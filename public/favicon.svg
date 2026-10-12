@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Stylized Orange S -->
+  <path
+    d="M48 20 C34 20, 24 28, 24 38 C24 48, 34 52, 45 55 C57 58, 65 62, 65 72 C65 82, 54 88, 38 88 C25 88, 15 82, 12 74"
+    stroke="#F58220"
+    stroke-width="14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  
+  <!-- Stylized Charcoal G -->
+  <path
+    d="M58 24 C72 26, 82 36, 82 52 C82 72, 68 85, 48 85"
+    stroke="#202124"
+    stroke-width="12"
+    stroke-linecap="round"
+  />
+  <path
+    d="M82 56 H60 V72"
+    stroke="#202124"
+    stroke-width="12"
+    stroke-linecap="square"
+  />
+
+  <!-- House Silhouette in G -->
+  <path d="M58 36 L68 26 L78 36 Z" fill="#F58220" />
+  <rect x="62" y="36" width="12" height="10" fill="#F58220" />
+  <rect x="65" y="39" width="6" height="5" fill="#FFFFFF" />
+</svg>

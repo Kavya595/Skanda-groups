@@ -1,0 +1,30 @@
+[
+  {
+    "id": "bk-101",
+    "plotNumber": 15,
+    "plotId": 15,
+    "customerName": "K. Ramesh Reddy",
+    "customerPhone": "+91 98480 22334",
+    "requestedAt": "2026-10-12T04:18:38.123Z",
+    "status": "approved",
+    "tokenAmount": "₹50,000",
+    "facing": "West",
+    "sqYards": 202,
+    "notes": "Customer submitted token advance via NEFT. Awaiting Admin Approval.",
+    "approvedAt": "2026-10-12T06:23:14.455Z",
+    "adminNotes": "Approved by Admin"
+  },
+  {
+    "id": "bk-102",
+    "plotNumber": 23,
+    "plotId": 23,
+    "customerName": "Priya Sharma",
+    "customerPhone": "+91 97012 34567",
+    "requestedAt": "2026-10-12T01:18:38.123Z",
+    "status": "pending_approval",
+    "tokenAmount": "₹1,00,000",
+    "facing": "West",
+    "sqYards": 183,
+    "notes": "Site visit completed. Spot booking confirmation requested."
+  }
+]
