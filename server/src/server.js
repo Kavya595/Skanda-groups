@@ -7,15 +7,29 @@ import { connectDB } from './config/db.js';
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
-  await connectDB();
-  app.listen(PORT, () => {
-    console.log(`=======================================================`);
-    console.log(` Alekhya's Brundavan API Server running on port ${PORT}`);
-    console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(` Health Check: http://localhost:${PORT}/health`);
-    console.log(` API Base:     http://localhost:${PORT}/api`);
-    console.log(`=======================================================`);
-  });
+  try {
+    await connectDB();
+    const server = app.listen(PORT, () => {
+      console.log(`=======================================================`);
+      console.log(` Alekhya's Brundavan API Server running on port ${PORT}`);
+      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(` Health Check: http://localhost:${PORT}/health`);
+      console.log(` API Base:     http://localhost:${PORT}/api`);
+      console.log(`=======================================================`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`\n[Server Error] Port ${PORT} is already in use by another process.`);
+        console.error(`Please stop any existing process on port ${PORT} or specify a different PORT in server/.env.\n`);
+      } else {
+        console.error('[Server Error]', err);
+      }
+    });
+  } catch (err) {
+    console.error('[Startup Error] Failed to connect to database or start server:', err.message);
+    process.exit(1);
+  }
 }
 
 startServer();
