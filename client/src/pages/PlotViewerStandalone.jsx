@@ -36,7 +36,12 @@ import {
   Plus,
   Minus,
   Eye,
-  Sliders
+  Sliders,
+  ArrowUpRight,
+  TrendingUp,
+  Phone,
+  Send,
+  Bot
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
@@ -158,7 +163,46 @@ export default function PlotViewerStandalone({ settings }) {
   // Selected Plot & Modals
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
+  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [aiChatMessages, setAiChatMessages] = useState([
+    {
+      role: 'assistant',
+      text: "Namaste! I am your Alekhya's Brundavan AI Assistant. How can I help you regarding plot availability, Vasthu facings, DTCP/RERA approvals, or Srisailam Highway connectivity today?"
+    }
+  ]);
+  const [aiInputText, setAiInputText] = useState('');
   const [copiedShare, setCopiedShare] = useState(false);
+
+  const handleAskAIPrompt = (promptText) => {
+    let reply = "";
+    const lower = promptText.toLowerCase();
+
+    if (lower.includes('east') || lower.includes('facing')) {
+      reply = "Alekhya's Brundavan offers premium East-facing plots (e.g. Plots 2, 3, 4, 5, 23, 24, 25, 91, 92, 93, 94, 95) with sizes ranging from 194 to 295 sq.yds. All plots are 100% Vasthu compliant with 33' blacktop road access.";
+    } else if (lower.includes('dtcp') || lower.includes('rera') || lower.includes('approval') || lower.includes('legal')) {
+      reply = "Alekhya's Brundavan is fully sanctioned by DTCP (Sanction Order: TLP NO. 87/2024/H) and registered with TS RERA (Reg No: PO2400009081). The venture provides 100% clear title ownership with instant spot registration and bank loan tie-ups with SBI, HDFC, and ICICI.";
+    } else if (lower.includes('distance') || lower.includes('temple') || lower.includes('airport') || lower.includes('rgia')) {
+      reply = "Key connectivity from Alekhya's Brundavan (Kadthal):\n• Maisigandi Maisamma Temple: 0.8 km (1 min)\n• Srisailam Highway (NH 765): Direct Frontage (0 min)\n• Regional Ring Road (RRR) Kadthal Junction: 12.4 km (10 mins)\n• Hyderabad Pharma City SEZ: 18.5 km (15 mins)\n• Rajiv Gandhi International Airport (RGIA): 38.5 km (32 mins)";
+    } else if (lower.includes('size') || lower.includes('dimension') || lower.includes('area') || lower.includes('road')) {
+      reply = "Plot sizes range from 183 to 672 sq.yards (1,647 to 6,048 sq.ft) with standard dimensions such as 55' x 30' and 55' x 33'. The layout features a 60' wide main approach road, 33' wide internal blacktop boulevards, and an Ac. 0.758 landscaped central park.";
+    } else {
+      reply = "Alekhya's Brundavan by Skandha Group is a prime 96-plot gated community situated directly on Srisailam Highway in Kadthal. Would you like to schedule a site visit or enquire about specific plot numbers? Click 'Enquire Plot' or message us directly on WhatsApp!";
+    }
+
+    setAiChatMessages(prev => [
+      ...prev,
+      { role: 'user', text: promptText },
+      { role: 'assistant', text: reply }
+    ]);
+  };
+
+  const handleSendAIMessage = (e) => {
+    e?.preventDefault();
+    if (!aiInputText.trim()) return;
+    const q = aiInputText.trim();
+    setAiInputText('');
+    handleAskAIPrompt(q);
+  };
 
   // Tools & State
   const [cameraPreset, setCameraPreset] = useState('overview');
@@ -380,15 +424,15 @@ export default function PlotViewerStandalone({ settings }) {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-slate-50 text-slate-800 font-sans">
-      
-      {/* ========================================================== */}
-      {/* 1. TOP INTERACTIVE MASTER PLAN MAP (76VH HEIGHT)           */}
-      {/* ========================================================== */}
-      <section
-        ref={mapSectionRef}
-        className="relative w-full h-[76vh] min-h-[540px] bg-[#DFEFE0] overflow-hidden select-none border-b border-slate-200"
-      >
+    <div ref={containerRef} className="flex flex-col min-h-screen justify-between bg-slate-100 font-sans text-slate-800">
+      <div id="main" className="grow">
+        {/* ========================================================== */}
+        {/* 1. TOP INTERACTIVE MASTER PLAN MAP (FIXED 75VH)            */}
+        {/* ========================================================== */}
+        <div
+          ref={mapSectionRef}
+          className="fixed top-0 left-0 w-full z-0 overflow-hidden h-[75vh] select-none bg-[#E5ECE3]"
+        >
         {/* Floating Top Header (Branding & Search) */}
         <header className="absolute top-3 left-3 right-3 z-30 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
           <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center gap-3.5">
@@ -909,127 +953,201 @@ export default function PlotViewerStandalone({ settings }) {
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* ========================================================== */}
-      {/* 2. STICKY SUB-NAV BAR (MATCHING PLOTS99 SCREENSHOT 1 & 2)  */}
+      {/* 2. SLIDING BOTTOM CONTAINER SHEET (STARTING AT mt-[75vh])   */}
       {/* ========================================================== */}
-      <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-3 overflow-x-auto no-scrollbar">
-          <div className="flex items-center gap-6 text-xs sm:text-sm font-semibold text-slate-600 shrink-0">
-            <button
-              onClick={() => mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
-              className="text-brand-orange font-bold flex items-center gap-1 hover:text-brand-orange-dark transition-colors"
-            >
-              <Compass className="w-4 h-4" />
-              <span>Interactive Map</span>
-            </button>
-            <button onClick={() => scrollToSection('sec-overview')} className="hover:text-brand-orange transition-colors">
-              Overview
-            </button>
-            <button onClick={() => scrollToSection('sec-insights')} className="hover:text-brand-orange transition-colors">
-              Insights
-            </button>
-            <button onClick={() => scrollToSection('sec-stats')} className="hover:text-brand-orange transition-colors">
-              Stats
-            </button>
-            <button onClick={() => scrollToSection('sec-landmarks')} className="hover:text-brand-orange transition-colors">
-              Nearby
-            </button>
-          </div>
+      <div
+        className="container-main relative z-10 bg-white/95 backdrop-blur-xs rounded-t-[28px] sm:rounded-t-[36px] md:rounded-t-[40px] shadow-[0_-12px_40px_rgba(0,0,0,0.18)] border-t border-slate-200/40 max-w-full overflow-x-hidden mt-[75vh]"
+        style={{ width: '100%', borderTopColor: '#329e4d' }}
+      >
+          {/* Sticky Navigation Bar matching Plots99 */}
+          <div className="sticky top-0 z-20 backdrop-blur-md bg-white/90 border-b border-slate-200/50 px-3 sm:px-6 py-2 sm:py-2.5 transition-all shadow-xs rounded-t-[28px] sm:rounded-t-[36px] md:rounded-t-[40px]">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
+              <nav className="flex items-center gap-1 sm:gap-1.5 shrink-0" aria-label="Page Navigation">
+                <button
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                  className="h-8 px-2.5 rounded-full text-xs font-semibold gap-1.5 text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition-all inline-flex items-center"
+                  title="Interactive Map"
+                >
+                  <Building className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden md:inline font-bold">Alekhya's Brundavan</span>
+                </button>
+                <div className="h-4 w-px bg-slate-300 mx-0.5" />
+                <button
+                  onClick={() => scrollToSection('sec-info')}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Overview</span>
+                </button>
+                <button
+                  onClick={() => scrollToSection('sec-insights')}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
+                >
+                  <Lightbulb className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Insights</span>
+                </button>
+                <button
+                  onClick={() => scrollToSection('sec-stats')}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Stats</span>
+                </button>
+                <button
+                  onClick={() => scrollToSection('sec-landmarks')}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Nearby</span>
+                </button>
+                <button
+                  onClick={() => scrollToSection('sec-approvals')}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Approvals</span>
+                </button>
+              </nav>
 
-          <div className="flex items-center gap-2.5 shrink-0">
-            <button
-              onClick={() => setIsEnquiryOpen(true)}
-              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-all"
-            >
-              <MessageCircle className="w-3.5 h-3.5" />
-              <span>Ask Advisor</span>
-            </button>
-
-            <a
-              href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all"
-            >
-              <Navigation className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Directions</span>
-            </a>
-
-            <button
-              onClick={() => handleShareCurrentPlot(selectedPlot || plots[0])}
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors"
-              title="Share Layout"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* ========================================================== */}
-      {/* 3. PROJECT BANNER & VITAL STATS STRIP                      */}
-      {/* ========================================================== */}
-      <section id="sec-overview" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10">
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <span className="text-xs uppercase font-bold tracking-wider px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-full">
-                  Plotted Villa Development
-                </span>
-                <span className="text-xs font-medium text-slate-500">
-                  Kadthal, Srisailam Highway (NH 765)
-                </span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => setIsAIAssistantOpen(true)}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
+                  type="button"
+                  title="Ask AI Assistant"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Ask AI</span>
+                </button>
+                <a
+                  href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
+                  title="Get Directions"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Directions</span>
+                </a>
+                <button
+                  onClick={() => handleShareCurrentPlot(selectedPlot || plots[0])}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
+                  type="button"
+                  title="Share Venture"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 mt-2">
-                Alekhya's Brundavan
-              </h2>
-              <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-                By <strong>Skandha Group</strong>. A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City &amp; Hyderabad Pharma City.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3.5 rounded-xl text-sm shadow transition-all"
-              >
-                <span>Enquire Plot Availability</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
             </div>
           </div>
 
-          {/* Quick Spec Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <div className="text-xs font-semibold text-slate-500">Total Plotted Units</div>
-              <div className="text-2xl font-bold text-slate-900 mt-0.5">96 Plots</div>
-              <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">Available for Booking</div>
+          {/* Sheet Content: Info & Overview */}
+          <section id="sec-info" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-8 md:space-y-12">
+            {/* Top Brand & Title Info Block (exact Plots99 match) */}
+            <div className="scroll-mt-24 space-y-5">
+              <div className="flex items-start gap-3.5 sm:gap-5 md:items-center md:justify-between">
+                <div className="shrink-0">
+                  <div className="block p-2 sm:p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all group">
+                    <img
+                      alt="Skandha Group"
+                      src="/assets/skandha_logo.svg"
+                      className="object-contain h-12 w-12 sm:h-16 sm:w-16 md:h-18 md:w-auto max-w-[85px] sm:max-w-[140px] md:max-w-[190px] transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 sm:space-y-2 grow min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span className="w-fit shrink-0 justify-center overflow-hidden whitespace-nowrap border transition-[color,box-shadow] rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 font-semibold text-[11px] sm:text-xs bg-emerald-600/10 text-emerald-700 border-emerald-600/20 flex items-center gap-1 sm:gap-1.5">
+                      <Layers className="w-3 h-3 text-emerald-600" />
+                      <span>Plotted Development</span>
+                    </span>
+                    <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-50 text-brand-orange border border-orange-200">
+                      DTCP &amp; TS RERA Approved
+                    </span>
+                  </div>
+
+                  <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]">
+                    Alekhya's Brundavan
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-slate-500">
+                    <a
+                      href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-slate-600 hover:text-emerald-700 transition-colors text-left"
+                      title="View on Google Maps"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>Kadthal, Srisailam Highway, Telangana</span>
+                    </a>
+                    <span className="opacity-40">•</span>
+                    <a
+                      href="/"
+                      className="group inline-flex items-center gap-1 font-medium uppercase tracking-wider text-slate-500 hover:text-emerald-700 transition-colors text-[11px] sm:text-xs"
+                    >
+                      <span>By Skandha Group</span>
+                      <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <div className="text-xs font-semibold text-slate-500">Plot Sizes Range</div>
-              <div className="text-2xl font-bold text-slate-900 mt-0.5">183 - 672</div>
-              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Sq. Yards (1,647 - 6,048 Sq.Ft)</div>
-            </div>
+            {/* Overview Card */}
+            <div id="sec-overview" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-xs space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl font-bold text-slate-900">
+                    Project Overview
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
+                    By <strong>Skandha Group</strong>. A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City &amp; Hyderabad Pharma City.
+                  </p>
+                </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <div className="text-xs font-semibold text-slate-500">Statutory Clearances</div>
-              <div className="text-lg font-bold text-slate-900 mt-0.5">DTCP &amp; TS RERA</div>
-              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">TLP NO. 87/2024/H</div>
-            </div>
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3.5 rounded-xl text-sm shadow transition-all shrink-0"
+                >
+                  <span>Enquire Plot Availability</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
 
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-              <div className="text-xs font-semibold text-slate-500">Open Space Park</div>
-              <div className="text-2xl font-bold text-slate-900 mt-0.5">Ac. 0.758</div>
-              <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">Landscaped Children's Park</div>
+              {/* Quick Spec Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500">Total Plotted Units</div>
+                  <div className="text-2xl font-bold text-slate-900 mt-0.5">96 Plots</div>
+                  <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">Available for Booking</div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500">Plot Sizes Range</div>
+                  <div className="text-2xl font-bold text-slate-900 mt-0.5">183 - 672</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 font-medium">Sq. Yards (1,647 - 6,048 Sq.Ft)</div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500">Statutory Clearances</div>
+                  <div className="text-lg font-bold text-slate-900 mt-0.5">DTCP &amp; TS RERA</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 font-medium">TLP NO. 87/2024/H</div>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500">Open Space Park</div>
+                  <div className="text-2xl font-bold text-slate-900 mt-0.5">Ac. 0.758</div>
+                  <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">Landscaped Children's Park</div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
       {/* ========================================================== */}
       {/* 4. NEARBY LANDMARKS & CONNECTIVITY (MATCHING SCREENSHOT 5) */}
@@ -1493,28 +1611,262 @@ export default function PlotViewerStandalone({ settings }) {
 
 
       {/* ========================================================== */}
-      {/* BOTTOM FOOTER                                              */}
+      {/* 8. SIGNATURE DARK FOOTER (PLOTS99 EXACT MATCH)             */}
       {/* ========================================================== */}
-      <footer className="bg-slate-900 text-slate-400 py-10 px-4 sm:px-6 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <img
-              src="/assets/skandha_logo_white.svg"
-              alt="Skandha Group"
-              className="h-10 w-auto object-contain"
-            />
-            <div className="border-l border-slate-700 pl-3">
-              <div className="text-white font-serif font-bold text-base">Alekhya's Brundavan</div>
-              <div className="text-xs text-slate-400">Kadthal &bull; DTCP TLP NO. 87/2024/H &bull; TS RERA PO2400009081</div>
+      <footer className="bg-slate-950 text-slate-400 pt-16 pb-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800/80">
+        <div className="max-w-7xl mx-auto space-y-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
+            {/* Col 1: Developer Branding */}
+            <div className="space-y-4 md:col-span-1">
+              <div className="flex items-center gap-3">
+                <img
+                  src="/assets/skandha_logo_white.svg"
+                  alt="Skandha Group"
+                  className="h-10 w-auto object-contain"
+                />
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                <strong className="text-white">Alekhya's Brundavan</strong> is a landmark DTCP-approved gated community residential layout by <strong>Skandha Group</strong>, strategically poised on Srisailam Highway (NH 765), Kadthal.
+              </p>
+              <div className="space-y-1 text-[11px] text-slate-400">
+                <div><span className="text-slate-300 font-semibold">DTCP Sanction:</span> TLP NO. 87/2024/H</div>
+                <div><span className="text-slate-300 font-semibold">TS RERA Reg:</span> PO2400009081</div>
+                <div><span className="text-slate-300 font-semibold">Location:</span> Kadthal, Ranga Reddy Dist, Telangana</div>
+              </div>
+            </div>
+
+            {/* Col 2: Layout & Planning */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Layout Specifications</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer" onClick={() => scrollToSection('sec-overview')}>
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>96 Premium Plotted Units</span>
+                </li>
+                <li className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer" onClick={() => scrollToSection('sec-overview')}>
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>60' Wide Arterial Highway Approach</span>
+                </li>
+                <li className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer" onClick={() => scrollToSection('sec-overview')}>
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>33' Blacktop Internal Boulevards</span>
+                </li>
+                <li className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer" onClick={() => scrollToSection('sec-overview')}>
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>Ac. 0.758 Landscaped Central Park</span>
+                </li>
+                <li className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer" onClick={() => scrollToSection('sec-stats')}>
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>100% Vasthu Compliant East &amp; West Plots</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 3: Strategic Growth Corridors */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Regional Growth Hubs</h4>
+              <ul className="space-y-2 text-xs text-slate-400">
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-brand-orange" />
+                  <span>Maisigandi Maisamma Temple (1 min)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-brand-orange" />
+                  <span>RRR Kadthal Interchange (10 mins)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-brand-orange" />
+                  <span>Pharma City &amp; Mucherla Future City (15 mins)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-brand-orange" />
+                  <span>RGIA Airport Shamshabad (32 mins)</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-brand-orange" />
+                  <span>ORR Exit 14 Tukkuguda (25 mins)</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Col 4: Corporate Office & Support */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-white">Contact &amp; Site Visits</h4>
+              <p className="text-xs text-slate-400">
+                Direct builder bookings with guaranteed spot registration and bank loan assistance.
+              </p>
+              <div className="space-y-2 pt-1 text-xs">
+                <a
+                  href="tel:+919100000000"
+                  className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors font-medium"
+                >
+                  <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>+91 91000 00000 / Site Desk</span>
+                </a>
+                <a
+                  href="https://wa.me/919100000000?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all font-semibold"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Chat on WhatsApp</span>
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-6 text-xs font-semibold">
-            <a href="/" className="hover:text-brand-orange transition-colors">Main Website</a>
-            <a href="/project" className="hover:text-brand-orange transition-colors">Project Specifications</a>
+          {/* Legal Compliance & Disclaimer */}
+          <div className="pt-8 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-3 leading-relaxed">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-400">
+              <div className="flex flex-wrap items-center gap-4">
+                <span>&copy; {new Date().getFullYear()} Skandha Group. All Rights Reserved.</span>
+                <span className="opacity-40">•</span>
+                <a href="/" className="hover:text-slate-300 transition-colors">Main Portal</a>
+                <span className="opacity-40">•</span>
+                <a href="/project" className="hover:text-slate-300 transition-colors">Project Specifications</a>
+                <span className="opacity-40">•</span>
+                <a href="https://rerait.telangana.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-slate-300 transition-colors">TS RERA Registry</a>
+              </div>
+              <div className="flex items-center gap-2 text-emerald-400 font-medium">
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                <span>DTCP Approved &bull; RERA Certified</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-slate-400">
+              Disclaimer: The interactive 2D and 3D layout maps, road visualizations, plot boundaries, and metric estimates displayed on this platform represent the sanctioned DTCP master plan (TLP NO. 87/2024/H). Visual simulations (including street roll-throughs, foliage, and vehicle animations) are artistic impressions created for spatial orientation. Plot availability, pricing tiers, and statutory registrations are subject to change and formal execution of developer conveyance deeds.
+            </p>
           </div>
         </div>
       </footer>
+
+      {/* Close container-main */}
+      </div>
+
+      {/* ========================================================== */}
+      {/* FLOATING AI ASSISTANT TRIGGER BUTTON (PLOTS99 EXACT MATCH) */}
+      {/* ========================================================== */}
+      <button
+        onClick={() => setIsAIAssistantOpen(true)}
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-2.5 px-4 py-3 rounded-full text-white font-semibold text-xs shadow-2xl transition-all duration-300 hover:scale-105 group"
+        style={{
+          background: 'linear-gradient(135deg, #329e4d 0%, #16a34a 50%, #6366f1 100%)',
+          boxShadow: '0 8px 30px rgba(50, 158, 77, 0.45)'
+        }}
+        title="Chat with AI Venture Assistant"
+      >
+        <div className="relative">
+          <Sparkles className="w-4 h-4 text-white" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-300 animate-ping" />
+        </div>
+        <span className="tracking-wide">Ask AI Assistant</span>
+      </button>
+
+      {/* ========================================================== */}
+      {/* AI ASSISTANT MODAL DIALOG                                  */}
+      {/* ========================================================== */}
+      {isAIAssistantOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] animate-scaleUp">
+            {/* Modal Header */}
+            <div className="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-emerald-500 to-indigo-500 flex items-center justify-center shadow-md">
+                  <Bot className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-white">Alekhya's Brundavan AI</h3>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  </div>
+                  <div className="text-[10px] text-slate-300 font-medium">
+                    Skandha Group Real Estate &amp; Master Plan Intelligence
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAIAssistantOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
+                title="Close AI Assistant"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick Questions Chips */}
+            <div className="p-2.5 bg-slate-50 border-b border-slate-200 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0">
+              {[
+                'Available East plots',
+                'DTCP & RERA Approvals',
+                'Distance from Temple & RGIA',
+                'Plot sizes & dimensions',
+                'Schedule site visit'
+              ].map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => handleAskAIPrompt(chip)}
+                  className="px-2.5 py-1 rounded-full bg-white text-slate-700 text-[11px] font-semibold border border-slate-200 hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/50 transition-all shrink-0 whitespace-nowrap shadow-2xs"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+
+            {/* Chat Messages Stream */}
+            <div className="p-4 overflow-y-auto space-y-3.5 flex-1 max-h-[380px] bg-slate-50/50">
+              {aiChatMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'bg-slate-900 text-white rounded-br-xs'
+                        : 'bg-white text-slate-800 border border-slate-200 shadow-2xs rounded-bl-xs'
+                    }`}
+                  >
+                    <div className="whitespace-pre-line">{msg.text}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chat Input Form */}
+            <form onSubmit={handleSendAIMessage} className="p-3 bg-white border-t border-slate-200 flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Ask about plot availability, vasthu, approvals..."
+                value={aiInputText}
+                onChange={(e) => setAiInputText(e.target.value)}
+                className="flex-1 px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+              />
+              <button
+                type="submit"
+                disabled={!aiInputText.trim()}
+                className="p-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white transition-colors"
+                title="Send Message"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+
+            {/* Direct WhatsApp Callout Footer */}
+            <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-900">
+              <span className="font-medium">Prefer direct human assistance?</span>
+              <a
+                href="https://wa.me/919100000000?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-emerald-700 hover:underline flex items-center gap-1"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>WhatsApp Sales Desk</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Enquiry Modal */}
       <EnquiryModal
@@ -1522,6 +1874,11 @@ export default function PlotViewerStandalone({ settings }) {
         onClose={() => setIsEnquiryOpen(false)}
         prefilledPlot={selectedPlot}
       />
+
+      {/* Close id="main" */}
+      </div>
+
+    {/* Close containerRef */}
     </div>
   );
 }
