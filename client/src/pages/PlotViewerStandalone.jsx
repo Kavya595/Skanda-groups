@@ -718,7 +718,7 @@ export default function PlotViewerStandalone({ settings }) {
         </aside>
 
         {/* Map Canvas (3D or 2D) */}
-        <div className="w-full h-full" onWheel={handleMapWheel}>
+        <div className="w-full h-full">
           {loading ? (
             <div className="w-full h-full flex items-center justify-center bg-[#DFEFE0]">
               <div className="text-center space-y-2">
@@ -732,14 +732,10 @@ export default function PlotViewerStandalone({ settings }) {
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
               cameraPreset={cameraPreset}
-              walkRoadIndex={walkRoadIndex}
-              walkProgress={walkProgress}
-              onWalkProgressChange={setWalkProgress}
               animateVehicles={animateVehicles}
               isMeasureMode={isMeasureMode}
               measurePoints={measurePoints}
               onMeasurePoint={handleMeasurePoint}
-              onRoadClick={handleRoadClick}
               onParkClick={handleParkClick}
             />
           ) : (
