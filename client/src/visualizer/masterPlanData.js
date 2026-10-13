@@ -22,6 +22,29 @@ export const LAYOUT_BOUNDS = {
   depth: 122
 };
 
+/**
+ * Real-World Geographic Alignment at Kadthal, Srisailam Highway, Hyderabad
+ * DTCP Approval: TLP NO. 87/2024/H | TS RERA: PO2400009081
+ */
+export const SITE_GEO = {
+  center: [17.0985, 78.5085], // [lat, lng] Kadthal, Telangana
+  zoom: 18,
+  minZoom: 13,
+  maxZoom: 20,
+  locality: "Kadthal, Srisailam Highway, Hyderabad",
+  pinCode: "509358",
+  state: "Telangana"
+};
+
+// Coordinate projection from local (x, z) meters to [lat, lng]
+export function localToLatLng(x, z) {
+  const LAT_METERS_PER_DEG = 110649;
+  const LNG_METERS_PER_DEG = 106399;
+  const lat = SITE_GEO.center[0] - (z / LAT_METERS_PER_DEG);
+  const lng = SITE_GEO.center[1] + (x / LNG_METERS_PER_DEG);
+  return [lat, lng];
+}
+
 export const statusColors = {
   available: {
     bg: '#9BD89E',         // Plots99 Soft Map Green
@@ -420,6 +443,14 @@ export function getEnrichedPlots(overridePlots = null) {
         depth
       },
       center: [centerX, centerZ],
+      // Geographic Coordinates [latitude, longitude] at Kadthal, Srisailam Highway
+      geoCenter: localToLatLng(centerX, centerZ),
+      geoPolygon: [
+        localToLatLng(x0, z0),
+        localToLatLng(x1, z0),
+        localToLatLng(x1, z1),
+        localToLatLng(x0, z1)
+      ],
       // 2D SVG canvas normalized coordinates (scaled to standard 1200x800 viewBox)
       // Map X: [-90, +90] -> SVG [60, 1140] (factor: 6.0)
       // Map Z: [-55, +65] -> SVG [60, 740] (factor: 5.66)
@@ -432,3 +463,11 @@ export function getEnrichedPlots(overridePlots = null) {
     };
   });
 }
+
+// Site boundary in geographic coordinates [lat, lng]
+export const SITE_BOUNDARY_GEO = [
+  localToLatLng(LAYOUT_BOUNDS.minX, LAYOUT_BOUNDS.minZ),
+  localToLatLng(LAYOUT_BOUNDS.maxX, LAYOUT_BOUNDS.minZ),
+  localToLatLng(LAYOUT_BOUNDS.maxX, LAYOUT_BOUNDS.maxZ),
+  localToLatLng(LAYOUT_BOUNDS.minX, LAYOUT_BOUNDS.maxZ)
+];

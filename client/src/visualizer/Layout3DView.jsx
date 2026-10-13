@@ -865,13 +865,13 @@ function ParkArea3D({ onParkClick }) {
   );
 }
 
-// Google Maps / Cartographic Terrain Backdrop Plane
+// Real-World Kadthal / Srisailam Highway Cartographic Terrain Backdrop
 function CartographicMapTerrain() {
   return (
     <group>
       {/* Light pastel green map terrain plane (matching OpenStreetMap / Google Maps base) */}
       <mesh position={[0, -0.015, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[420, 300]} />
+        <planeGeometry args={[450, 320]} />
         <meshBasicMaterial color="#CFE2CC" />
       </mesh>
 
@@ -881,15 +881,47 @@ function CartographicMapTerrain() {
         <meshBasicMaterial color="#D5E8CE" />
       </mesh>
 
-      {/* Surrounding Terrain Arterial Grid & Approach Highway Veins */}
-      <mesh position={[0, 0.006, -75]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[260, 4]} />
-        <meshBasicMaterial color="#CBD5E1" />
+      {/* Boundary Compound Fencing Line */}
+      <lineSegments position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <edgesGeometry args={[new THREE.PlaneGeometry(186, 126)]} />
+        <lineBasicMaterial color="#68D391" linewidth={2} />
+      </lineSegments>
+
+      {/* Srisailam Highway Extended North-South Corridor Vein */}
+      <mesh position={[80, 0.006, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[16, 320]} />
+        <meshBasicMaterial color="#1E232A" />
       </mesh>
-      <mesh position={[0, 0.006, 85]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[260, 4]} />
-        <meshBasicMaterial color="#CBD5E1" />
+      {/* Highway Median Line Extension */}
+      <mesh position={[80, 0.008, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[0.35, 320]} />
+        <meshBasicMaterial color="#FBBF24" />
       </mesh>
+
+      {/* 60ft Arterial Road East-West Extension towards Maisigandi Temple */}
+      <mesh position={[-60, 0.006, -47]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[260, 10]} />
+        <meshBasicMaterial color="#2B303A" />
+      </mesh>
+
+      {/* Real-World GIS Milestone Markers on 3D Map */}
+      <group position={[80, 0.05, -120]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+        <Text fontSize={3.2} color="#1E3A8A" fontWeight="bold">
+          ▲ to Hyderabad / RGIA Airport / ORR Exit 14 (34 km)
+        </Text>
+      </group>
+
+      <group position={[80, 0.05, 130]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+        <Text fontSize={3.2} color="#1E3A8A" fontWeight="bold">
+          ▼ to Kadthal Town / Dindi / Srisailam (NH-765)
+        </Text>
+      </group>
+
+      <group position={[-140, 0.05, -47]} rotation={[-Math.PI / 2, 0, 0]}>
+        <Text fontSize={3.0} color="#92400E" fontWeight="bold">
+          ◄ to Maisigandi Maisamma Temple (0.8 km)
+        </Text>
+      </group>
     </group>
   );
 }

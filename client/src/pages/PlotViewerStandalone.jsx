@@ -211,6 +211,7 @@ export default function PlotViewerStandalone({ settings }) {
 
   const containerRef = useRef(null);
   const mapSectionRef = useRef(null);
+  const layout2DRef = useRef(null);
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { viewMode, standalone: true });
@@ -475,18 +476,28 @@ export default function PlotViewerStandalone({ settings }) {
           <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl p-1 flex flex-col gap-1">
             <button
               onClick={() => {
-                if (cameraPreset === 'overview') setCameraPreset('topDown');
-                else if (cameraPreset === 'topDown') setCameraPreset('roadWalk');
+                if (viewMode === '2d') {
+                  layout2DRef.current?.zoomIn();
+                } else {
+                  if (cameraPreset === 'overview') setCameraPreset('topDown');
+                  else if (cameraPreset === 'topDown') setCameraPreset('roadWalk');
+                }
               }}
               className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
-              title="Zoom In"
+              title="Zoom In (+)"
             >
               <Plus className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setCameraPreset('overview')}
+              onClick={() => {
+                if (viewMode === '2d') {
+                  layout2DRef.current?.zoomOut();
+                } else {
+                  setCameraPreset('overview');
+                }
+              }}
               className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
-              title="Zoom Out to Overview"
+              title="Zoom Out (−)"
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -494,7 +505,13 @@ export default function PlotViewerStandalone({ settings }) {
 
           {/* Compass Rose Needle (matching Screenshot 1, 2, 3) */}
           <div
-            onClick={() => setCameraPreset('overview')}
+            onClick={() => {
+              if (viewMode === '2d') {
+                layout2DRef.current?.reset();
+              } else {
+                setCameraPreset('overview');
+              }
+            }}
             className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl flex items-center justify-center cursor-pointer group hover:bg-white transition-all"
             title="True North Indicator (Click to Reset View)"
           >
@@ -506,7 +523,13 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto">
           {/* Fit Overview */}
           <button
-            onClick={() => setCameraPreset('overview')}
+            onClick={() => {
+              if (viewMode === '2d') {
+                layout2DRef.current?.reset();
+              } else {
+                setCameraPreset('overview');
+              }
+            }}
             className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-brand-orange hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
             title="Fit Master Plan to Viewport"
           >
@@ -618,6 +641,7 @@ export default function PlotViewerStandalone({ settings }) {
             />
           ) : (
             <Layout2DView
+              ref={layout2DRef}
               plots={plots}
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
@@ -850,6 +874,13 @@ export default function PlotViewerStandalone({ settings }) {
                 <span>{stats?.available || 81} AVAILABLE</span>
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Map Attribution (Matching Plots99 Screenshots 1 & 5) */}
+        <div className="absolute bottom-4 right-28 z-30 pointer-events-auto hidden sm:block">
+          <div className="bg-white/85 backdrop-blur-xs text-[10px] text-slate-600 px-2.5 py-1 rounded-xl border border-slate-200/70 shadow-xs font-sans">
+            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-900 font-semibold">OpenStreetMap contributors</a>
           </div>
         </div>
 
