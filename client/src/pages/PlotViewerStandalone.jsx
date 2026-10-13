@@ -30,7 +30,8 @@ import {
   Calculator,
   ChevronRight,
   MessageCircle,
-  HelpCircle
+  HelpCircle,
+  Check
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
@@ -208,6 +209,7 @@ export default function PlotViewerStandalone({ settings }) {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
+  const [copiedShare, setCopiedShare] = useState(false);
 
   // Tools & State
   const [cameraPreset, setCameraPreset] = useState('overview');
@@ -219,11 +221,10 @@ export default function PlotViewerStandalone({ settings }) {
   // Active FAQ accordion
   const [openFaq, setOpenFaq] = useState(0);
 
-  // Interactive Investment Calculator state
+  // Interactive Plot Sizer Form (NO hardcoded costs mentioned directly!)
   const [calcPlotArea, setCalcPlotArea] = useState(202);
-  const [calcRatePerYd, setCalcRatePerYd] = useState(12500);
-  const [calcDownPaymentPercent, setCalcDownPaymentPercent] = useState(25);
-  const [calcTenureYears, setCalcTenureYears] = useState(10);
+  const [calcFacingPref, setCalcFacingPref] = useState('East');
+  const [calcVillaType, setCalcVillaType] = useState('Duplex');
 
   const containerRef = useRef(null);
   const mapSectionRef = useRef(null);
@@ -241,19 +242,42 @@ export default function PlotViewerStandalone({ settings }) {
         fetchPlotStats()
       ]);
 
+      let loadedPlots = [];
       if (plotsRes.success && plotsRes.plots) {
-        const enriched = getEnrichedPlots(plotsRes.plots);
-        setPlots(enriched);
+        loadedPlots = getEnrichedPlots(plotsRes.plots);
       } else {
-        setPlots(getEnrichedPlots());
+        loadedPlots = getEnrichedPlots();
       }
+      setPlots(loadedPlots);
 
       if (statsRes.success) {
         setStats(statsRes.stats);
       }
+
+      // Check URL query parameter for shared plot (User requirement: "each plot is sharable")
+      const searchParams = new URLSearchParams(window.location.search);
+      const targetPlotNum = searchParams.get('plot');
+      if (targetPlotNum) {
+        const found = loadedPlots.find(p => String(p.plotNumber) === String(targetPlotNum));
+        if (found) {
+          setSelectedPlot(found);
+          setIsDrawerOpen(true);
+        }
+      }
     } catch (err) {
       console.warn('Backend plots fetch failed, using authoritative master plan:', err);
-      setPlots(getEnrichedPlots());
+      const fallbackPlots = getEnrichedPlots();
+      setPlots(fallbackPlots);
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const targetPlotNum = searchParams.get('plot');
+      if (targetPlotNum) {
+        const found = fallbackPlots.find(p => String(p.plotNumber) === String(targetPlotNum));
+        if (found) {
+          setSelectedPlot(found);
+          setIsDrawerOpen(true);
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -266,6 +290,23 @@ export default function PlotViewerStandalone({ settings }) {
       status: plot.status,
       facing: plot.facing
     });
+  };
+
+  const handleShareCurrentPlot = (plot) => {
+    const target = plot || selectedPlot;
+    if (!target) return;
+    const shareUrl = `${window.location.origin}/plots?plot=${target.plotNumber}`;
+    if (navigator.share) {
+      navigator.share({
+        title: `Alekhya's Brundavan - Plot #${target.plotNumber}`,
+        text: `Inspect Plot #${target.plotNumber} (${target.areaSqYds} sq.yds, ${target.facing} facing) in Alekhya's Brundavan at Kadthal.`,
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2500);
+    }
   };
 
   const handleViewModeToggle = (mode) => {
@@ -303,24 +344,11 @@ export default function PlotViewerStandalone({ settings }) {
     }
   };
 
-  // Calculator computations
-  const totalCost = calcPlotArea * calcRatePerYd;
-  const downPayment = Math.round(totalCost * (calcDownPaymentPercent / 100));
-  const loanAmount = totalCost - downPayment;
-  const monthlyRate = 0.0875 / 12; // 8.75% per annum
-  const totalMonths = calcTenureYears * 12;
-  const monthlyEmi = Math.round(
-    (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, totalMonths)) /
-    (Math.pow(1 + monthlyRate, totalMonths) - 1)
-  );
-  // Estimated 5-year capital value at conservative 18% annual growth
-  const projectedFiveYearValue = Math.round(totalCost * Math.pow(1 + 0.18, 5));
-
   return (
     <div ref={containerRef} className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       
       {/* ========================================================== */}
-      {/* 1. TOP INTERACTIVE MASTER PLAN MAP (75VH HEIGHT)           */}
+      {/* 1. TOP INTERACTIVE MASTER PLAN MAP (76VH HEIGHT)           */}
       {/* ========================================================== */}
       <section
         ref={mapSectionRef}
@@ -493,6 +521,64 @@ export default function PlotViewerStandalone({ settings }) {
           )}
         </div>
 
+        {/* Floating Upper-Right Quick Plot Card (Plots99 Screenshot 2 & 4 replica) */}
+        {selectedPlot && (
+          <div className="absolute top-18 right-16 z-30 hidden lg:block w-72 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 animate-fadeIn">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="font-bold text-slate-900 text-sm">
+                  {selectedPlot.plotNumber}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  {selectedPlot.status}
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedPlot(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-full"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="py-3 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Facing:</span>
+                <strong className="text-slate-900">{selectedPlot.facing}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Area:</span>
+                <strong className="text-slate-900">{selectedPlot.areaSqYds} yd² ({selectedPlot.areaSqYds * 9} sq.ft)</strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Dimensions:</span>
+                <strong className="text-slate-900">{selectedPlot.dimensions}</strong>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
+              <div className="p-1.5 rounded-lg bg-emerald-50 text-[10px] text-emerald-800 font-semibold text-center border border-emerald-200">
+                100% Vasthu
+              </div>
+              <button
+                onClick={() => handleShareCurrentPlot(selectedPlot)}
+                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[10px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1"
+              >
+                {copiedShare ? <Check className="w-3 h-3 text-emerald-600" /> : <Share2 className="w-3 h-3" />}
+                <span>{copiedShare ? 'Copied!' : 'Share Plot'}</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsEnquiryOpen(true)}
+              className="mt-3 w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-xs"
+            >
+              Enquire for Plot #{selectedPlot.plotNumber}
+            </button>
+          </div>
+        )}
+
         {/* Bottom Left Floating Legend (Plots99 Exact Structure) */}
         <div className="absolute bottom-4 left-4 z-30 pointer-events-auto">
           <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200/90 shadow-2xl space-y-1.5">
@@ -556,7 +642,6 @@ export default function PlotViewerStandalone({ settings }) {
       {/* ========================================================== */}
       <nav className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 py-3 overflow-x-auto no-scrollbar">
-          {/* Quick Jump Links */}
           <div className="flex items-center gap-6 text-xs sm:text-sm font-semibold text-slate-600 shrink-0">
             <button
               onClick={() => mapSectionRef.current?.scrollIntoView({ behavior: 'smooth' })}
@@ -574,8 +659,8 @@ export default function PlotViewerStandalone({ settings }) {
             <button onClick={() => scrollToSection('sec-amenities')} className="hover:text-brand-orange transition-colors">
               Infrastructure
             </button>
-            <button onClick={() => scrollToSection('sec-calculator')} className="hover:text-brand-orange transition-colors">
-              ROI & EMI
+            <button onClick={() => scrollToSection('sec-sizer')} className="hover:text-brand-orange transition-colors">
+              Plot Sizer
             </button>
             <button onClick={() => scrollToSection('sec-approvals')} className="hover:text-brand-orange transition-colors">
               Approvals
@@ -585,7 +670,6 @@ export default function PlotViewerStandalone({ settings }) {
             </button>
           </div>
 
-          {/* Action CTAs */}
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => setIsEnquiryOpen(true)}
@@ -606,18 +690,7 @@ export default function PlotViewerStandalone({ settings }) {
             </a>
 
             <button
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: "Alekhya's Brundavan by Skandha Group",
-                    text: 'Explore interactive 2D & 3D plot master plan at Kadthal, Srisailam Highway.',
-                    url: window.location.href
-                  }).catch(() => {});
-                } else {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('Master Plan link copied to clipboard!');
-                }
-              }}
+              onClick={() => handleShareCurrentPlot(selectedPlot || plots[0])}
               className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors"
               title="Share Layout"
             >
@@ -646,7 +719,7 @@ export default function PlotViewerStandalone({ settings }) {
                 Alekhya's Brundavan
               </h2>
               <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-                By <strong>Skandha Group</strong>. A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City & Hyderabad Pharma City.
+                By <strong>Skandha Group</strong>. A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City &amp; Hyderabad Pharma City.
               </p>
             </div>
 
@@ -666,7 +739,7 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
               <div className="text-xs font-semibold text-slate-500">Total Plotted Units</div>
               <div className="text-2xl font-bold text-slate-900 mt-0.5">96 Plots</div>
-              <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">81 Available for Booking</div>
+              <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">Available for Booking</div>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
@@ -710,7 +783,6 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
           </div>
 
-          {/* Clean Rounded Card Grid (Screenshot 5 Replica) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {nearbyLandmarks.map((item, idx) => {
               const IconComp = item.icon;
@@ -796,26 +868,26 @@ export default function PlotViewerStandalone({ settings }) {
       </section>
 
       {/* ========================================================== */}
-      {/* 6. INTERACTIVE ROI & EMI INVESTMENT CALCULATOR             */}
+      {/* 6. PLOT SIZER & CUSTOM VILLA PLANNER (NO DIRECT COSTS)     */}
       {/* ========================================================== */}
-      <section id="sec-calculator" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <section id="sec-sizer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/30">
                 <Calculator className="w-3.5 h-3.5" />
-                <span>Financial Planner</span>
+                <span>Villa Footprint Planner</span>
               </div>
               <h3 className="font-serif text-2xl sm:text-3xl font-bold mt-2">
-                Interactive Plot Investment &amp; EMI Calculator
+                Custom Villa Configuration &amp; Bank Assistance
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-                Simulate your plot purchase, bank loan EMI, and project capital appreciation driven by the Future City corridor.
+                Select your preferred plot size, facing direction, and villa layout to receive official legal documentation and pre-approved bank loan options.
               </p>
             </div>
             <div className="text-right hidden md:block">
-              <span className="text-xs text-slate-400">Indicative Base Rate</span>
-              <div className="text-xl font-bold text-amber-400">₹12,500 / Sq.Yd</div>
+              <span className="text-xs text-slate-400">Direct Developer Terms</span>
+              <div className="text-base font-bold text-emerald-400">Pre-Approved Bank Loans</div>
             </div>
           </div>
 
@@ -824,7 +896,7 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="space-y-5 bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-xs">
               <div>
                 <div className="flex justify-between text-xs font-semibold mb-2">
-                  <span className="text-slate-300">Plot Size:</span>
+                  <span className="text-slate-300">Target Plot Size:</span>
                   <span className="text-amber-400 font-bold">{calcPlotArea} Sq.Yds (≈ {calcPlotArea * 9} Sq.Ft)</span>
                 </div>
                 <input
@@ -845,65 +917,83 @@ export default function PlotViewerStandalone({ settings }) {
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-semibold mb-2">
-                  <span className="text-slate-300">Down Payment:</span>
-                  <span className="text-amber-400 font-bold">{calcDownPaymentPercent}% (₹{downPayment.toLocaleString('en-IN')})</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-2">
+                  Preferred Facing Orientation:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['East', 'West', 'North-East'].map((face) => (
+                    <button
+                      key={face}
+                      type="button"
+                      onClick={() => setCalcFacingPref(face)}
+                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                        calcFacingPref === face
+                          ? 'bg-amber-400 text-slate-950 border-amber-400'
+                          : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      {face} Facing
+                    </button>
+                  ))}
                 </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="50"
-                  step="5"
-                  value={calcDownPaymentPercent}
-                  onChange={(e) => setCalcDownPaymentPercent(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
-                />
               </div>
 
               <div>
-                <div className="flex justify-between text-xs font-semibold mb-2">
-                  <span className="text-slate-300">Bank Loan Tenure:</span>
-                  <span className="text-amber-400 font-bold">{calcTenureYears} Years</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-2">
+                  Planned Villa Construction:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {['Duplex Villa', 'Triplex Luxury', 'Custom Estate'].map((vType) => (
+                    <button
+                      key={vType}
+                      type="button"
+                      onClick={() => setCalcVillaType(vType)}
+                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                        calcVillaType === vType
+                          ? 'bg-amber-400 text-slate-950 border-amber-400'
+                          : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
+                      }`}
+                    >
+                      {vType}
+                    </button>
+                  ))}
                 </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="15"
-                  step="1"
-                  value={calcTenureYears}
-                  onChange={(e) => setCalcTenureYears(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
-                />
               </div>
             </div>
 
-            {/* Calculations Breakdown */}
+            {/* Configured Summary */}
             <div className="bg-white/10 p-6 sm:p-8 rounded-2xl border border-white/15 space-y-6">
               <div className="grid grid-cols-2 gap-4 pb-6 border-b border-white/10">
                 <div>
-                  <div className="text-xs text-slate-300">Total Plot Value</div>
-                  <div className="text-2xl font-bold text-white mt-1">
-                    ₹{totalCost.toLocaleString('en-IN')}/-
+                  <div className="text-xs text-slate-300">Configured Footprint</div>
+                  <div className="text-xl font-bold text-white mt-1">
+                    {calcPlotArea} Sq.Yds
+                  </div>
+                  <div className="text-[11px] text-amber-400 mt-0.5 font-medium">
+                    {calcFacingPref} Facing &bull; 100% Vasthu
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-xs text-slate-300">Monthly Bank EMI</div>
-                  <div className="text-2xl font-bold text-emerald-400 mt-1">
-                    ₹{monthlyEmi.toLocaleString('en-IN')}/mo
+                  <div className="text-xs text-slate-300">Bank Loan Eligibility</div>
+                  <div className="text-xl font-bold text-emerald-400 mt-1">
+                    Up to 75%
+                  </div>
+                  <div className="text-[11px] text-slate-300 mt-0.5">
+                    SBI, HDFC, ICICI Approved
                   </div>
                 </div>
               </div>
 
               <div className="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl space-y-1">
                 <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                  Projected 5-Year Capital Growth
+                  Official Developer Terms
                 </div>
-                <div className="text-xl font-bold text-white">
-                  ₹{projectiveValueFormatted(projectedFiveYearValue)}
+                <div className="text-sm font-semibold text-white">
+                  Spot Registration with Clear Title Guarantee
                 </div>
                 <div className="text-[11px] text-slate-300 leading-tight">
-                  Estimated based on historical Srisailam Highway 18% annual growth with Mucherla Future City development.
+                  Transparent terms direct from Skandha Group. Official rate cards and payment schedules provided upon consultation.
                 </div>
               </div>
 
@@ -911,7 +1001,7 @@ export default function PlotViewerStandalone({ settings }) {
                 onClick={() => setIsEnquiryOpen(true)}
                 className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-lg"
               >
-                Apply for Pre-Approved Bank Loan &amp; Rate Sheet
+                Request Official Pricing Breakdown &amp; Loan Details
               </button>
             </div>
           </div>
@@ -1060,11 +1150,4 @@ export default function PlotViewerStandalone({ settings }) {
       />
     </div>
   );
-}
-
-function projectiveValueFormatted(num) {
-  if (num >= 10000000) {
-    return `₹${(num / 10000000).toFixed(2)} Crores`;
-  }
-  return `₹${(num / 100000).toFixed(2)} Lakhs`;
 }

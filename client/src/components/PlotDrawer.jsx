@@ -1,8 +1,23 @@
-import React from 'react';
-import { X, CheckCircle2, AlertCircle, Compass, Shield, Tag, Info, ArrowLeft, Ruler, Building, ExternalLink } from 'lucide-react';
-import { statusColors } from '../visualizer/layoutData';
+import React, { useState } from 'react';
+import {
+  X,
+  Compass,
+  Shield,
+  Info,
+  ArrowLeft,
+  Ruler,
+  Share2,
+  Navigation,
+  Check,
+  Sparkles,
+  PhoneCall,
+  MessageCircle
+} from 'lucide-react';
+import { statusColors } from '../visualizer/masterPlanData';
 
 export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
+  const [copied, setCopied] = useState(false);
+
   if (!isOpen || !plot) return null;
 
   const statusMeta = statusColors[plot.status] || statusColors.available;
@@ -10,9 +25,24 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
   const isReserved = plot.status === 'reserved';
   const isSold = plot.status === 'sold';
 
-  // Area calculations
   const sqYds = plot.areaSqYds || 0;
   const sqFt = plot.areaSqFt || Math.round(sqYds * 9);
+
+  // Handle individual plot sharing (User requirement: "each plot is sharable")
+  const handleSharePlot = () => {
+    const shareUrl = `${window.location.origin}/plots?plot=${plot.plotNumber}`;
+    if (navigator.share) {
+      navigator.share({
+        title: `Alekhya's Brundavan - Plot #${plot.plotNumber}`,
+        text: `Check out Plot #${plot.plotNumber} (${sqYds} sq.yds, ${plot.facing} facing) in Alekhya's Brundavan at Kadthal, Srisailam Highway.`,
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true" aria-label={`Details for Plot ${plot.plotNumber}`}>
@@ -47,14 +77,17 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
               </h2>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Share Button (Plots99 Feature) */}
               <button
-                onClick={onClose}
-                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                onClick={handleSharePlot}
+                className="p-2 rounded-lg hover:bg-slate-200 text-slate-600 transition-colors flex items-center gap-1 text-xs font-semibold"
+                title="Share this Plot Link"
               >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Return to Layout</span>
+                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                <span className="hidden sm:inline">{copied ? 'Copied!' : 'Share'}</span>
               </button>
+
               <button
                 onClick={onClose}
                 className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors"
@@ -96,7 +129,7 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
               </div>
             </div>
 
-            {/* Approved Dimensions Card (from Brochure Page 2) */}
+            {/* Approved Dimensions Card */}
             <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-white">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
@@ -111,7 +144,7 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
                 <div className="text-slate-500">Dimensions:</div>
                 <div className="font-semibold text-slate-900 text-right">{plot.dimensions || "36'-0\" x 50'-0\""}</div>
 
-                <div className="text-slate-500">Front Road:</div>
+                <div className="text-slate-500">Adjoining Road:</div>
                 <div className="font-semibold text-slate-900 text-right">{plot.roadWidth || "33'-0\""} Wide Road</div>
 
                 <div className="text-slate-500">Plot Type:</div>
@@ -119,72 +152,49 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
                   {plot.isCorner ? (
                     <span className="text-brand-orange font-bold">Corner Plot</span>
                   ) : (
-                    'Regular Plotted Unit'
+                    'Regular Villa Plot'
                   )}
                 </div>
 
-                <div className="text-slate-500">Approval Stamp:</div>
+                <div className="text-slate-500">Sanction Stamp:</div>
                 <div className="font-semibold text-emerald-700 text-right text-xs">
                   TLP NO. 87/2024/H
                 </div>
               </div>
             </div>
 
-            {/* Price Transparency Card */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Price Transparency
-                </span>
-                <span className="text-[11px] text-slate-500 font-medium">Direct Rate</span>
+            {/* Quick Action Chips (Plots99 Screenshot 2 & 4) */}
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-center">
+                <div className="text-xs font-bold text-emerald-800 flex items-center justify-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>100% Vasthu</span>
+                </div>
+                <div className="text-[10px] text-emerald-700 mt-0.5">Certified Alignment</div>
               </div>
 
-              {plot.price && plot.price > 0 ? (
-                <div className="space-y-1">
-                  <div className="text-lg font-bold text-slate-900">
-                    Rs. {plot.price.toLocaleString('en-IN')}/- <span className="text-xs font-normal text-slate-600">per Sq.Yd</span>
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    Estimated Base: Rs. {(plot.price * sqYds).toLocaleString('en-IN')}/- (excl. registration & taxes)
-                  </div>
+              <a
+                href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-center transition-colors flex flex-col items-center justify-center"
+              >
+                <div className="text-xs font-bold text-slate-800 flex items-center justify-center gap-1">
+                  <Navigation className="w-3.5 h-3.5 text-brand-orange" />
+                  <span>Get Directions</span>
                 </div>
-              ) : (
-                <div className="text-xs text-slate-600 leading-relaxed">
-                  Base rate card and spot booking incentives are provided transparently upon enquiry. All pricing is direct from Skandha Group without middlemen markup.
-                </div>
-              )}
+                <div className="text-[10px] text-slate-500 mt-0.5">Srisailam Highway</div>
+              </a>
             </div>
 
-            {/* Extra Charges Breakdown (Brochure Page 2 Table) */}
-            {plot.extraChargesBreakdown && plot.extraChargesBreakdown.length > 0 && (
-              <div className="bg-amber-50/60 border border-amber-200 rounded-xl p-4 space-y-2.5">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
-                  <Tag className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Extra Charges (As per Brochure Table)</span>
-                </div>
-                <div className="space-y-1.5 text-xs text-slate-700">
-                  {plot.extraChargesBreakdown.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center">
-                      <span>{item.label}</span>
-                      <strong className="text-amber-900">+ Rs. {item.rate}/- per Sq.Yd</strong>
-                    </div>
-                  ))}
-                  <div className="pt-2 border-t border-amber-200 flex justify-between font-bold text-amber-950 text-xs">
-                    <span>Total Extra Charges:</span>
-                    <span>Rs. {plot.extraChargesPerSqYd}/- per Sq.Yd</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Legal Approvals Note */}
-            <div className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl text-xs text-emerald-950 space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
+            {/* Legal Clearances & Title Note (NO direct cost figures per user directive) */}
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-slate-900">
                 <Shield className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Statutory Clearances</span>
+                <span>Clear Title &amp; Booking Terms</span>
               </div>
-              <p className="text-[11px] text-emerald-800 leading-relaxed">
-                DTCP Approved Layout TLP NO. 87/2024/H &amp; TS RERA PO2400009081. Bank loan assistance available with leading public &amp; private banks.
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Direct developer terms with immediate spot registration availability under DTCP TLP NO. 87/2024/H &amp; TS RERA PO2400009081. Official government rate card and bank loan options provided upon consultation.
               </p>
             </div>
           </div>

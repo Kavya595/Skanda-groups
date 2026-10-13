@@ -27,6 +27,31 @@ export default function Layout2DView({
   const [hoveredPlot, setHoveredPlot] = useState(null);
   const containerRef = useRef(null);
 
+  // Animated 2D Cars positions (User requirement: "and 2d view also cars we can see")
+  const [carPositions, setCarPositions] = useState({
+    hwySouth: 150,
+    hwyNorth: 550,
+    road60: 300,
+    roadMid: 200,
+    roadV1: 250
+  });
+
+  useEffect(() => {
+    let animationFrame;
+    const animate = () => {
+      setCarPositions(prev => ({
+        hwySouth: prev.hwySouth > 720 ? 40 : prev.hwySouth + 1.2,
+        hwyNorth: prev.hwyNorth < 40 ? 720 : prev.hwyNorth - 1.1,
+        road60: prev.road60 > 1100 ? 50 : prev.road60 + 1.0,
+        roadMid: prev.roadMid > 950 ? 80 : prev.roadMid + 0.8,
+        roadV1: prev.roadV1 > 700 ? 50 : prev.roadV1 + 0.7
+      }));
+      animationFrame = requestAnimationFrame(animate);
+    };
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, []);
+
   // Zoom controls
   const handleZoomIn = () => setScale(prev => Math.min(prev + 0.35, 3.5));
   const handleZoomOut = () => setScale(prev => Math.max(prev - 0.35, 0.65));
@@ -196,6 +221,37 @@ export default function Layout2DView({
             );
           })}
 
+          {/* Moving 2D Vehicles on Roads (User requirement: "and 2d view also cars we can see") */}
+          {/* Car 1: Highway Southbound (White) */}
+          <g transform={`translate(1048, ${carPositions.hwySouth})`}>
+            <rect x="-5" y="-10" width="10" height="20" rx="3" fill="#FFFFFF" stroke="#0F172A" strokeWidth="1" />
+            <rect x="-4" y="-3" width="8" height="9" rx="1.5" fill="#1E293B" />
+          </g>
+
+          {/* Car 2: Highway Northbound (Red) */}
+          <g transform={`translate(1062, ${carPositions.hwyNorth})`}>
+            <rect x="-5" y="-10" width="10" height="20" rx="3" fill="#EF4444" stroke="#0F172A" strokeWidth="1" />
+            <rect x="-4" y="-6" width="8" height="9" rx="1.5" fill="#1E293B" />
+          </g>
+
+          {/* Car 3: 60ft Arterial Road Eastbound (Blue) */}
+          <g transform={`translate(${carPositions.road60}, 62)`}>
+            <rect x="-10" y="-5" width="20" height="10" rx="3" fill="#2563EB" stroke="#0F172A" strokeWidth="1" />
+            <rect x="-3" y="-4" width="9" height="8" rx="1.5" fill="#1E293B" />
+          </g>
+
+          {/* Car 4: Internal 33' Mid Road Eastbound (Yellow) */}
+          <g transform={`translate(${carPositions.roadMid}, 332)`}>
+            <rect x="-9" y="-4.5" width="18" height="9" rx="2.5" fill="#FBBF24" stroke="#0F172A" strokeWidth="1" />
+            <rect x="-2" y="-3.5" width="8" height="7" rx="1.5" fill="#1E293B" />
+          </g>
+
+          {/* Car 5: Internal 33' Vertical Road V1 Southbound (Silver) */}
+          <g transform={`translate(375, ${carPositions.roadV1})`}>
+            <rect x="-4.5" y="-9" width="9" height="18" rx="2.5" fill="#E2E8F0" stroke="#0F172A" strokeWidth="1" />
+            <rect x="-3.5" y="-2" width="7" height="8" rx="1.5" fill="#1E293B" />
+          </g>
+
           {/* Road Typography */}
           <text
             x="580"
@@ -328,8 +384,8 @@ export default function Layout2DView({
                   {plot.plotNumber}
                 </text>
 
-                {/* Area Label on Zoom */}
-                {scale > 1.3 && (
+                {/* Area Label on Zoom (Screenshot 2: 183.33 yd²) */}
+                {scale > 1.25 && (
                   <text
                     x={cx}
                     y={cy + 17}
@@ -337,10 +393,32 @@ export default function Layout2DView({
                     fontSize="8.5"
                     fontWeight="semibold"
                     textAnchor="middle"
-                    opacity="0.85"
+                    opacity="0.9"
                   >
-                    {plot.areaSqYds} sq.yds
+                    {plot.areaSqYds} yd²
                   </text>
+                )}
+
+                {/* Edge Dimensions when selected or hovered (Screenshot 2 & 4) */}
+                {(isSelected || (isHovered && scale > 1.2)) && (
+                  <g>
+                    {/* Top dimension */}
+                    <text x={cx} y={p0y + 9} fill={isSelected ? '#FFFFFF' : '#0F172A'} fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {plot.dimensions?.split('x')[0]?.trim()}
+                    </text>
+                    {/* Bottom dimension */}
+                    <text x={cx} y={p0y + h - 3} fill={isSelected ? '#FFFFFF' : '#0F172A'} fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {plot.dimensions?.split('x')[0]?.trim()}
+                    </text>
+                    {/* Left dimension */}
+                    <text x={p0x + 8} y={cy + 3} fill={isSelected ? '#FFFFFF' : '#0F172A'} fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {plot.dimensions?.split('x')[1]?.trim()}
+                    </text>
+                    {/* Right dimension */}
+                    <text x={p0x + w - 8} y={cy + 3} fill={isSelected ? '#FFFFFF' : '#0F172A'} fontSize="8" fontWeight="bold" textAnchor="middle">
+                      {plot.dimensions?.split('x')[1]?.trim()}
+                    </text>
+                  </g>
                 )}
               </g>
             );
@@ -348,7 +426,7 @@ export default function Layout2DView({
         </svg>
       </div>
 
-      {/* OpenStreetMap Attribution Watermark (as seen in Screenshot 4) */}
+      {/* OpenStreetMap Attribution Watermark */}
       <div className="absolute bottom-2 right-2 text-[10px] text-slate-500 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded">
         &copy; OpenStreetMap contributors &bull; DTCP TLP NO. 87/2024/H
       </div>
