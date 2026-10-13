@@ -1,0 +1,29 @@
+{
+  "name": "skandha-alekhyas-brundavan",
+  "version": "1.0.0",
+  "description": "Production real-estate platform for Skandha Group / Alekhya's Brundavan, Kadthal",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "test": "npm run test --prefix server",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client"
+  },
+  "keywords": [
+    "skandha-group",
+    "alekhyas-brundavan",
+    "real-estate",
+    "dtcp-approved",
+    "ts-rera",
+    "open-plots-kadthal",
+    "threejs",
+    "react",
+    "express",
+    "mongodb"
+  ],
+  "author": "Skandha Group Engineering",
+  "license": "UNLICENSED"
+}
