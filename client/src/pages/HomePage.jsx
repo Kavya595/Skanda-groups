@@ -23,6 +23,7 @@ import {
 import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent } from '../api/client';
 import EnquiryModal from '../components/EnquiryModal';
 import Lightbox from '../components/Lightbox';
+import SpecialLandmarkView from '../components/SpecialLandmarkView';
 
 export default function HomePage() {
   const [settings, setSettings] = useState(null);
@@ -406,64 +407,10 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 6. STRATEGIC LOCATION & FLYER ROUTE MAP                    */}
+      {/* 6. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER         */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-5 space-y-6">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-3.5 py-1 rounded-full border border-emerald-200">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Location Corridor &bull; Kadthal</span>
-            </div>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
-              Seamless Transit to Hyderabad &amp; Future City
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Alekhya's Brundavan enjoys direct frontage along Srisailam Highway (NH 765), providing immediate access to Maisigandi Temple and fast commutes to Rajiv Gandhi International Airport.
-            </p>
-
-            <div className="space-y-3 pt-2">
-              {locations.map((loc, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-orange-50/50 rounded-xl border border-slate-200 transition-colors"
-                >
-                  <div>
-                    <div className="text-xs font-bold text-slate-900">{loc.claim}</div>
-                    <div className="text-[11px] text-slate-500">{loc.desc}</div>
-                  </div>
-                  <span className="text-xs font-bold text-brand-orange bg-white px-2.5 py-1 rounded-md border border-slate-200 shrink-0">
-                    {loc.time}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2 flex items-center gap-4">
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-xl text-xs transition-colors shadow-xs"
-              >
-                <Navigation className="w-3.5 h-3.5" />
-                <span>View Google Map &amp; Directions</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden p-3 space-y-3">
-              <img
-                src="/assets/route_map.jpg"
-                alt="Alekhya's Brundavan Location and Route Map"
-                className="w-full h-auto max-h-[500px] object-contain rounded-2xl bg-slate-50"
-              />
-              <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between text-xs text-slate-600">
-                <span>Route via Srisailam Highway (NH 765) &amp; ORR Exit 14</span>
-                <span className="font-semibold text-brand-orange">Official Flyer Map</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SpecialLandmarkView />
       </section>
 
       {/* ========================================================== */}

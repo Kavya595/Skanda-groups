@@ -18,6 +18,7 @@ import {
   Maximize2
 } from 'lucide-react';
 import { submitLead, trackActivityEvent } from '../api/client';
+import SpecialLandmarkView from '../components/SpecialLandmarkView';
 
 export default function ContactPage({ settings }) {
   const [formData, setFormData] = useState({
@@ -197,7 +198,7 @@ export default function ContactPage({ settings }) {
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-slate-950/5 relative overflow-hidden group">
               <img
-                src="/assets/route_map.jpg"
+                src="/assets/route_map_hd.png"
                 alt="Alekhya's Brundavan Official Flyer Location & Route Map"
                 className="max-h-full max-w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
                 onClick={() => setIsFlyerZoomed(true)}
@@ -210,6 +211,9 @@ export default function ContactPage({ settings }) {
           )}
         </div>
       </section>
+
+      {/* Special Landmark Corridor & Layout Plan View */}
+      <SpecialLandmarkView />
 
       {/* Contact Form & Corporate Information Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -428,7 +432,7 @@ export default function ContactPage({ settings }) {
               &times;
             </button>
             <img
-              src="/assets/route_map.jpg"
+              src="/assets/route_map_hd.png"
               alt="Alekhya's Brundavan Full Route Map"
               className="max-h-[85vh] w-auto object-contain rounded-2xl mx-auto"
             />

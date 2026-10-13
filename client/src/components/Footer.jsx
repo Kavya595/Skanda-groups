@@ -1,6 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Mail, ShieldCheck, ExternalLink, Clock } from 'lucide-react';
+import {
+  MapPin,
+  Mail,
+  ShieldCheck,
+  ExternalLink,
+  Facebook,
+  Instagram,
+  Youtube,
+  Linkedin,
+  Twitter,
+  MessageCircle
+} from 'lucide-react';
 
 export default function Footer({ settings }) {
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -8,42 +19,53 @@ export default function Footer({ settings }) {
   const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
   const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
 
+  const socialLinks = [
+    { name: 'Facebook', icon: Facebook, href: 'https://facebook.com', hoverColor: 'hover:text-[#1877F2]' },
+    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com', hoverColor: 'hover:text-[#E4405F]' },
+    { name: 'YouTube', icon: Youtube, href: 'https://youtube.com', hoverColor: 'hover:text-[#FF0000]' },
+    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com', hoverColor: 'hover:text-[#0A66C2]' },
+    { name: 'X / Twitter', icon: Twitter, href: 'https://twitter.com', hoverColor: 'hover:text-white' },
+    { name: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/919949501513', hoverColor: 'hover:text-[#25D366]' }
+  ];
+
   return (
-    <footer className="bg-slate-50 border-t border-slate-200 text-slate-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10">
-          {/* Brand & Positioning (5 cols) */}
-          <div className="lg:col-span-5 space-y-4">
+    <footer className="bg-[#1f2329] border-t border-[#313642] text-slate-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 items-start">
+          {/* Brand & Statutory Credentials (5 cols) */}
+          <div className="lg:col-span-5 space-y-3.5">
             <Link to="/" className="inline-block">
               <img
-                src="/assets/skandha_logo.svg"
+                src="/assets/skandha_logo_white.svg"
                 alt="Skandha Group"
-                className="h-12 w-auto object-contain"
+                className="h-11 w-auto object-contain"
               />
             </Link>
-            <p className="text-sm text-slate-600 leading-relaxed max-w-md">
-              <strong>Alekhya's Brundavan</strong> is a landmark DTCP &amp; RERA approved residential plotted development in Kadthal, strategically situated along the booming Srisailam Highway (NH 765) growth corridor.
-            </p>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-emerald-50 text-emerald-800 rounded border border-emerald-200">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                DTCP Approved: {dtcpNo}
-              </span>
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded border border-slate-200">
-                TS RERA: {reraNo}
-              </span>
+            <div className="space-y-1">
+              <h3 className="font-serif text-lg font-bold text-white tracking-wide">
+                Alekhya's Brundavan
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                10.50-Acre landmark DTCP sanctioned &amp; TS RERA registered plotted community in Kadthal, adjoining Srisailam Highway (NH 765) and 1 minute to Maisigandi Temple.
+              </p>
             </div>
-            <div className="text-xs text-slate-500 font-medium">
-              100% Vasthu Compliant &bull; Spot Registration &bull; Clear Legal Title
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-emerald-950/80 text-emerald-400 rounded-md border border-emerald-800/80">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                DTCP: {dtcpNo}
+              </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 bg-[#2a2f38] text-slate-300 rounded-md border border-[#3b414f]">
+                RERA: {reraNo}
+              </span>
             </div>
           </div>
 
-          {/* Quick Navigation (3 cols) */}
-          <div className="lg:col-span-3">
-            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-l-2 border-brand-orange pl-2.5">
+          {/* Clean Quick Navigation (3 cols) */}
+          <div className="lg:col-span-3 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider border-l-2 border-brand-orange pl-2.5">
               Explore Project
             </h4>
-            <ul className="space-y-2.5 text-sm">
+            <ul className="space-y-2 text-xs text-slate-300">
               <li>
                 <Link to="/" className="hover:text-brand-orange transition-colors">
                   Home Overview
@@ -55,19 +77,8 @@ export default function Footer({ settings }) {
                 </Link>
               </li>
               <li>
-                <a
-                  href="/plots"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-brand-orange font-semibold text-brand-orange transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>Interactive Plot Availability</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-                </a>
-              </li>
-              <li>
                 <Link to="/gallery" className="hover:text-brand-orange transition-colors">
-                  Site Development Photos
+                  Site Progress Photos
                 </Link>
               </li>
               <li>
@@ -77,48 +88,79 @@ export default function Footer({ settings }) {
               </li>
               <li>
                 <Link to="/contact" className="hover:text-brand-orange transition-colors">
-                  Enquiry &amp; Contact
+                  Location Map &amp; Enquiry
                 </Link>
+              </li>
+              <li>
+                <a
+                  href="/plots"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-orange font-semibold text-orange-400 transition-colors inline-flex items-center gap-1"
+                >
+                  <span>Plot Availability (2D/3D)</span>
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </a>
               </li>
             </ul>
           </div>
 
-          {/* Corporate Office Information (4 cols) */}
-          <div className="lg:col-span-4">
-            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-l-2 border-brand-orange pl-2.5">
-              Corporate Office
+          {/* Corporate Contact & Social Media (4 cols) */}
+          <div className="lg:col-span-4 space-y-4">
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider border-l-2 border-brand-orange pl-2.5">
+              Connect With Us
             </h4>
-            <div className="space-y-3.5 text-sm text-slate-600">
+            <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-1" />
+                <MapPin className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
                 <span className="leading-snug">{officeAddress}</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-brand-orange shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-brand-orange underline">
+                <Mail className="w-4 h-4 text-orange-400 shrink-0" />
+                <a href={`mailto:${email}`} className="hover:text-brand-orange text-slate-200 transition-colors">
                   {email}
                 </a>
               </div>
-              <div className="flex items-start gap-2.5 text-xs text-slate-500 pt-1">
-                <Clock className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                <span>Working Hours: Monday – Saturday, 9:30 AM to 6:30 PM. Site visits organized daily.</span>
+            </div>
+
+            {/* Social Media Icons Strip */}
+            <div className="pt-2">
+              <div className="text-[11px] font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+                Follow Skandha Group
+              </div>
+              <div className="flex items-center gap-2">
+                {socialLinks.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`w-8 h-8 rounded-lg bg-[#2a2f38] border border-[#3b414f] text-slate-400 flex items-center justify-center transition-all duration-200 hover:bg-[#343a46] hover:scale-105 ${item.hoverColor}`}
+                      aria-label={item.name}
+                      title={item.name}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Regulatory Disclaimer & Copyright */}
-        <div className="mt-12 pt-6 border-t border-slate-200 text-xs text-slate-500 space-y-2">
-          <p className="leading-relaxed">
-            <strong>Regulatory &amp; Transparency Notice:</strong> All project highlights, layout arrangements, and location references (including Maisigandi Temple, Srisailam Highway NH 765, Kadthal town, and pharmaceutical company corridors) are directly sourced from the approved layout plan (TLP NO. 87/2024/H) and registered credentials. Availability is subject to administrative verification.
-          </p>
-          <div className="flex flex-wrap justify-between items-center gap-2 pt-2 text-slate-400">
-            <div>
-              &copy; {new Date().getFullYear()} Skandha Group. All official trademarks and layout plans are property of Skandha Group.
-            </div>
-            <div>
-              RERA Registration: {reraNo} &bull; Kadthal, Telangana
-            </div>
+        {/* Minimalist Bottom Row */}
+        <div className="mt-10 pt-5 border-t border-[#2e333e] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <div>
+            &copy; {new Date().getFullYear()} Skandha Group. All Rights Reserved.
+          </div>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span>DTCP: {dtcpNo}</span>
+            <span>&bull;</span>
+            <span>TS RERA: {reraNo}</span>
+            <span>&bull;</span>
+            <span>Kadthal, Srisailam Highway</span>
           </div>
         </div>
       </div>

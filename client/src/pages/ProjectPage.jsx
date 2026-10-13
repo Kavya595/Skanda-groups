@@ -194,7 +194,7 @@ export default function ProjectPage() {
             className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 cursor-zoom-in group p-3"
           >
             <img
-              src="/assets/brochure_layout_master.png"
+              src="/assets/layout_plan_hd.png"
               alt="Alekhya's Brundavan Sanctioned Master Layout Plan"
               className="w-full h-auto max-h-[580px] object-contain rounded-xl mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
             />
@@ -367,7 +367,7 @@ export default function ProjectPage() {
               &times;
             </button>
             <img
-              src="/assets/brochure_layout_master.png"
+              src="/assets/layout_plan_hd.png"
               alt="Alekhya's Brundavan Master Layout Plan Full Size"
               className="max-h-[85vh] w-auto object-contain rounded-2xl mx-auto"
             />
