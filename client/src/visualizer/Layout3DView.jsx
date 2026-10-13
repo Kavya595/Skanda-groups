@@ -1,34 +1,114 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Text, Html } from '@react-three/drei';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, Text, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
-import { statusColors } from './layoutData';
-import { Camera, Eye, Info, Pause, Play } from 'lucide-react';
+import {
+  LAYOUT_BOUNDS,
+  layoutRoads,
+  parkData,
+  statusColors
+} from './masterPlanData';
 
-// Single Plot 3D Mesh
-function Plot3D({ plot, isSelected, onSelect, reducedMotion }) {
-  const [hovered, setHovered] = useState(false);
-  const meshRef = useRef();
+// Camera Controller for Smooth Transitions and Framing
+function CameraController({
+  selectedPlot,
+  cameraPreset,
+  onResetComplete
+}) {
+  const { camera } = useThree();
+  const controlsRef = useRef();
+  const animatingRef = useRef(false);
+  const targetPos = useRef(new THREE.Vector3(0, 82, 92));
+  const targetLook = useRef(new THREE.Vector3(0, 0, 4));
 
-  const color = useMemo(() => {
-    if (isSelected) return '#FB923C'; // Vibrant Orange
-    if (hovered) return '#F97316';
-    if (plot.status === 'sold') return '#94A3B8';
-    if (plot.status === 'reserved') return '#F59E0B';
-    if (plot.status === 'blocked') return '#475569';
-    return '#10B981'; // Available - Emerald Green
-  }, [plot.status, isSelected, hovered]);
+  useEffect(() => {
+    if (selectedPlot && selectedPlot.center) {
+      const [cx, cz] = selectedPlot.center;
+      targetPos.current.set(cx, 26, cz + 26);
+      targetLook.current.set(cx, 0.6, cz);
+      animatingRef.current = true;
+    } else if (cameraPreset) {
+      if (cameraPreset === 'overview') {
+        targetPos.current.set(0, 82, 92);
+        targetLook.current.set(0, 0, 4);
+      } else if (cameraPreset === 'topDown') {
+        targetPos.current.set(0, 115, 0.1);
+        targetLook.current.set(0, 0, 0);
+      } else if (cameraPreset === 'highway') {
+        targetPos.current.set(82, 28, 20);
+        targetLook.current.set(50, 0, -5);
+      } else if (cameraPreset === 'park') {
+        targetPos.current.set(-68, 25, -10);
+        targetLook.current.set(-60, 0, -25);
+      }
+      animatingRef.current = true;
+    }
+  }, [selectedPlot, cameraPreset]);
 
-  const height = isSelected ? 1.2 : hovered ? 0.9 : 0.6;
+  useFrame((_, delta) => {
+    if (animatingRef.current && controlsRef.current) {
+      const step = Math.min(delta * 3.8, 1);
+      camera.position.lerp(targetPos.current, step);
+      controlsRef.current.target.lerp(targetLook.current, step);
+      controlsRef.current.update();
+
+      if (camera.position.distanceTo(targetPos.current) < 0.25) {
+        animatingRef.current = false;
+        if (onResetComplete) onResetComplete();
+      }
+    }
+  });
 
   return (
-    <group position={[plot.x3d || 0, height / 2, plot.z3d || 0]}>
+    <OrbitControls
+      ref={controlsRef}
+      maxPolarAngle={Math.PI / 2.06} // Prevent navigating underground
+      minDistance={10}
+      maxDistance={180}
+      enableDamping
+      dampingFactor={0.06}
+    />
+  );
+}
+
+// Raised Master Plot Polygon with Survey Demarcation
+function Plot3D({
+  plot,
+  isSelected,
+  onSelect,
+  isMeasureMode,
+  onMeasurePoint
+}) {
+  const [hovered, setHovered] = useState(false);
+
+  const meta = statusColors[plot.status] || statusColors.available;
+
+  const color = useMemo(() => {
+    if (isSelected) return '#F15A24'; // Skandha Warm Orange Glow
+    if (hovered) return '#FB923C';
+    return meta.threeColor;
+  }, [plot.status, isSelected, hovered, meta.threeColor]);
+
+  // Elevation
+  const height = isSelected ? 0.95 : hovered ? 0.6 : 0.35;
+  const [cx, cz] = plot.center || [0, 0];
+  const w = plot.bounds?.width || 10;
+  const d = plot.bounds?.depth || 10;
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (isMeasureMode && onMeasurePoint) {
+      onMeasurePoint([cx, 0.4, cz]);
+    } else {
+      onSelect(plot);
+    }
+  };
+
+  return (
+    <group position={[cx, height / 2, cz]}>
+      {/* Extruded Plot Surface */}
       <mesh
-        ref={meshRef}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect(plot);
-        }}
+        onClick={handleClick}
         onPointerOver={(e) => {
           e.stopPropagation();
           setHovered(true);
@@ -40,93 +120,67 @@ function Plot3D({ plot, isSelected, onSelect, reducedMotion }) {
         castShadow
         receiveShadow
       >
-        <boxGeometry args={[plot.w3d || 6, height, plot.d3d || 5]} />
+        <boxGeometry args={[w, height, d]} />
         <meshStandardMaterial
           color={color}
-          roughness={0.4}
-          metalness={0.1}
+          roughness={0.42}
+          metalness={0.12}
         />
       </mesh>
 
-      {/* Plot Number floating label */}
-      <Text
-        position={[0, height / 2 + 0.3, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={1.4}
-        color={isSelected || hovered ? '#FFFFFF' : '#1E293B'}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {String(plot.plotNumber)}
-      </Text>
+      {/* Survey Demarcation Border Line */}
+      <lineSegments position={[0, height / 2 + 0.015, 0]}>
+        <edgesGeometry args={[new THREE.BoxGeometry(w, 0.02, d)]} />
+        <lineBasicMaterial
+          color={isSelected ? '#FFFFFF' : '#1E293B'}
+          linewidth={isSelected ? 3 : 1.5}
+        />
+      </lineSegments>
+
+      {/* Circular Plot Number Badge */}
+      <group position={[0, height / 2 + 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, 0, 0.01]}>
+          <circleGeometry args={[1.05, 24]} />
+          <meshBasicMaterial
+            color={isSelected ? '#1E293B' : '#FFFFFF'}
+            opacity={0.94}
+            transparent
+          />
+        </mesh>
+        <Text
+          position={[0, 0, 0.02]}
+          fontSize={1.15}
+          color={isSelected ? '#FFFFFF' : '#0F172A'}
+          anchorX="center"
+          anchorY="middle"
+          fontWeight="bold"
+        >
+          {String(plot.plotNumber)}
+        </Text>
+      </group>
     </group>
   );
 }
 
-// Moving Cars on Highway & 60ft Road
-function AnimatedCars({ animate }) {
-  const car1Ref = useRef();
-  const car2Ref = useRef();
-
-  useFrame((_, delta) => {
-    if (!animate) return;
-    if (car1Ref.current) {
-      car1Ref.current.position.z += delta * 12;
-      if (car1Ref.current.position.z > 35) car1Ref.current.position.z = -35;
-    }
-    if (car2Ref.current) {
-      car2Ref.current.position.x += delta * 10;
-      if (car2Ref.current.position.x > 45) car2Ref.current.position.x = -45;
-    }
-  });
-
+// Low-poly Royal Palm Tree
+function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   return (
-    <group>
-      {/* Highway Car (White SUV) */}
-      <mesh ref={car1Ref} position={[68, 0.4, -20]} castShadow>
-        <boxGeometry args={[1.8, 1, 3.2]} />
-        <meshStandardMaterial color="#FFFFFF" roughness={0.3} metalness={0.4} />
+    <group position={position} scale={scale}>
+      {/* Palm Trunk */}
+      <mesh position={[0, 1.4, 0]} castShadow>
+        <cylinderGeometry args={[0.18, 0.28, 2.8, 7]} />
+        <meshStandardMaterial color="#6B4F35" roughness={0.9} />
       </mesh>
-
-      {/* 60ft Road Car (Blue Sedan) */}
-      <mesh ref={car2Ref} position={[-20, 0.4, -38]} castShadow>
-        <boxGeometry args={[3, 0.9, 1.6]} />
-        <meshStandardMaterial color="#2563EB" roughness={0.3} metalness={0.4} />
-      </mesh>
-    </group>
-  );
-}
-
-// 3D Trees (Instanced Cylinder + Cone)
-function Trees() {
-  const treePositions = useMemo(() => {
-    const list = [];
-    // Avenue trees along Road V1, V2, V3
-    [-18, 4, 25].forEach(x => {
-      for (let z = -25; z <= 35; z += 12) {
-        list.push([x, 0, z]);
-      }
-    });
-    // Park trees
-    for (let i = 0; i < 8; i++) {
-      list.push([-42 + (i % 3) * 6, 0, -22 + Math.floor(i / 3) * 7]);
-    }
-    return list;
-  }, []);
-
-  return (
-    <group>
-      {treePositions.map((pos, idx) => (
-        <group key={idx} position={pos}>
-          {/* Trunk */}
-          <mesh position={[0, 0.8, 0]}>
-            <cylinderGeometry args={[0.2, 0.25, 1.6, 6]} />
-            <meshStandardMaterial color="#78350F" roughness={0.8} />
-          </mesh>
-          {/* Foliage */}
-          <mesh position={[0, 2.2, 0]} castShadow>
-            <coneGeometry args={[1.2, 2.4, 7]} />
-            <meshStandardMaterial color="#15803D" roughness={0.6} />
+      {/* Palm Fronds (layered foliage) */}
+      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, idx) => (
+        <group
+          key={idx}
+          position={[0, 2.7, 0]}
+          rotation={[0.35, (angle * Math.PI) / 180, -0.45]}
+        >
+          <mesh position={[0.7, 0, 0]} rotation={[0, 0, -0.2]} castShadow>
+            <coneGeometry args={[0.42, 1.6, 5]} />
+            <meshStandardMaterial color="#2E7D32" roughness={0.65} />
           </mesh>
         </group>
       ))}
@@ -134,174 +188,400 @@ function Trees() {
   );
 }
 
-// Scene Environment & Roads
-function SceneGround() {
+// Avenue Landscaping & Trees
+function Landscaping() {
+  const trees = useMemo(() => {
+    const list = [];
+    // Palm trees along 60ft Road
+    for (let x = -88; x <= 80; x += 14) {
+      list.push({ pos: [x, 0, -41], scale: 1.1 });
+    }
+    // Palm trees along Srisailam Highway Service Road
+    for (let z = -48; z <= 60; z += 12) {
+      list.push({ pos: [62, 0, z], scale: 1.15 });
+      list.push({ pos: [71, 0, z], scale: 1.2 });
+    }
+    // Palm trees along Mid 33ft Road
+    for (let x = -60; x <= 55; x += 15) {
+      list.push({ pos: [x, 0, -3.8], scale: 0.95 });
+      list.push({ pos: [x, 0, 3.8], scale: 0.95 });
+    }
+    // Trees around Ac. 0.758 Park Perimeter & Interior
+    const parkTrees = [
+      [-85, -13], [-80, -13], [-70, -13], [-60, -13],
+      [-86, -22], [-86, -32], [-86, -40],
+      [-60, -22], [-60, -32], [-60, -40],
+      [-73, -24], [-75, -30], [-68, -28], [-78, -35]
+    ];
+    parkTrees.forEach(([px, pz]) => {
+      list.push({ pos: [px, 0, pz], scale: 1.25 });
+    });
+
+    return list;
+  }, []);
+
   return (
     <group>
-      {/* Ground Terrain */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[160, 100]} />
-        <meshStandardMaterial color="#E2E8F0" roughness={0.8} />
-      </mesh>
-
-      {/* Srisailam Highway Road (NH-765) */}
-      <mesh position={[68, 0.05, 0]} receiveShadow>
-        <planeGeometry args={[12, 100]} />
-        <meshStandardMaterial color="#334155" roughness={0.6} />
-      </mesh>
-
-      {/* Highway Service Road (33ft) */}
-      <mesh position={[58, 0.05, 0]} receiveShadow>
-        <planeGeometry args={[6, 100]} />
-        <meshStandardMaterial color="#475569" roughness={0.6} />
-      </mesh>
-
-      {/* Proposed 60'-0" Wide Road (Top) */}
-      <mesh position={[0, 0.05, -38]} receiveShadow>
-        <planeGeometry args={[160, 8]} />
-        <meshStandardMaterial color="#334155" roughness={0.6} />
-      </mesh>
-
-      {/* Proposed 33'-0" Mid Horizontal Road */}
-      <mesh position={[0, 0.05, -4]} receiveShadow>
-        <planeGeometry args={[130, 6]} />
-        <meshStandardMaterial color="#475569" roughness={0.6} />
-      </mesh>
-
-      {/* Vertical Roads V0, V1, V2, V3 */}
-      {[-35, -2, 16, 38].map((x, i) => (
-        <mesh key={i} position={[x, 0.05, 0]} receiveShadow>
-          <planeGeometry args={[5, 75]} />
-          <meshStandardMaterial color="#475569" roughness={0.6} />
-        </mesh>
+      {trees.map((t, idx) => (
+        <PalmTree key={idx} position={t.pos} scale={t.scale} />
       ))}
-
-      {/* Reserved Park (Ac. 0.758 cents) */}
-      <mesh position={[-42, 0.1, -22]} receiveShadow>
-        <boxGeometry args={[26, 0.2, 22]} />
-        <meshStandardMaterial color="#4ADE80" roughness={0.7} />
-      </mesh>
-
-      {/* Park Fountain */}
-      <mesh position={[-42, 0.25, -22]}>
-        <cylinderGeometry args={[3, 3, 0.3, 16]} />
-        <meshStandardMaterial color="#38BDF8" roughness={0.2} metalness={0.8} />
-      </mesh>
     </group>
   );
 }
 
-export default function Layout3DView({ plots, selectedPlot, onSelectPlot }) {
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const controlsRef = useRef();
+// Low-poly Moving Vehicles
+function LowPolyCar({ color = '#FFFFFF', position = [0, 0, 0], rotation = [0, 0, 0] }) {
+  return (
+    <group position={position} rotation={rotation} castShadow>
+      {/* Car Body */}
+      <mesh position={[0, 0.42, 0]} castShadow>
+        <boxGeometry args={[1.7, 0.55, 3.2]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.4} />
+      </mesh>
+      {/* Cabin */}
+      <mesh position={[0, 0.85, -0.2]} castShadow>
+        <boxGeometry args={[1.4, 0.45, 1.9]} />
+        <meshStandardMaterial color="#0F172A" roughness={0.2} metalness={0.8} />
+      </mesh>
+      {/* Headlights */}
+      <mesh position={[-0.55, 0.45, 1.62]}>
+        <boxGeometry args={[0.3, 0.18, 0.05]} />
+        <meshBasicMaterial color="#FEF08A" />
+      </mesh>
+      <mesh position={[0.55, 0.45, 1.62]}>
+        <boxGeometry args={[0.3, 0.18, 0.05]} />
+        <meshBasicMaterial color="#FEF08A" />
+      </mesh>
+      {/* Wheels */}
+      {[-0.88, 0.88].map((wx, i) =>
+        [-0.95, 0.95].map((wz, j) => (
+          <mesh key={`${i}-${j}`} position={[wx, 0.24, wz]} rotation={[0, 0, Math.PI / 2]}>
+            <cylinderGeometry args={[0.26, 0.26, 0.2, 10]} />
+            <meshStandardMaterial color="#1E293B" roughness={0.8} />
+          </mesh>
+        ))
+      )}
+    </group>
+  );
+}
 
-  const setViewpoint = (view) => {
-    if (!controlsRef.current) return;
-    if (view === 'iso') {
-      controlsRef.current.object.position.set(0, 48, 62);
-      controlsRef.current.target.set(0, 0, 0);
-    } else if (view === 'top') {
-      controlsRef.current.object.position.set(0, 85, 0.1);
-      controlsRef.current.target.set(0, 0, 0);
-    } else if (view === 'highway') {
-      controlsRef.current.object.position.set(80, 20, 25);
-      controlsRef.current.target.set(50, 0, -10);
-    } else if (view === 'park') {
-      controlsRef.current.object.position.set(-50, 18, 5);
-      controlsRef.current.target.set(-42, 0, -22);
+function MovingVehicles({ animate }) {
+  const hwySouthRef = useRef();
+  const hwyNorthRef = useRef();
+  const road60Ref = useRef();
+
+  useFrame((_, delta) => {
+    if (!animate) return;
+    if (hwySouthRef.current) {
+      hwySouthRef.current.position.z += delta * 15;
+      if (hwySouthRef.current.position.z > 62) hwySouthRef.current.position.z = -54;
     }
-  };
+    if (hwyNorthRef.current) {
+      hwyNorthRef.current.position.z -= delta * 13;
+      if (hwyNorthRef.current.position.z < -54) hwyNorthRef.current.position.z = 62;
+    }
+    if (road60Ref.current) {
+      road60Ref.current.position.x += delta * 12;
+      if (road60Ref.current.position.x > 84) road60Ref.current.position.x = -88;
+    }
+  });
 
   return (
-    <div className="relative w-full h-[650px] bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl">
-      {/* Conceptual Disclaimer Banner */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 bg-slate-900/80 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700 text-white text-xs">
-        <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-amber-400 shrink-0" />
-          <span>
-            <strong>Conceptual 3D Visualization:</strong> Derived from DTCP Approved Layout Plan TLP No. 87/2024/H. Click any plot to view source-verified dimensions.
-          </span>
-        </div>
+    <group>
+      {/* Srisailam Highway Southbound SUV */}
+      <group ref={hwySouthRef} position={[76, 0, -20]}>
+        <LowPolyCar color="#FFFFFF" />
+      </group>
+      {/* Srisailam Highway Northbound Sedan */}
+      <group ref={hwyNorthRef} position={[83, 0, 30]} rotation={[0, Math.PI, 0]}>
+        <LowPolyCar color="#EF4444" />
+      </group>
+      {/* 60ft Arterial Road Sedan */}
+      <group ref={road60Ref} position={[-30, 0, -47]} rotation={[0, Math.PI / 2, 0]}>
+        <LowPolyCar color="#2563EB" />
+      </group>
+    </group>
+  );
+}
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setReducedMotion(!reducedMotion)}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-slate-200 transition-colors"
-          >
-            {reducedMotion ? <Play className="w-3.5 h-3.5 text-emerald-400" /> : <Pause className="w-3.5 h-3.5 text-amber-400" />}
-            <span>{reducedMotion ? 'Resume Motion' : 'Reduce Motion'}</span>
-          </button>
-        </div>
-      </div>
+// Connected Road Network & Markings
+function ConnectedRoadNetwork() {
+  return (
+    <group>
+      {/* Continuous Road Surfaces */}
+      {layoutRoads.map((road) => {
+        const [p0, p1, p2, p3] = road.polygon;
+        const xMin = Math.min(p0[0], p1[0], p2[0], p3[0]);
+        const xMax = Math.max(p0[0], p1[0], p2[0], p3[0]);
+        const zMin = Math.min(p0[1], p1[1], p2[1], p3[1]);
+        const zMax = Math.max(p0[1], p1[1], p2[1], p3[1]);
+        const w = xMax - xMin;
+        const d = zMax - zMin;
+        const cx = (xMin + xMax) / 2;
+        const cz = (zMin + zMax) / 2;
 
-      {/* Floating Viewpoint Controls */}
-      <div className="absolute bottom-4 left-4 z-20 flex flex-wrap gap-2 bg-slate-900/80 backdrop-blur-md p-2 rounded-xl border border-slate-700 text-white text-xs">
-        <button
-          onClick={() => setViewpoint('iso')}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-brand-orange transition-colors font-medium"
-        >
-          Isometric View
-        </button>
-        <button
-          onClick={() => setViewpoint('top')}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-brand-orange transition-colors font-medium"
-        >
-          Top-Down Master Plan
-        </button>
-        <button
-          onClick={() => setViewpoint('highway')}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-brand-orange transition-colors font-medium"
-        >
-          Highway Entrance View
-        </button>
-        <button
-          onClick={() => setViewpoint('park')}
-          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-brand-orange transition-colors font-medium"
-        >
-          Park & Green Space View
-        </button>
-      </div>
+        const isHighway = road.type === 'highway';
+        const isArterial = road.type === 'arterial';
 
-      {/* 3D Canvas */}
-      <Canvas
-        camera={{ position: [0, 48, 62], fov: 45 }}
-        shadows
-        className="w-full h-full cursor-grab active:cursor-grabbing"
+        return (
+          <group key={road.id} position={[cx, 0.04, cz]}>
+            {/* Dark Asphalt Surface */}
+            <mesh receiveShadow>
+              <planeGeometry args={[w, d]} />
+              <meshStandardMaterial
+                color={isHighway ? '#1E232A' : isArterial ? '#252A32' : '#2D323A'}
+                roughness={0.58}
+              />
+            </mesh>
+
+            {/* Road Markings */}
+            {isHighway && (
+              // Srisailam Highway Center Yellow Divider
+              <mesh position={[0, 0.01, 0]}>
+                <planeGeometry args={[0.35, d]} />
+                <meshBasicMaterial color="#FBBF24" />
+              </mesh>
+            )}
+
+            {isArterial && (
+              // 60ft Road White Dashed Center Line
+              <mesh position={[0, 0.01, 0]}>
+                <planeGeometry args={[w, 0.28]} />
+                <meshBasicMaterial color="#FFFFFF" opacity={0.8} transparent />
+              </mesh>
+            )}
+          </group>
+        );
+      })}
+
+      {/* 3D Road Name Labels */}
+      <Text
+        position={[0, 0.1, -47]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={1.7}
+        color="#F8FAFC"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
       >
-        <ambientLight intensity={0.7} />
-        <directionalLight
-          position={[40, 60, 30]}
-          intensity={1.2}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-        />
-        <directionalLight position={[-30, 40, -20]} intensity={0.4} />
+        PROPOSED 60'-0" WIDE ROAD (TO MAISIGANDI TEMPLE)
+      </Text>
 
-        <OrbitControls
-          ref={controlsRef}
-          maxPolarAngle={Math.PI / 2.05}
-          minDistance={15}
-          maxDistance={120}
-          enableDamping
-          dampingFactor={0.05}
-        />
+      <Text
+        position={[80, 0.1, 5]}
+        rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
+        fontSize={1.8}
+        color="#FEF08A"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        SRISAILAM HIGHWAY (NH-765)
+      </Text>
 
-        {/* Scene Components */}
-        <SceneGround />
-        <Trees />
-        <AnimatedCars animate={!reducedMotion} />
+      <Text
+        position={[0, 0.1, 0.5]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={1.4}
+        color="#94A3B8"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        PROPOSED 33'-0" WIDE ROAD
+      </Text>
+    </group>
+  );
+}
 
-        {/* 96 Plots */}
-        {plots.map((plot) => (
-          <Plot3D
-            key={plot.plotNumber}
-            plot={plot}
-            isSelected={selectedPlot && selectedPlot.plotNumber === plot.plotNumber}
-            onSelect={onSelectPlot}
-            reducedMotion={reducedMotion}
+// Ac. 0.758 Park Environment
+function ParkArea() {
+  const [cx, cz] = parkData.center;
+  const w = parkData.width;
+  const d = parkData.depth;
+
+  return (
+    <group position={[cx, 0.06, cz]}>
+      {/* Lush Green Lawn */}
+      <mesh receiveShadow>
+        <planeGeometry args={[w, d]} />
+        <meshStandardMaterial color="#5EAB53" roughness={0.7} />
+      </mesh>
+
+      {/* Jogging Track Perimeter Path */}
+      <mesh position={[0, 0.01, 0]}>
+        <ringGeometry args={[w * 0.35, w * 0.42, 32]} />
+        <meshStandardMaterial color="#D97706" roughness={0.8} opacity={0.85} transparent />
+      </mesh>
+
+      {/* Park Name Billboard */}
+      <group position={[0, 0.15, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <Text
+          fontSize={1.5}
+          color="#14532D"
+          anchorX="center"
+          anchorY="middle"
+          fontWeight="bold"
+        >
+          OPEN SPACE PARK
+        </Text>
+        <Text
+          position={[0, -1.8, 0]}
+          fontSize={1.1}
+          color="#166534"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Ac. 0.758 Cents Landscaped
+        </Text>
+      </group>
+    </group>
+  );
+}
+
+// Interactive Distance Measurement Line
+function MeasureOverlay({ points }) {
+  if (!points || points.length === 0) return null;
+
+  const [p1, p2] = points;
+  let distanceM = 0;
+  let distanceFt = 0;
+  let midPoint = [0, 0, 0];
+
+  if (p2) {
+    const v1 = new THREE.Vector3(...p1);
+    const v2 = new THREE.Vector3(...p2);
+    distanceM = v1.distanceTo(v2);
+    distanceFt = Math.round(distanceM * 3.28084);
+    midPoint = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2 + 1.2, (p1[2] + p2[2]) / 2];
+  }
+
+  return (
+    <group>
+      {/* Markers */}
+      <mesh position={p1}>
+        <sphereGeometry args={[0.45, 16, 16]} />
+        <meshBasicMaterial color="#F15A24" />
+      </mesh>
+
+      {p2 && (
+        <>
+          <mesh position={p2}>
+            <sphereGeometry args={[0.45, 16, 16]} />
+            <meshBasicMaterial color="#F15A24" />
+          </mesh>
+          <Line
+            points={[p1, p2]}
+            color="#F15A24"
+            lineWidth={3}
+            dashed
+            dashScale={2}
           />
-        ))}
+          {/* Distance Text Badge */}
+          <group position={midPoint} rotation={[-Math.PI / 2, 0, 0]}>
+            <mesh position={[0, 0, -0.05]}>
+              <planeGeometry args={[10, 2.2]} />
+              <meshBasicMaterial color="#0F172A" opacity={0.9} transparent />
+            </mesh>
+            <Text
+              fontSize={1.1}
+              color="#FFFFFF"
+              anchorX="center"
+              anchorY="middle"
+              fontWeight="bold"
+            >
+              {`${distanceFt} ft (${distanceM.toFixed(1)} m)`}
+            </Text>
+          </group>
+        </>
+      )}
+    </group>
+  );
+}
+
+export default function Layout3DView({
+  plots,
+  selectedPlot,
+  onSelectPlot,
+  cameraPreset,
+  animateVehicles = true,
+  isMeasureMode = false,
+  measurePoints = [],
+  onMeasurePoint
+}) {
+  return (
+    <div className="w-full h-full relative bg-slate-900 select-none">
+      <Canvas
+        shadows
+        camera={{ position: [0, 82, 92], fov: 42, near: 1, far: 500 }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      >
+        {/* Sky / Scene Ambient Color */}
+        <color attach="background" args={['#E6F4EA']} />
+
+        {/* Natural Sun Lighting & Soft Shadows */}
+        <ambientLight intensity={0.85} color="#FFFFFF" />
+        <directionalLight
+          position={[60, 95, 45]}
+          intensity={1.4}
+          castShadow
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+          shadow-camera-far={250}
+          shadow-camera-left={-110}
+          shadow-camera-right={110}
+          shadow-camera-top={80}
+          shadow-camera-bottom={-80}
+          shadow-bias={-0.0004}
+        />
+        <hemisphereLight skyColor="#F8FAFC" groundColor="#8CB878" intensity={0.4} />
+
+        {/* Camera Navigation Controller */}
+        <CameraController
+          selectedPlot={selectedPlot}
+          cameraPreset={cameraPreset}
+        />
+
+        {/* Surrounding Natural Grass Terrain */}
+        <mesh position={[0, -0.02, 5]} receiveShadow>
+          <planeGeometry args={[380, 260]} />
+          <meshStandardMaterial color="#8CB878" roughness={0.9} />
+        </mesh>
+
+        {/* Project Compound Boundary Kerb */}
+        <mesh position={[0, 0.01, 5]}>
+          <planeGeometry args={[186, 126]} />
+          <meshStandardMaterial color="#94C383" roughness={0.85} />
+        </mesh>
+
+        {/* Connected Asphalt Road Network */}
+        <ConnectedRoadNetwork />
+
+        {/* Ac. 0.758 Park Environment */}
+        <ParkArea />
+
+        {/* Avenue Landscaping & Palm Trees */}
+        <Landscaping />
+
+        {/* Low-poly Animated Vehicles */}
+        <MovingVehicles animate={animateVehicles} />
+
+        {/* Continuous Plot Surfaces (All 96 Plots) */}
+        <group>
+          {plots.map((plot) => (
+            <Plot3D
+              key={plot.plotNumber}
+              plot={plot}
+              isSelected={selectedPlot?.plotNumber === plot.plotNumber}
+              onSelect={onSelectPlot}
+              isMeasureMode={isMeasureMode}
+              onMeasurePoint={onMeasurePoint}
+            />
+          ))}
+        </group>
+
+        {/* Interactive Measure Tool Overlay */}
+        {isMeasureMode && <MeasureOverlay points={measurePoints} />}
       </Canvas>
     </div>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, MapPin, Mail, Award, CheckCircle, HeartHandshake } from 'lucide-react';
+import { ShieldCheck, MapPin, Mail, Award, CheckCircle, HeartHandshake, ExternalLink } from 'lucide-react';
 
 export default function AboutPage({ settings }) {
   const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
@@ -58,12 +58,15 @@ export default function AboutPage({ settings }) {
           </p>
 
           <div className="pt-2">
-            <Link
-              to="/plots"
+            <a
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-xl text-sm shadow transition-all"
             >
               <span>Explore The Layout Master Plan</span>
-            </Link>
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
 

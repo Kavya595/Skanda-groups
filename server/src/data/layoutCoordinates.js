@@ -1,24 +1,139 @@
 import { initialPlots, parkData, layoutRoads, calculateExtraCharges } from './plotsData.js';
 
+// Master plot boundaries definition matching client/src/visualizer/masterPlanData.js
+const masterPlotQuads = {
+  1:  [57, 63, -42, -35.5],
+  2:  [57, 63, -35.5, -29],
+  3:  [57, 63, -29, -22.5],
+  4:  [57, 63, -22.5, -16],
+  5:  [57, 63, -16, -9.5],
+  6:  [57, 63, -9.5, -3],
+
+  10: [29, 39.5, -42, -29],
+  8:  [29, 39.5, -29, -16],
+  7:  [29, 39.5, -16, -3],
+  9:  [39.5, 50, -42, -29],
+  11: [39.5, 50, -29, -16],
+  12: [39.5, 50, -16, -3],
+
+  16: [0, 11, -42, -22.5],
+  14: [0, 11, -22.5, -3],
+  15: [11, 22, -42, -22.5],
+  13: [11, 22, -22.5, -3],
+
+  24: [-29, -18, -42, -32.25],
+  22: [-29, -18, -32.25, -22.5],
+  21: [-29, -18, -22.5, -12.75],
+  20: [-29, -18, -12.75, -3],
+  23: [-18, -7, -42, -32.25],
+  19: [-18, -7, -32.25, -22.5],
+  18: [-18, -7, -22.5, -12.75],
+  17: [-18, -7, -12.75, -3],
+
+  29: [-58, -47, -42, -29],
+  28: [-58, -47, -29, -16],
+  27: [-58, -47, -16, -3],
+  30: [-47, -36, -42, -29],
+  26: [-47, -36, -29, -16],
+  25: [-47, -36, -16, -3],
+
+  31: [-78, -65, 4, 13.3],
+  32: [-78, -65, 13.3, 22.6],
+  33: [-78, -65, 22.6, 32.0],
+  34: [-78, -65, 32.0, 41.3],
+  35: [-78, -65, 41.3, 50.6],
+  36: [-78, -65, 50.6, 60],
+
+  41: [-58, -47, 4, 15.2],
+  40: [-58, -47, 15.2, 26.4],
+  39: [-58, -47, 26.4, 37.6],
+  38: [-58, -47, 37.6, 48.8],
+  37: [-58, -47, 48.8, 60],
+  42: [-47, -36, 4, 15.2],
+  43: [-47, -36, 15.2, 26.4],
+  44: [-47, -36, 26.4, 37.6],
+  45: [-47, -36, 37.6, 48.8],
+  46: [-47, -36, 48.8, 60],
+
+  51: [-29, -18, 4, 13.33],
+  50: [-29, -18, 13.33, 22.66],
+  49: [-29, -18, 22.66, 32.0],
+  48: [-29, -18, 32.0, 41.33],
+  47: [-29, -18, 41.33, 50.66],
+  56: [-29, -18, 50.66, 60],
+  52: [-18, -7, 4, 13.33],
+  53: [-18, -7, 13.33, 22.66],
+  54: [-18, -7, 22.66, 32.0],
+  55: [-18, -7, 32.0, 41.33],
+  58: [-18, -7, 41.33, 50.66],
+  57: [-18, -7, 50.66, 60],
+
+  64: [0, 11, 4, 13.33],
+  63: [0, 11, 13.33, 22.66],
+  62: [0, 11, 22.66, 32.0],
+  61: [0, 11, 32.0, 41.33],
+  60: [0, 11, 41.33, 50.66],
+  59: [0, 11, 50.66, 60],
+  65: [11, 22, 4, 13.33],
+  66: [11, 22, 13.33, 22.66],
+  67: [11, 22, 22.66, 32.0],
+  68: [11, 22, 32.0, 41.33],
+  69: [11, 22, 41.33, 50.66],
+  70: [11, 22, 50.66, 60],
+
+  76: [29, 39.5, 4, 13.33],
+  75: [29, 39.5, 13.33, 22.66],
+  74: [29, 39.5, 22.66, 32.0],
+  73: [29, 39.5, 32.0, 41.33],
+  72: [29, 39.5, 41.33, 50.66],
+  71: [29, 39.5, 50.66, 60],
+  77: [39.5, 50, 4, 13.33],
+  78: [39.5, 50, 13.33, 22.66],
+  79: [39.5, 50, 22.66, 32.0],
+  80: [39.5, 50, 32.0, 41.33],
+  81: [39.5, 50, 41.33, 50.66],
+  82: [39.5, 50, 50.66, 60],
+
+  89: [57, 63.5, 4, 12],
+  88: [57, 63.5, 12, 20],
+  87: [57, 63.5, 20, 28],
+  86: [57, 63.5, 28, 36],
+  85: [57, 63.5, 36, 44],
+  84: [57, 63.5, 44, 52],
+  83: [57, 63.5, 52, 60],
+  90: [63.5, 70, 4, 12],
+  91: [63.5, 70, 12, 20],
+  92: [63.5, 70, 20, 28],
+  93: [63.5, 70, 28, 36],
+  94: [63.5, 70, 36, 44],
+  95: [63.5, 70, 44, 52],
+  96: [63.5, 70, 52, 60]
+};
+
 export function getEnrichedPlots() {
   const plots = [...initialPlots];
 
-  // Helper to find and set coords
-  const setCoord = (num, x, y, w, h) => {
-    const p = plots.find(item => item.plotNumber === num);
-    if (p) {
-      p.bounds = { x, y, width: w, height: h };
+  plots.forEach(p => {
+    const quad = masterPlotQuads[p.plotNumber];
+    if (quad) {
+      const [x0, x1, z0, z1] = quad;
+      const w = Math.abs(x1 - x0);
+      const d = Math.abs(z1 - z0);
+      const cx = (x0 + x1) / 2;
+      const cz = (z0 + z1) / 2;
+
+      p.bounds = { x: x0, z: z0, width: w, depth: d };
       p.polygon = [
-        [x, y],
-        [x + w, y],
-        [x + w, y + h],
-        [x, y + h]
+        [x0, z0],
+        [x1, z0],
+        [x1, z1],
+        [x0, z1]
       ];
-      // 3D coordinates centered around (0,0) on XZ plane
-      p.x3d = (x + w / 2 - 550) * 0.15;
-      p.z3d = (y + h / 2 - 360) * 0.15;
-      p.w3d = w * 0.14;
-      p.d3d = h * 0.14;
+      // 3D coordinates on XZ plane
+      p.x3d = cx;
+      p.z3d = cz;
+      p.w3d = w;
+      p.d3d = d;
 
       // Base pricing & extra charges
       p.basePricePerSqYd = 12500;
@@ -26,128 +141,10 @@ export function getEnrichedPlots() {
       p.extraChargesPerSqYd = extra.totalPerSqYd;
       p.extraChargesBreakdown = extra.breakdown;
       p.totalPrice = p.areaSqYds * (p.basePricePerSqYd + p.extraChargesPerSqYd);
-      p.isUnverifiedPricing = true; // Transparency note: preview pricing pending final developer approval
+      p.isUnverifiedPricing = true;
       p.areaSqFt = p.areaSqYds * 9;
     }
-  };
-
-  // TOP SECTION: Block E - Highway Strip (Plots 1 to 6)
-  setCoord(1, 875, 75, 60, 30);
-  setCoord(2, 875, 107, 60, 30);
-  setCoord(3, 875, 139, 60, 30);
-  setCoord(4, 875, 171, 60, 30);
-  setCoord(5, 875, 203, 60, 30);
-  setCoord(6, 875, 235, 60, 35);
-
-  // TOP SECTION: Block D (Plots 7 to 12)
-  setCoord(10, 725, 75, 48, 38);
-  setCoord(9,  778, 75, 48, 38);
-  setCoord(8,  725, 118, 48, 36);
-  setCoord(11, 778, 118, 48, 36);
-  setCoord(7,  725, 158, 48, 36);
-  setCoord(12, 778, 158, 48, 36);
-
-  // TOP SECTION: Block C (Plots 13 to 16)
-  setCoord(16, 570, 75, 52, 40);
-  setCoord(15, 626, 75, 52, 40);
-  setCoord(14, 570, 120, 52, 45);
-  setCoord(13, 626, 120, 52, 45);
-
-  // TOP SECTION: Block B (Plots 17 to 24)
-  setCoord(24, 415, 75, 50, 40);
-  setCoord(23, 470, 75, 50, 40);
-  setCoord(22, 415, 120, 50, 33);
-  setCoord(19, 470, 120, 50, 33);
-  setCoord(21, 415, 157, 50, 33);
-  setCoord(18, 470, 157, 50, 33);
-  setCoord(20, 415, 194, 50, 33);
-  setCoord(17, 470, 194, 50, 33);
-
-  // TOP SECTION: Block A (Plots 25 to 30)
-  setCoord(29, 275, 75, 45, 40);
-  setCoord(30, 323, 75, 45, 40);
-  setCoord(28, 275, 120, 45, 34);
-  setCoord(26, 323, 120, 45, 34);
-  setCoord(27, 275, 158, 45, 34);
-  setCoord(25, 323, 158, 45, 34);
-
-  // BOTTOM SECTION: West Strip (Plots 31 to 36)
-  setCoord(31, 40, 325, 70, 50);
-  setCoord(32, 40, 380, 70, 45);
-  setCoord(33, 40, 430, 70, 45);
-  setCoord(34, 40, 480, 70, 45);
-  setCoord(35, 40, 530, 70, 45);
-  setCoord(36, 40, 580, 70, 85);
-
-  // BOTTOM SECTION: Block G (Plots 37 to 46)
-  setCoord(41, 185, 325, 50, 45);
-  setCoord(42, 240, 325, 50, 45);
-  setCoord(40, 185, 375, 50, 45);
-  setCoord(43, 240, 375, 50, 45);
-  setCoord(39, 185, 425, 50, 45);
-  setCoord(44, 240, 425, 50, 45);
-  setCoord(38, 185, 475, 50, 45);
-  setCoord(45, 240, 475, 50, 45);
-  setCoord(37, 185, 525, 50, 60);
-  setCoord(46, 240, 525, 50, 70);
-
-  // BOTTOM SECTION: Block H (Plots 47 to 58)
-  setCoord(51, 415, 325, 48, 42);
-  setCoord(52, 468, 325, 48, 42);
-  setCoord(50, 415, 372, 48, 42);
-  setCoord(53, 468, 372, 48, 42);
-  setCoord(49, 415, 419, 48, 42);
-  setCoord(54, 468, 419, 48, 42);
-  setCoord(48, 415, 466, 48, 42);
-  setCoord(55, 468, 466, 48, 42);
-  setCoord(47, 415, 513, 48, 42);
-  setCoord(58, 468, 513, 48, 42);
-  setCoord(56, 415, 560, 48, 65);
-  setCoord(57, 468, 560, 48, 65);
-
-  // BOTTOM SECTION: Block I (Plots 59 to 70)
-  setCoord(64, 570, 325, 48, 42);
-  setCoord(65, 623, 325, 48, 42);
-  setCoord(63, 570, 372, 48, 42);
-  setCoord(66, 623, 372, 48, 42);
-  setCoord(62, 570, 419, 48, 42);
-  setCoord(67, 623, 419, 48, 42);
-  setCoord(61, 570, 466, 48, 42);
-  setCoord(68, 623, 466, 48, 42);
-  setCoord(60, 570, 513, 48, 42);
-  setCoord(69, 623, 513, 48, 42);
-  setCoord(59, 570, 560, 48, 65);
-  setCoord(70, 623, 560, 48, 65);
-
-  // BOTTOM SECTION: Block J (Plots 71 to 82)
-  setCoord(76, 725, 325, 48, 42);
-  setCoord(77, 778, 325, 48, 42);
-  setCoord(75, 725, 372, 48, 42);
-  setCoord(78, 778, 372, 48, 42);
-  setCoord(74, 725, 419, 48, 42);
-  setCoord(79, 778, 419, 48, 42);
-  setCoord(73, 725, 466, 48, 42);
-  setCoord(80, 778, 466, 48, 42);
-  setCoord(72, 725, 513, 48, 42);
-  setCoord(81, 778, 513, 48, 42);
-  setCoord(71, 725, 560, 48, 65);
-  setCoord(82, 778, 560, 48, 65);
-
-  // BOTTOM SECTION: Block K - Highway Avenue (Plots 83 to 96)
-  setCoord(89, 875, 325, 45, 38);
-  setCoord(90, 924, 325, 48, 42);
-  setCoord(88, 875, 368, 45, 38);
-  setCoord(91, 924, 372, 48, 36);
-  setCoord(87, 875, 411, 45, 38);
-  setCoord(92, 924, 413, 48, 36);
-  setCoord(86, 875, 454, 45, 38);
-  setCoord(93, 924, 454, 48, 36);
-  setCoord(85, 875, 497, 45, 38);
-  setCoord(94, 924, 495, 48, 36);
-  setCoord(84, 875, 540, 45, 38);
-  setCoord(95, 924, 536, 48, 45);
-  setCoord(83, 875, 583, 45, 50);
-  setCoord(96, 924, 586, 48, 75);
+  });
 
   return plots;
 }

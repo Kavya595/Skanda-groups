@@ -1,14 +1,27 @@
-import React, { useState, useRef } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Compass, TreePine, Info } from 'lucide-react';
-import { parkData, layoutRoads, statusColors } from './layoutData';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Compass,
+  Maximize2,
+  Minimize2,
+  Trees
+} from 'lucide-react';
+import {
+  LAYOUT_BOUNDS,
+  layoutRoads,
+  parkData,
+  statusColors
+} from './masterPlanData';
 
 export default function Layout2DView({
   plots,
   selectedPlot,
   onSelectPlot,
-  filterStatus,
-  filterFacing,
-  searchTerm
+  filterStatus = 'all',
+  filterFacing = 'all',
+  searchTerm = ''
 }) {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -18,16 +31,32 @@ export default function Layout2DView({
   const containerRef = useRef(null);
 
   // Zoom controls
-  const handleZoomIn = () => setScale(prev => Math.min(prev + 0.25, 2.5));
-  const handleZoomOut = () => setScale(prev => Math.max(prev - 0.25, 0.6));
-  const handleReset = () => {
+  const handleZoomIn = () => setScale(prev => Math.min(prev + 0.35, 3.5));
+  const handleZoomOut = () => setScale(prev => Math.max(prev - 0.35, 0.65));
+  const handleReset = useCallback(() => {
     setScale(1);
     setPosition({ x: 0, y: 0 });
-  };
+  }, []);
 
-  // Drag pan controls
+  // Center on selected plot if selection changes
+  useEffect(() => {
+    if (selectedPlot && selectedPlot.svgPolygon) {
+      const [[x0, y0], [x1], [, y2]] = selectedPlot.svgPolygon;
+      const plotCenterX = (x0 + x1) / 2;
+      const plotCenterY = (y0 + y2) / 2;
+
+      if (scale > 1.2) {
+        setPosition({
+          x: -(plotCenterX - 600) * (scale - 1),
+          y: -(plotCenterY - 390) * (scale - 1)
+        });
+      }
+    }
+  }, [selectedPlot, scale]);
+
+  // Pan controls
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return; // Only primary button
+    if (e.button !== 0) return;
     setIsDragging(true);
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
@@ -42,218 +71,257 @@ export default function Layout2DView({
 
   const handleMouseUp = () => setIsDragging(false);
 
-  // Determine if a plot matches the active filters
-  const matchesFilter = (plot) => {
-    if (filterStatus && filterStatus !== 'all' && plot.status !== filterStatus) return false;
-    if (filterFacing && filterFacing !== 'all' && !plot.facing.toLowerCase().includes(filterFacing.toLowerCase())) return false;
-    if (searchTerm) {
-      const s = searchTerm.toLowerCase();
-      const numMatch = String(plot.plotNumber) === s;
-      const blockMatch = plot.block && plot.block.toLowerCase().includes(s);
-      if (!numMatch && !blockMatch) return false;
-    }
-    return true;
+  // Wheel zoom
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.88;
+    setScale(prev => Math.min(Math.max(prev * zoomFactor, 0.65), 3.5));
   };
 
   return (
-    <div className="relative w-full h-[650px] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-inner select-none">
-      {/* Floating View Controls */}
-      <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-white/95 backdrop-blur-sm p-1.5 rounded-xl shadow-md border border-slate-200">
+    <div
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onWheel={handleWheel}
+      className="relative w-full h-full bg-[#EAF5E8] overflow-hidden select-none cursor-grab active:cursor-grabbing border border-slate-200"
+    >
+      {/* Zoom / Pan Controls Floating Pill */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-200/90 shadow-md">
         <button
           onClick={handleZoomIn}
-          title="Zoom In"
           className="p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
-          aria-label="Zoom In"
+          title="Zoom In"
         >
-          <ZoomIn className="w-5 h-5" />
+          <ZoomIn className="w-4 h-4" />
         </button>
         <button
           onClick={handleZoomOut}
-          title="Zoom Out"
           className="p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
-          aria-label="Zoom Out"
+          title="Zoom Out"
         >
-          <ZoomOut className="w-5 h-5" />
+          <ZoomOut className="w-4 h-4" />
         </button>
         <button
           onClick={handleReset}
-          title="Reset View"
           className="p-2 rounded-lg hover:bg-slate-100 text-slate-700 transition-colors"
-          aria-label="Reset View"
+          title="Reset Master Plan View"
         >
-          <RotateCcw className="w-5 h-5" />
+          <RotateCcw className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Floating Orientation Badge (Compass Rose) */}
-      <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-md border border-slate-200 flex items-center gap-3">
-        <div className="flex flex-col items-center">
-          <span className="text-[10px] font-extrabold text-red-600">N</span>
-          <Compass className="w-6 h-6 text-slate-700" />
-          <span className="text-[10px] font-bold text-slate-400">S</span>
-        </div>
-        <div className="text-xs">
-          <div className="font-bold text-slate-800">Master Plan View</div>
-          <div className="text-[11px] text-slate-500">TLP NO. 87/2024/H</div>
+      {/* North Compass Rose */}
+      <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-200/90 shadow-md flex items-center gap-2">
+        <Compass className="w-5 h-5 text-brand-orange animate-pulse" />
+        <div className="text-left">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Master Plan</div>
+          <div className="text-xs font-bold text-slate-900">True North</div>
         </div>
       </div>
 
-      {/* Hover Info Tooltip */}
-      {hoveredPlot && (
-        <div
-          className="absolute z-30 pointer-events-none bg-slate-900/90 text-white text-xs px-3 py-2 rounded-lg shadow-xl backdrop-blur-sm transform -translate-x-1/2 -translate-y-full mb-2"
-          style={{
-            left: hoveredPlot.bounds.x + hoveredPlot.bounds.width / 2 + position.x,
-            top: hoveredPlot.bounds.y + position.y - 10
-          }}
-        >
-          <div className="font-bold text-amber-300">Plot #{hoveredPlot.plotNumber}</div>
-          <div>Area: {hoveredPlot.areaSqYds} Sq.Yds</div>
-          <div>Facing: {hoveredPlot.facing}</div>
-          <div className="capitalize text-emerald-300 font-semibold">{hoveredPlot.status}</div>
-        </div>
-      )}
-
-      {/* SVG Container */}
+      {/* SVG Canvas */}
       <div
-        ref={containerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        className={`w-full h-full cursor-grab ${isDragging ? 'cursor-grabbing' : ''}`}
+        className="w-full h-full flex items-center justify-center transition-transform duration-75 ease-out"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+          transformOrigin: 'center center'
+        }}
       >
         <svg
-          viewBox="0 0 1100 720"
-          className="w-full h-full"
-          style={{
-            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-            transformOrigin: 'center center',
-            transition: isDragging ? 'none' : 'transform 0.15s ease-out'
-          }}
+          viewBox="0 0 1200 780"
+          className="w-full h-full max-w-[1400px] max-h-[850px] drop-shadow-lg"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Background Canvas */}
-          <rect x="0" y="0" width="1100" height="720" fill="#F8FAFC" />
+          <defs>
+            {/* Soft shadow filter */}
+            <filter id="plotShadow" x="-10%" y="-10%" width="120%" height="120%">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.25" />
+            </filter>
+            <filter id="selectedGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#F15A24" floodOpacity="0.8" />
+            </filter>
+          </defs>
 
-          {/* Boundaries & External References */}
-          {/* Top: 60ft Road to Maisigandi Temple */}
-          <rect x="20" y="20" width="960" height="45" fill="#475569" rx="4" />
-          <text x="450" y="47" fill="#F8FAFC" fontSize="13" fontWeight="bold" textAnchor="middle" letterSpacing="1">
-            PROPOSED 60'-0" WIDE ROAD ────────► TO MASIGANDI TEMPLE
-          </text>
+          {/* Surrounding Natural Grass Terrain */}
+          <rect x="0" y="0" width="1200" height="780" fill="#E2F0DE" />
 
-          {/* East: Srisailam Highway */}
-          <rect x="990" y="20" width="85" height="670" fill="#334155" rx="4" />
+          {/* Site Boundary Compound Plot */}
+          <rect
+            x="35"
+            y="30"
+            width="1120"
+            height="710"
+            fill="#D5E8CE"
+            stroke="#94C383"
+            strokeWidth="3"
+            rx="12"
+          />
+
+          {/* Connected Asphalt Road Network */}
+          {layoutRoads.map((road) => {
+            const [p0, p1, p2, p3] = road.polygon;
+            const xMin = (Math.min(p0[0], p1[0], p2[0], p3[0]) + 95) * 6.0;
+            const xMax = (Math.max(p0[0], p1[0], p2[0], p3[0]) + 95) * 6.0;
+            const yMin = (Math.min(p0[1], p1[1], p2[1], p3[1]) + 58) * 5.6;
+            const yMax = (Math.max(p0[1], p1[1], p2[1], p3[1]) + 58) * 5.6;
+            const w = xMax - xMin;
+            const h = yMax - yMin;
+
+            const isHighway = road.type === 'highway';
+            const isArterial = road.type === 'arterial';
+
+            return (
+              <g key={road.id}>
+                {/* Asphalt Bed */}
+                <rect
+                  x={xMin}
+                  y={yMin}
+                  width={w}
+                  height={h}
+                  fill={isHighway ? '#1E232A' : isArterial ? '#252A32' : '#2D323A'}
+                />
+
+                {/* Road Kerbs */}
+                <rect
+                  x={xMin}
+                  y={yMin}
+                  width={w}
+                  height={h}
+                  fill="none"
+                  stroke="#475569"
+                  strokeWidth="1.5"
+                />
+
+                {/* Road Markings */}
+                {isHighway && (
+                  <line
+                    x1={xMin + w / 2}
+                    y1={yMin}
+                    x2={xMin + w / 2}
+                    y2={yMax}
+                    stroke="#FBBF24"
+                    strokeWidth="3"
+                  />
+                )}
+
+                {isArterial && (
+                  <line
+                    x1={xMin}
+                    y1={yMin + h / 2}
+                    x2={xMax}
+                    y2={yMin + h / 2}
+                    stroke="#FFFFFF"
+                    strokeWidth="2.5"
+                    strokeDasharray="12 8"
+                  />
+                )}
+              </g>
+            );
+          })}
+
+          {/* Road Name Typography */}
           <text
-            x="1035"
-            y="355"
+            x="580"
+            y="65"
             fill="#F8FAFC"
             fontSize="14"
             fontWeight="bold"
             textAnchor="middle"
             letterSpacing="2"
-            transform="rotate(90 1035 355)"
           >
-            SRISAILAM HIGHWAY (NH 765)
+            PROPOSED 60'-0" WIDE ROAD (TO MAISIGANDI TEMPLE)
           </text>
 
-          {/* East: Highway 33ft Service Road */}
-          <rect x="940" y="20" width="40" height="670" fill="#64748B" opacity="0.9" />
           <text
-            x="960"
-            y="355"
-            fill="#FFFFFF"
-            fontSize="10"
-            fontWeight="600"
+            x="1055"
+            y="400"
+            fill="#FEF08A"
+            fontSize="15"
+            fontWeight="bold"
             textAnchor="middle"
-            transform="rotate(90 960 355)"
+            transform="rotate(90, 1055, 400)"
+            letterSpacing="2"
           >
-            PROP. 33'-0" WIDE ROAD
+            SRISAILAM HIGHWAY (NH-765)
           </text>
 
-          {/* Middle: Horizontal 33ft Road */}
-          <rect x="20" y="275" width="920" height="40" fill="#64748B" rx="3" opacity="0.9" />
-          <text x="460" y="299" fill="#FFFFFF" fontSize="11" fontWeight="bold" textAnchor="middle" letterSpacing="1">
+          <text
+            x="580"
+            y="332"
+            fill="#CBD5E1"
+            fontSize="12"
+            fontWeight="bold"
+            textAnchor="middle"
+            letterSpacing="1.5"
+          >
             PROPOSED 33'-0" WIDE ROAD
           </text>
 
-          {/* Bottom Boundary: 4th Phase */}
-          <rect x="20" y="675" width="960" height="30" fill="#E2E8F0" rx="3" />
-          <text x="490" y="694" fill="#64748B" fontSize="12" fontWeight="bold" textAnchor="middle">
-            4th Phase Development
-          </text>
-
-          {/* Vertical Internal 33ft Roads */}
-          <rect x="135" y="315" width="40" height="360" fill="#64748B" opacity="0.85" />
-          <rect x="370" y="65" width="38" height="610" fill="#64748B" opacity="0.85" />
-          <rect x="525" y="65" width="38" height="610" fill="#64748B" opacity="0.85" />
-          <rect x="685" y="65" width="38" height="610" fill="#64748B" opacity="0.85" />
-          <rect x="835" y="65" width="38" height="610" fill="#64748B" opacity="0.85" />
-
-          {/* Road Direction/Labels */}
-          <text x="389" y="180" fill="#FFFFFF" fontSize="9" fontWeight="600" textAnchor="middle" transform="rotate(90 389 180)">PROP. 33' ROAD</text>
-          <text x="544" y="180" fill="#FFFFFF" fontSize="9" fontWeight="600" textAnchor="middle" transform="rotate(90 544 180)">PROP. 33' ROAD</text>
-          <text x="704" y="180" fill="#FFFFFF" fontSize="9" fontWeight="600" textAnchor="middle" transform="rotate(90 704 180)">PROP. 33' ROAD</text>
-          <text x="854" y="180" fill="#FFFFFF" fontSize="9" fontWeight="600" textAnchor="middle" transform="rotate(90 854 180)">PROP. 33' ROAD</text>
-
-          {/* Reserved Open Space / Park (Ac. 0.758 cents) */}
+          {/* Reserved Open Park (Ac. 0.758 cents) */}
           <g>
             <rect
-              x={parkData.bounds.x}
-              y={parkData.bounds.y}
-              width={parkData.bounds.width}
-              height={parkData.bounds.height}
-              fill="#86EFAC"
-              stroke="#22C55E"
+              x={(parkData.polygon[0][0] + 95) * 6.0}
+              y={(parkData.polygon[0][1] + 58) * 5.6}
+              width={parkData.width * 6.0}
+              height={parkData.depth * 5.6}
+              fill="#5EAB53"
+              stroke="#3B7D31"
               strokeWidth="2"
               rx="6"
             />
-            {/* Park Internal Pathway & Decor */}
-            <circle cx="150" cy="170" r="30" fill="#BBF7D0" stroke="#4ADE80" strokeWidth="1.5" />
-            <circle cx="150" cy="170" r="10" fill="#38BDF8" opacity="0.8" />
-            <text x="150" y="130" fill="#14532D" fontSize="11" fontWeight="bold" textAnchor="middle">
-              SITE RESERVED FOR OPEN SPACE
+            {/* Jogging Track Ring */}
+            <circle
+              cx={(parkData.center[0] + 95) * 6.0}
+              cy={(parkData.center[1] + 58) * 5.6}
+              r={parkData.width * 1.8}
+              fill="none"
+              stroke="#D97706"
+              strokeWidth="4"
+              strokeDasharray="6 4"
+              opacity="0.85"
+            />
+            <text
+              x={(parkData.center[0] + 95) * 6.0}
+              y={(parkData.center[1] + 58) * 5.6 - 8}
+              fill="#FFFFFF"
+              fontSize="13"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              OPEN SPACE PARK
             </text>
-            <text x="150" y="145" fill="#15803D" fontSize="12" fontWeight="extrabold" textAnchor="middle">
-              (PARK)
-            </text>
-            <text x="150" y="195" fill="#166534" fontSize="10" fontWeight="bold" textAnchor="middle">
-              Ac. 0.758 cents
-            </text>
-            <text x="150" y="210" fill="#14532D" fontSize="8" textAnchor="middle">
-              209'-9" x 169'-3" x 201'-6"
+            <text
+              x={(parkData.center[0] + 95) * 6.0}
+              y={(parkData.center[1] + 58) * 5.6 + 12}
+              fill="#FEF08A"
+              fontSize="11"
+              fontWeight="semibold"
+              textAnchor="middle"
+            >
+              Ac. 0.758 Cents
             </text>
           </g>
 
-          {/* Render 96 Plots */}
-          {plots.map(plot => {
-            if (!plot.bounds) return null;
-            const { x, y, width: w, height: h } = plot.bounds;
-            const isSelected = selectedPlot && selectedPlot.plotNumber === plot.plotNumber;
-            const isHovered = hoveredPlot && hoveredPlot.plotNumber === plot.plotNumber;
-            const matches = matchesFilter(plot);
-
+          {/* Master Plots (All 96 Plots) */}
+          {plots.map((plot) => {
+            const isSelected = selectedPlot?.plotNumber === plot.plotNumber;
+            const isHovered = hoveredPlot?.plotNumber === plot.plotNumber;
             const meta = statusColors[plot.status] || statusColors.available;
-            // Yellow base with status indication matching Brochure Page 2
-            const fillColor = isSelected
-              ? '#FB923C' // Vibrant Orange for selected
-              : matches
-                ? plot.status === 'sold'
-                  ? '#CBD5E1'
-                  : plot.status === 'reserved'
-                    ? '#FDE68A'
-                    : plot.status === 'blocked'
-                      ? '#94A3B8'
-                      : '#FEF08A' // Warm sunny yellow matching brochure plots
-                : '#F1F5F9';
 
-            const strokeColor = isSelected
-              ? '#EA580C'
-              : isHovered
-                ? '#F97316'
-                : meta.border || '#CA8A04';
+            const [[p0x, p0y], [p1x], [, p2y]] = plot.svgPolygon;
+            const w = p1x - p0x;
+            const h = p2y - p0y;
+            const cx = p0x + w / 2;
+            const cy = p0y + h / 2;
 
-            const opacity = matches ? 1 : 0.25;
+            // Check filters
+            const matchesStatus = filterStatus === 'all' || plot.status === filterStatus;
+            const matchesFacing = filterFacing === 'all' || plot.facing.toLowerCase().includes(filterFacing.toLowerCase());
+            const matchesSearch = !searchTerm || String(plot.plotNumber) === searchTerm.trim();
+            const isDimmed = !matchesStatus || !matchesFacing || !matchesSearch;
 
             return (
               <g
@@ -261,59 +329,56 @@ export default function Layout2DView({
                 onClick={() => onSelectPlot(plot)}
                 onMouseEnter={() => setHoveredPlot(plot)}
                 onMouseLeave={() => setHoveredPlot(null)}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectPlot(plot);
-                  }
-                }}
-                className="plot-polygon focus:outline-none"
-                style={{ opacity, transition: 'all 0.2s ease' }}
+                className="cursor-pointer transition-opacity duration-150"
+                opacity={isDimmed ? 0.35 : 1}
               >
+                {/* Plot Surface */}
                 <rect
-                  x={x}
-                  y={y}
+                  x={p0x}
+                  y={p0y}
                   width={w}
                   height={h}
-                  fill={fillColor}
-                  stroke={strokeColor}
-                  strokeWidth={isSelected ? 3 : isHovered ? 2 : 1}
+                  fill={isSelected ? '#F15A24' : isHovered ? '#FB923C' : meta.bg}
+                  stroke={isSelected ? '#FFFFFF' : '#1E293B'}
+                  strokeWidth={isSelected ? 3 : 1.2}
+                  filter={isSelected ? 'url(#selectedGlow)' : 'url(#plotShadow)'}
                   rx="2"
                 />
 
-                {/* Plot Number Label */}
+                {/* Circular Number Badge */}
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={Math.min(w, h) * 0.32 > 10 ? 10 : Math.min(w, h) * 0.32}
+                  fill={isSelected ? '#1E293B' : '#FFFFFF'}
+                  stroke={isSelected ? '#FFFFFF' : '#0F172A'}
+                  strokeWidth="1"
+                />
                 <text
-                  x={x + w / 2}
-                  y={y + h / 2 - 2}
-                  fill="#1E293B"
-                  fontSize={w < 48 ? '9' : '11'}
+                  x={cx}
+                  y={cy + 3.5}
+                  fill={isSelected ? '#FFFFFF' : '#0F172A'}
+                  fontSize={Math.min(w, h) * 0.28 > 9.5 ? 9.5 : 8}
                   fontWeight="bold"
                   textAnchor="middle"
-                  dominantBaseline="middle"
                 >
                   {plot.plotNumber}
                 </text>
 
-                {/* Area Label (Sq.Yds) */}
-                <text
-                  x={x + w / 2}
-                  y={y + h / 2 + 10}
-                  fill="#475569"
-                  fontSize={w < 48 ? '7' : '8'}
-                  fontWeight="600"
-                  textAnchor="middle"
-                >
-                  {plot.areaSqYds}
-                </text>
-
-                {/* Status Dot / Indicator */}
-                <circle
-                  cx={x + w - 5}
-                  cy={y + 5}
-                  r="3"
-                  fill={meta.bg}
-                />
+                {/* Area Label on Zoom */}
+                {scale > 1.3 && (
+                  <text
+                    x={cx}
+                    y={cy + 16}
+                    fill="#FFFFFF"
+                    fontSize="7.5"
+                    fontWeight="semibold"
+                    textAnchor="middle"
+                    opacity="0.9"
+                  >
+                    {plot.areaSqYds} sq.yds
+                  </text>
+                )}
               </g>
             );
           })}

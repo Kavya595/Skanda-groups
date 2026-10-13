@@ -10,7 +10,8 @@ import {
   Droplets,
   Building,
   Tag,
-  ArrowRight
+  ArrowRight,
+  ExternalLink
 } from 'lucide-react';
 import EnquiryModal from '../components/EnquiryModal';
 
@@ -179,13 +180,15 @@ export default function ProjectPage() {
           </ul>
 
           <div className="pt-4">
-            <Link
-              to="/plots"
-              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-lg text-sm transition-all"
+            <a
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-lg text-sm transition-all shadow-md"
             >
               <span>Explore Interactive 2D & 3D Master Plan</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
 

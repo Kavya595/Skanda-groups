@@ -52,9 +52,15 @@ export default function Footer({ settings }) {
                 </Link>
               </li>
               <li>
-                <Link to="/plots" className="hover:text-brand-orange font-semibold text-brand-orange transition-colors flex items-center gap-1.5">
-                  Interactive Plot Availability (2D/3D)
-                </Link>
+                <a
+                  href="/plots"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-orange font-semibold text-brand-orange transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Interactive Plot Availability (2D/3D)</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
               </li>
               <li>
                 <Link to="/gallery" className="hover:text-brand-orange transition-colors">

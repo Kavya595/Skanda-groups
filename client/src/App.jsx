@@ -7,13 +7,15 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
-// Public Pages
+// Public Marketing Pages
 import HomePage from './pages/HomePage';
 import ProjectPage from './pages/ProjectPage';
-import PlotAvailabilityPage from './pages/PlotAvailabilityPage';
 import GalleryPage from './pages/GalleryPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+
+// Standalone Master Plan Plot Viewer (Completely Separate App Experience)
+import PlotViewerStandalone from './pages/PlotViewerStandalone';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -45,7 +47,7 @@ function ProtectedAdminRoute({ children }) {
   return children;
 }
 
-// Public Layout Wrapper
+// Public Marketing Website Wrapper (With Main Navbar and Footer)
 function PublicLayout({ settings }) {
   const location = useLocation();
 
@@ -61,7 +63,6 @@ function PublicLayout({ settings }) {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/project" element={<ProjectPage />} />
-          <Route path="/plots" element={<PlotAvailabilityPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage settings={settings} />} />
           <Route path="/contact" element={<ContactPage settings={settings} />} />
@@ -81,6 +82,12 @@ export default function App() {
       .then(res => res.success && setSettings(res.settings))
       .catch(console.error);
   }, []);
+
+  // Detect whether viewer is deployed at standalone subdomain e.g. plots.skandhagroup.com
+  const isPlotsSubdomain = typeof window !== 'undefined' && (
+    window.location.hostname.startsWith('plots.') ||
+    window.location.search.includes('standalone=true')
+  );
 
   return (
     <AuthProvider>
@@ -106,7 +113,15 @@ export default function App() {
           <Route path="audit" element={<AdminAuditLogs />} />
         </Route>
 
-        {/* All Public Routes */}
+        {/* Standalone Plot Viewer Route - NO Marketing Navbar, NO Hero, NO Footer */}
+        <Route path="/plots" element={<PlotViewerStandalone settings={settings} />} />
+
+        {/* If hosted on plots.skandhagroup.com subdomain, root '/' serves standalone viewer */}
+        {isPlotsSubdomain ? (
+          <Route path="/" element={<PlotViewerStandalone settings={settings} />} />
+        ) : null}
+
+        {/* Public Marketing Website */}
         <Route path="/*" element={<PublicLayout settings={settings} />} />
       </Routes>
     </AuthProvider>

@@ -9,7 +9,7 @@ export default function Navbar({ settings }) {
   const navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Project', path: '/project' },
-    { label: 'Plot Layout', path: '/plots' },
+    { label: 'Plot Availability', path: '/plots', isNewTab: true },
     { label: 'Gallery', path: '/gallery' },
     { label: 'About', path: '/about' },
     { label: 'Contact', path: '/contact' }
@@ -72,6 +72,21 @@ export default function Navbar({ settings }) {
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7">
             {navLinks.map(link => {
+              if (link.isNewTab) {
+                return (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-brand-orange hover:text-brand-orange-dark inline-flex items-center gap-1 transition-colors py-2"
+                  >
+                    <span>{link.label}</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                );
+              }
+
               const isActive = location.pathname === link.path;
               return (
                 <Link
@@ -92,15 +107,18 @@ export default function Navbar({ settings }) {
             })}
           </nav>
 
-          {/* Distinct Action Button: Plot Availability */}
+          {/* Distinct Action Button: Plot Availability (Opens in New Tab per Section A item 3) */}
           <div className="hidden sm:flex items-center gap-3">
-            <Link
-              to="/plots"
+            <a
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
             >
               <Compass className="w-4 h-4 text-white" />
               <span>Explore Plot Availability</span>
-            </Link>
+              <ExternalLink className="w-3.5 h-3.5 text-white/80" />
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -121,30 +139,51 @@ export default function Navbar({ settings }) {
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3">
           <div className="flex flex-col space-y-2">
-            {navLinks.map(link => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`px-3 py-2 rounded-md text-base font-semibold ${
-                  location.pathname === link.path
-                    ? 'bg-orange-50 text-brand-orange'
-                    : 'text-slate-700 hover:bg-slate-50 hover:text-brand-orange'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map(link => {
+              if (link.isNewTab) {
+                return (
+                  <a
+                    key={link.path}
+                    href={link.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-3 py-2 rounded-md text-base font-semibold text-brand-orange hover:bg-orange-50 flex items-center justify-between"
+                  >
+                    <span>{link.label}</span>
+                    <ExternalLink className="w-4 h-4 opacity-75" />
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`px-3 py-2 rounded-md text-base font-semibold ${
+                    location.pathname === link.path
+                      ? 'bg-orange-50 text-brand-orange'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-brand-orange'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            <Link
-              to="/plots"
+            <a
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center bg-brand-orange text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm"
+              className="w-full text-center bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm inline-flex items-center justify-center gap-2"
             >
-              Interactive Plot Availability (2D/3D)
-            </Link>
+              <Compass className="w-4 h-4" />
+              <span>Explore Interactive 3D Plots (New Tab)</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+            </a>
             <div className="text-xs text-center text-slate-500 pt-1">
               DTCP: {dtcpNo} | TS RERA: {reraNo}
             </div>

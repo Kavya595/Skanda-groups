@@ -13,7 +13,8 @@ import {
   Droplets,
   Lightbulb,
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  ExternalLink
 } from 'lucide-react';
 import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent } from '../api/client';
 import EnquiryModal from '../components/EnquiryModal';
@@ -94,13 +95,16 @@ export default function HomePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-4 pt-4">
-              <Link
-                to="/plots"
+              <a
+                href="/plots"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2.5 bg-brand-orange hover:bg-brand-orange-dark text-white px-7 py-3.5 rounded-xl text-base font-bold shadow-lg hover:shadow-orange-500/30 transition-all duration-200"
               >
                 <Compass className="w-5 h-5" />
                 <span>Explore Interactive Plots (2D / 3D)</span>
-              </Link>
+                <ExternalLink className="w-4 h-4 text-white/80" />
+              </a>
 
               <button
                 onClick={() => setIsEnquiryOpen(true)}
@@ -215,13 +219,15 @@ export default function HomePage() {
             </div>
 
             <div className="pt-4 flex items-center gap-4">
-              <Link
-                to="/plots"
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-lg text-sm transition-all"
+              <a
+                href="/plots"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-6 py-3 rounded-lg text-sm transition-all shadow-sm"
               >
                 <span>Select Your Plot Online</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+                <ExternalLink className="w-4 h-4" />
+              </a>
               <Link
                 to="/project"
                 className="text-sm font-semibold text-slate-700 hover:text-brand-orange transition-colors"
@@ -414,12 +420,15 @@ export default function HomePage() {
               Explore the interactive 2D master plan and 3D preview, select your preferred facing and plot number, and connect directly with our sales advisors for verified spot registration details.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link
-                to="/plots"
-                className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-6 py-3.5 rounded-xl text-sm shadow-md transition-all"
+              <a
+                href="/plots"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-6 py-3.5 rounded-xl text-sm shadow-md transition-all inline-flex items-center gap-2"
               >
-                Check Plot Availability Now
-              </Link>
+                <span>Check Plot Availability Now</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
               <button
                 onClick={() => setIsEnquiryOpen(true)}
                 className="bg-orange-950/40 hover:bg-orange-950/60 border border-white/30 text-white font-bold px-6 py-3.5 rounded-xl text-sm transition-all"
