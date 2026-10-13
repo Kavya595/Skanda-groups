@@ -32,4 +32,10 @@ async function startServer() {
   }
 }
 
-startServer();
+// In standard local development / standalone process, start listening
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+// Default export required by Vercel Express service & serverless invocation
+export default app;

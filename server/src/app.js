@@ -8,6 +8,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import apiRoutes from './routes/api.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { connectDB } from './config/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,9 +61,6 @@ if (fs.existsSync(clientPublic)) {
   app.use(express.static(clientPublic));
 }
 
-// Mount REST API
-app.use('/api', apiRoutes);
-
 // Health check endpoints
 const healthHandler = (req, res) => {
   res.json({
@@ -73,6 +71,19 @@ const healthHandler = (req, res) => {
 };
 app.get('/health', healthHandler);
 app.get('/api/health', healthHandler);
+
+// Connect to MongoDB on-demand (cached for serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+  } catch (err) {
+    console.error('[Database Connection Middleware Error]:', err.message);
+  }
+  next();
+});
+
+// Mount REST API
+app.use('/api', apiRoutes);
 
 // SPA fallback for HTML5 routing (when running monolithically locally)
 app.get('*', (req, res, next) => {
