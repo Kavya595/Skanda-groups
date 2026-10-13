@@ -160,7 +160,7 @@ export default function ProjectPage() {
                   Official Sanctioned Layout
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
-                  Brochure Page 2 Authoritative Blueprint
+                  Sanctioned Master Plan &bull; TLP NO. 87/2024/H
                 </span>
               </div>
               <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 mt-1">
@@ -290,7 +290,7 @@ export default function ProjectPage() {
         <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              Vasthu Geometry &bull; Brochure Page 2
+              Vasthu Geometry &bull; 100% Orientation Harmony
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-2">
               Plot Facing &amp; Orientation Hierarchy

@@ -18,7 +18,6 @@ import {
   Maximize2
 } from 'lucide-react';
 import { submitLead, trackActivityEvent } from '../api/client';
-import SpecialLandmarkView from '../components/SpecialLandmarkView';
 
 export default function ContactPage({ settings }) {
   const [formData, setFormData] = useState({
@@ -211,9 +210,6 @@ export default function ContactPage({ settings }) {
           )}
         </div>
       </section>
-
-      {/* Special Landmark Corridor & Layout Plan View */}
-      <SpecialLandmarkView />
 
       {/* Contact Form & Corporate Information Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">

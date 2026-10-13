@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function SpecialLandmarkView() {
-  const [activeTab, setActiveTab] = useState('route'); // 'route', 'layout', 'brochure'
+  const [activeTab, setActiveTab] = useState('route'); // 'route' or 'layout'
   const [selectedLandmark, setSelectedLandmark] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
@@ -181,15 +181,11 @@ export default function SpecialLandmarkView() {
 
   const currentModalImage = activeTab === 'route'
     ? '/assets/route_map_hd.png'
-    : activeTab === 'layout'
-    ? '/assets/layout_plan_hd.png'
-    : '/assets/brochure_page3_hd.png';
+    : '/assets/layout_plan_hd.png';
 
   const currentModalTitle = activeTab === 'route'
-    ? 'Official Flyer Route & Connectivity Map'
-    : activeTab === 'layout'
-    ? 'Challampally / Alekhya Brundavan Master Layout Plan'
-    : 'Brochure Page 3: Location & Project Highlights';
+    ? 'Strategic Highway & Transit Corridor Map'
+    : 'DTCP Sanctioned Master Layout Plan (TLP NO. 87/2024/H)';
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-8">
@@ -198,10 +194,10 @@ export default function SpecialLandmarkView() {
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
-              Special Visual View &bull; Brochure Page 3
+              Strategic Corridor &bull; Master Blueprint
             </span>
             <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-              Verified Map
+              TLP NO. 87/2024/H
             </span>
           </div>
           <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900">
@@ -212,7 +208,7 @@ export default function SpecialLandmarkView() {
           </p>
         </div>
 
-        {/* Special 3-View Mode Switcher */}
+        {/* Special 2-View Mode Switcher */}
         <div className="bg-slate-100 p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap items-center border border-slate-200 shrink-0 gap-1">
           <button
             onClick={() => setActiveTab('route')}
@@ -235,19 +231,7 @@ export default function SpecialLandmarkView() {
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Master Layout Plan</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('brochure')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeTab === 'brochure'
-                ? 'bg-white text-brand-orange shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Brochure Page 3</span>
+            <span>Master Layout Blueprint</span>
           </button>
         </div>
       </div>
@@ -272,7 +256,7 @@ export default function SpecialLandmarkView() {
           </div>
 
           <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-            <span>Source: Official Skandha Group Alekhya's Brundavan Brochure</span>
+            <span>Source: Sanctioned Layout TLP NO. 87/2024/H &amp; Verified Highway Survey</span>
             <button
               onClick={() => setIsZoomModalOpen(true)}
               className="text-brand-orange font-bold hover:underline inline-flex items-center gap-1"
@@ -369,12 +353,12 @@ export default function SpecialLandmarkView() {
         </div>
       </div>
 
-      {/* Brochure Page 3 Verified Highlights Ribbon */}
+      {/* Corridor Verified Highlights Ribbon */}
       <div className="pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2.5">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-orange">
             <CheckCircle2 className="w-4 h-4 text-brand-orange" />
-            <span>Brochure Location Highlights</span>
+            <span>Strategic Location Highlights</span>
           </div>
           <ul className="space-y-1.5 text-xs text-slate-700">
             <li className="flex items-center gap-2">

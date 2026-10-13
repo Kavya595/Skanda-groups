@@ -6,6 +6,34 @@ import EnquiryModal from '../components/EnquiryModal';
 
 const DEFAULT_GALLERY_PHOTOS = [
   {
+    _id: 'photo-villa-day',
+    title: 'Bespoke Contemporary Villa Architecture',
+    category: 'villas',
+    imageUrl: '/assets/luxury_villa_day.jpg',
+    caption: 'Modern villa living concept with crisp white lines, warm teakwood louvers, light ash-grey travertine stone terrace, and private reflection pool.'
+  },
+  {
+    _id: 'photo-villa-night',
+    title: 'Villa Twilight Illumination & Warm Ambiance',
+    category: 'lighting',
+    imageUrl: '/assets/villa_twilight_lighting.jpg',
+    caption: 'Curated evening ambiance featuring warm orange recessed cove lighting, architectural column uplighting, and illuminated private landscape.'
+  },
+  {
+    _id: 'photo-avenue-lighting',
+    title: 'Illuminated 40ft Internal Avenue Boulevard',
+    category: 'lighting',
+    imageUrl: '/assets/avenue_lighting.jpg',
+    caption: 'Wide 40-foot blacktop avenue illuminated by designer curved street lamps casting a warm amber glow across smooth asphalt and uplighted palm trees.'
+  },
+  {
+    _id: 'photo-pool-lighting',
+    title: 'Resort-Style Evening Pool Pavilion',
+    category: 'villas',
+    imageUrl: '/assets/pool_lighting.jpg',
+    caption: 'Open-air garden cabana and crystal-clear swimming pool with warm golden underwater illumination and light ash-grey travertine sun deck.'
+  },
+  {
     _id: 'photo-1',
     title: 'Grand Entrance Arch & Security Cabin',
     category: 'infrastructure',
@@ -106,10 +134,12 @@ export default function GalleryPage() {
   };
 
   const categories = [
-    { id: 'all', label: 'All Photos (9)' },
+    { id: 'all', label: 'All Photos (13)' },
+    { id: 'villas', label: 'Luxury Villa Concepts' },
+    { id: 'lighting', label: 'Evening Lighting & Ambiance' },
     { id: 'infrastructure', label: 'Civil Infrastructure & Roads' },
-    { id: 'amenities', label: 'Parks, Water & Landscaping' },
-    { id: 'development', label: 'Site Surroundings & Aerial' }
+    { id: 'amenities', label: 'Parks & Water Utilities' },
+    { id: 'development', label: 'Surroundings & Aerial' }
   ];
 
   return (
@@ -117,14 +147,15 @@ export default function GalleryPage() {
       {/* Editorial Luxury Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
         <div className="space-y-3 max-w-3xl">
-          <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
-            Real Site Progress &bull; Authentic Brochure Photography
-          </span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Curated Living &bull; Real Site Progress</span>
+          </div>
           <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-slate-900 leading-tight">
-            Alekhya's Brundavan On-Site Gallery
+            Alekhya's Brundavan Visual Showcase
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
-            Examine authentic on-site developmental milestones across internal blacktop avenues, overhead water infrastructure, landscaped open space, and gated entrance security.
+            Examine bespoke villa architectural concepts, warm twilight ambiance, and authentic on-site developmental progress across wide avenues, landscaped parkland, and security infrastructure.
           </p>
         </div>
 

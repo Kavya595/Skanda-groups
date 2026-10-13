@@ -133,7 +133,7 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
             <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-white">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  Approved Dimensions (Brochure Plan)
+                  Approved Dimensions (Sanctioned Plan)
                 </h4>
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
                   DTCP Verified

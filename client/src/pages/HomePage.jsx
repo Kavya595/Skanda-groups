@@ -18,7 +18,11 @@ import {
   ExternalLink,
   Quote,
   Maximize2,
-  Navigation
+  Navigation,
+  Sun,
+  Moon,
+  Layers,
+  Home
 } from 'lucide-react';
 import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent } from '../api/client';
 import EnquiryModal from '../components/EnquiryModal';
@@ -34,6 +38,12 @@ export default function HomePage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeFaqCategory, setActiveFaqCategory] = useState('All');
   const [selectedPhotoModal, setSelectedPhotoModal] = useState(null);
+
+  // Luxury Villa Concepts State
+  const [activeVillaConfig, setActiveVillaConfig] = useState('183');
+
+  // Twilight Architectural Lighting Showcase State
+  const [activeLightingIndex, setActiveLightingIndex] = useState(0);
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { source: 'homepage' });
@@ -57,7 +67,78 @@ export default function HomePage() {
     'MUCHERLA FUTURE CITY CORRIDOR'
   ];
 
-  // Authentic On-Site Photo Developments from Brochure Page 3
+  // Villa Concepts Data
+  const villaConfigs = {
+    '183': {
+      sqYards: '183 Sq.Yards',
+      dimension: "33' x 50'",
+      builtUp: '2,450 Sq.Ft Built-Up Area',
+      type: '3-BHK Contemporary Villa',
+      highlights: [
+        'East / West Facing Vasthu Alignment',
+        'Double-height formal living & dining',
+        'Private landscaped rear garden terrace',
+        'Dedicated covered car parking portico'
+      ],
+      desc: 'The ideal balance of elegance and functional living, designed with abundant natural sunlight, cross-ventilation, and private green sanctuary spaces.'
+    },
+    '240': {
+      sqYards: '240 Sq.Yards',
+      dimension: "36' x 60'",
+      builtUp: '3,200 Sq.Ft Built-Up Area',
+      type: '4-BHK Executive Courtyard Villa',
+      highlights: [
+        'Central open-to-sky internal courtyard',
+        'Expansive master suite with walk-in wardrobe',
+        'Private rooftop lounge with slatted pergola',
+        'Twin covered vehicle parking with electric charging'
+      ],
+      desc: 'An architectural statement featuring expansive glass facades, double-height volumes, and seamless integration between indoor living and manicured outdoor lawns.'
+    },
+    '350': {
+      sqYards: '350+ Sq.Yards',
+      dimension: "45' x 70' / Corner",
+      builtUp: '4,500+ Sq.Ft Built-Up Area',
+      type: '5-BHK Grand Signature Estate',
+      highlights: [
+        'Prime corner plot with dual road access',
+        'Private infinity-edge garden plunge pool',
+        'Family entertainment lounge & home theater',
+        'Grand entrance foyer with travertine stone accents'
+      ],
+      desc: 'Uncompromising luxury on prime corner plots. Designed for generational prosperity, exceptional privacy, and grand entertaining in Kadthal.'
+    }
+  };
+
+  // Twilight Ambiance & Lighting Showcase Data
+  const lightingScenes = [
+    {
+      title: 'Villa Twilight Ambiance & Warm Glow',
+      category: 'Architectural Lighting',
+      tag: 'Warm Amber Accents',
+      image: '/assets/villa_twilight_lighting.jpg',
+      badge: 'Bespoke Residential Lighting',
+      desc: 'Recessed warm orange ceiling coves, exterior travertine uplighting, and glowing floor-to-ceiling glass create a serene, welcoming dusk ambiance.'
+    },
+    {
+      title: 'Illuminated 40ft Internal Avenues',
+      category: 'Boulevard Lighting',
+      tag: 'Solar-Assisted Warm LEDs',
+      image: '/assets/avenue_lighting.jpg',
+      badge: 'Designer Curved Street Lamps',
+      desc: 'Wide 40-foot blacktop avenues lined with designer curved light posts casting a warm amber glow over smooth asphalt roads and uplighted palm trees.'
+    },
+    {
+      title: 'Resort Pool Pavilion & Evening Waterscape',
+      category: 'Amenities Illumination',
+      tag: 'Underwater Golden Glow',
+      image: '/assets/pool_lighting.jpg',
+      badge: 'Lush Garden Lighting',
+      desc: 'Submerged pool illumination paired with warm amber pergola lights and ash-grey stone sun deck create an enchanting evening retreat for families.'
+    }
+  ];
+
+  // Authentic On-Site Photo Developments
   const onSiteDevelopments = [
     {
       title: 'Grand Entrance Arch & Security',
@@ -127,18 +208,9 @@ export default function HomePage() {
     { title: 'Overhead Water Tank', desc: 'Dedicated water storage tank ensuring round-the-clock water supply.', icon: Droplets },
     { title: 'Landscaped Parks', desc: 'Ac. 0.758 cents reserved green space with lush plantings.', icon: Trees },
     { title: 'Jogging Track & Play Area', desc: 'Paved jogging trail and dedicated children activity zone.', icon: Sparkles },
-    { title: 'Unique Street Lights', desc: 'Illuminated LED street fixtures across all internal roads.', icon: Lightbulb },
+    { title: 'Avenue Street Lighting', desc: 'Warm amber illuminated street fixtures across all internal avenues.', icon: Lightbulb },
     { title: 'Avenue Plantation', desc: 'Lush avenue trees and greenery bordering all road curbs.', icon: Trees },
     { title: '2 Years Maintenance', desc: 'Complimentary security & comprehensive site maintenance for 2 years.', icon: ShieldCheck }
-  ];
-
-  const locations = [
-    { claim: 'Maisigandi Temple', time: '1 min drive', desc: 'Right along the proposed 60ft arterial layout road' },
-    { claim: 'Srisailam Highway (NH 765)', time: '2 min drive', desc: 'Direct adjoining arterial access to Hyderabad' },
-    { claim: 'Kadthal Town & Municipality', time: '3 min drive', desc: 'Established administrative town with retail & schools' },
-    { claim: 'Future City & Life Sciences Hub', time: '10 min drive', desc: 'Telangana mega economic and pharma development corridor' },
-    { claim: 'Kandukur - Maheshwaram Industrial Belt', time: '12 min drive', desc: 'Proximity to high-value IT, aerospace & industrial zones' },
-    { claim: 'Major Pharma Investments', time: 'Corridor', desc: "Dr. Reddy's, Aurobindo, Hetero, Laurus Labs, MSN & Gland Pharma" }
   ];
 
   const faqs = [
@@ -186,20 +258,20 @@ export default function HomePage() {
     : faqs.filter(f => f.category === activeFaqCategory);
 
   return (
-    <div className="space-y-24 pb-20 overflow-hidden">
+    <div className="space-y-24 pb-20 overflow-hidden bg-white">
       {/* ========================================================== */}
       {/* 1. CINEMATIC SUPREME HERO SECTION                          */}
       {/* ========================================================== */}
-      <section className="relative min-h-[90vh] flex items-center justify-center bg-slate-950 overflow-hidden">
-        {/* Background Visual with Subtle Motion */}
+      <section className="relative min-h-[92vh] flex items-center justify-center bg-slate-950 overflow-hidden">
+        {/* Background Visual with Warm Amber Overlay */}
         <div className="absolute inset-0 z-0">
           <img
             src="/assets/hero_cover.jpg"
             alt="Alekhya's Brundavan Villa Layout"
             className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000"
           />
-          {/* Accessible Luxury Gradient Overlays (Warm tones, no black panel) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-transparent" />
+          {/* Accessible Luxury Gradient Overlays (Warm golden & orange tones) */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/30" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-slate-950/40" />
         </div>
 
@@ -282,7 +354,7 @@ export default function HomePage() {
       {/* 3. EDITORIAL QUOTATION & BRAND PHILOSOPHY                  */}
       {/* ========================================================== */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-gradient-to-br from-orange-50 via-white to-amber-50/40 rounded-3xl p-8 sm:p-14 border border-orange-200/60 shadow-sm text-center">
+        <div className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/40 rounded-3xl p-8 sm:p-14 border border-orange-200/60 shadow-sm text-center">
           <Quote className="w-12 h-12 text-brand-orange/20 mx-auto mb-4" />
           <blockquote className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-slate-900 leading-snug tracking-tight">
             &ldquo;A harmonious plotted sanctuary where authentic Vasthu precision meets the future economic powerhouse of South Hyderabad.&rdquo;
@@ -299,19 +371,231 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 4. ON-SITE INFRASTRUCTURE & REAL PHOTO GALLERY SHOWCASE    */}
+      {/* 4. BESPOKE VILLA CONCEPTS & ARCHITECTURAL SPLENDOR (NEW)    */}
+      {/* ========================================================== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="space-y-2 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
+              <Home className="w-3.5 h-3.5" />
+              <span>Architectural Vision &bull; Bespoke Villas</span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+              Craft Your Signature Villa Sanctuary
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+              Alekhya's Brundavan offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+            {Object.keys(villaConfigs).map(key => (
+              <button
+                key={key}
+                onClick={() => setActiveVillaConfig(key)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  activeVillaConfig === key
+                    ? 'bg-white text-brand-orange shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {villaConfigs[key].sqYards}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Villa Showcase Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-50/70 rounded-3xl border border-slate-200/90 p-6 sm:p-10">
+          {/* Left: High-End Villa Daylight Photography */}
+          <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+            <img
+              src="/assets/luxury_villa_day.jpg"
+              alt="Bespoke Contemporary Luxury Villa at Alekhya's Brundavan"
+              className="w-full h-[360px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>Daylight Villa Concept</span>
+            </div>
+            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold px-3.5 py-1.5 rounded-xl shadow border border-slate-200">
+              <span>{villaConfigs[activeVillaConfig].builtUp}</span>
+            </div>
+          </div>
+
+          {/* Right: Villa Specifications & Architectural Breakdown */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3 py-1 rounded-md">
+                {villaConfigs[activeVillaConfig].dimension} Dimension
+              </span>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+                {villaConfigs[activeVillaConfig].type}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {villaConfigs[activeVillaConfig].desc}
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Architectural Highlights:
+              </div>
+              <ul className="space-y-2.5">
+                {villaConfigs[activeVillaConfig].highlights.map((h, i) => (
+                  <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span className="leading-snug">{h}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setIsEnquiryOpen(true)}
+                className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-colors"
+              >
+                Request Villa Floorplans
+              </button>
+              <Link
+                to="/project"
+                className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold px-4 py-3 rounded-xl transition-colors"
+              >
+                View Plot Grid Matrix
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 5. TWILIGHT AMBIANCE & CURATED LIGHTING SHOWCASE (NEW)      */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
-          <div className="space-y-2">
+          <div className="space-y-2 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold uppercase tracking-wider text-amber-700">
+              <Moon className="w-3.5 h-3.5" />
+              <span>Evening Illumination &bull; Curated Lighting</span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+              Atmospheric Evening Ambiance
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+              Experience the tranquility of dusk at Alekhya's Brundavan. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
+            </p>
+          </div>
+
+          {/* Interactive Scene Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shrink-0">
+            {lightingScenes.map((scene, idx) => (
+              <button
+                key={idx}
+                onClick={() => setActiveLightingIndex(idx)}
+                className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  activeLightingIndex === idx
+                    ? 'bg-white text-brand-orange shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Scene {idx + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Big Spotlight Card */}
+        <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-lg bg-slate-900 group">
+          <div className="relative h-[380px] sm:h-[520px] overflow-hidden">
+            <img
+              src={lightingScenes[activeLightingIndex].image}
+              alt={lightingScenes[activeLightingIndex].title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
+            />
+            {/* Subtle Twilight Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+
+            <div className="absolute top-6 left-6 flex flex-wrap items-center gap-2">
+              <span className="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl shadow-xs">
+                {lightingScenes[activeLightingIndex].badge}
+              </span>
+              <span className="bg-slate-900/80 backdrop-blur-md text-slate-200 text-xs font-medium px-3 py-1 rounded-xl border border-white/20">
+                {lightingScenes[activeLightingIndex].tag}
+              </span>
+            </div>
+
+            <div className="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4 text-white">
+              <div className="max-w-2xl space-y-1.5">
+                <div className="text-xs font-bold uppercase tracking-widest text-orange-400">
+                  {lightingScenes[activeLightingIndex].category}
+                </div>
+                <h3 className="font-serif text-2xl sm:text-4xl font-bold">
+                  {lightingScenes[activeLightingIndex].title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                  {lightingScenes[activeLightingIndex].desc}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setSelectedPhotoModal(lightingScenes[activeLightingIndex])}
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0 flex items-center gap-1.5"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Enlarge View</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Quick Cards Grid for Direct Navigation */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {lightingScenes.map((scene, idx) => {
+            const isActive = activeLightingIndex === idx;
+            return (
+              <div
+                key={idx}
+                onClick={() => setActiveLightingIndex(idx)}
+                className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center gap-4 ${
+                  isActive
+                    ? 'bg-orange-50/70 border-brand-orange shadow-xs ring-1 ring-orange-500/20'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <img
+                  src={scene.image}
+                  alt={scene.title}
+                  className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200"
+                />
+                <div className="space-y-0.5">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
+                    {scene.badge}
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 leading-tight">
+                    {scene.title}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 6. ON-SITE INFRASTRUCTURE & REAL PHOTO GALLERY SHOWCASE    */}
+      {/* ========================================================== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="space-y-2 max-w-3xl">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200">
-              On-Site Reality &bull; Verified Photos
+              On-Site Reality &bull; Verified Construction
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">
+            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
               Project Amenities &amp; Infrastructure
             </h2>
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl">
-              Authentic on-site development photography directly from the Alekhya's Brundavan project brochure, showcasing genuine roads, parkland, and security infrastructure.
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl font-light leading-relaxed">
+              Authentic on-site development photography highlighting genuine completed avenues, landscaped park reserves, water utilities, and gated security portals.
             </p>
           </div>
 
@@ -366,16 +650,16 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 5. COMPLETE 12 AMENITIES GRID                              */}
+      {/* 7. COMPLETE 12 AMENITIES GRID                              */}
       {/* ========================================================== */}
       <section className="bg-slate-50/80 border-y border-slate-200/70 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3.5 py-1 rounded-full">
-              Brochure Specifications
+              Sanctioned Standards
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
-              Master Plan Features &amp; Standards
+              Master Plan Features &amp; Infrastructure
             </h2>
             <p className="text-sm text-slate-600">
               Built to high DTCP regulatory benchmarks ensuring long-term liveability and generational asset protection.
@@ -407,14 +691,14 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 6. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER         */}
+      {/* 8. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER         */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SpecialLandmarkView />
       </section>
 
       {/* ========================================================== */}
-      {/* 7. COMPREHENSIVE INTERACTIVE FAQ ACCORDION                 */}
+      {/* 9. COMPREHENSIVE INTERACTIVE FAQ ACCORDION                 */}
       {/* ========================================================== */}
       <section className="bg-slate-50/80 py-16 border-y border-slate-200/80">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
@@ -516,7 +800,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 8. VIP PRIVATE SITE VISIT INVITATION                       */}
+      {/* 10. VIP PRIVATE SITE VISIT INVITATION                      */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 rounded-3xl p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden">
@@ -550,7 +834,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* On-Site Development Photo Detail Modal */}
+      {/* On-Site Development / Lighting Photo Detail Modal */}
       {selectedPhotoModal && (
         <div
           className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4"
@@ -577,7 +861,7 @@ export default function HomePage() {
                   {selectedPhotoModal.category}
                 </span>
                 <span className="text-xs font-medium text-slate-500">
-                  Alekhya's Brundavan On-Site Reality
+                  Alekhya's Brundavan Lifestyle Feature
                 </span>
               </div>
               <h3 className="font-serif text-2xl font-bold text-slate-900">
