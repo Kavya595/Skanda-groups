@@ -40,13 +40,68 @@ import {
   TrendingUp,
   Phone,
   Send,
-  Bot
+  Bot,
+  Mail,
+  Calendar,
+  User,
+  CheckCircle,
+  FileText
 } from 'lucide-react';
-import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
+import { fetchPlots, fetchPlotStats, trackActivityEvent, submitLead } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
 import Layout3DView from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
 import EnquiryModal from '../components/EnquiryModal';
+
+// Authoritative Location Highlights matching Plots99 structure
+const locationHighlights = [
+  { icon: '🚗', text: 'Direct Frontage on Srisailam National Highway (NH 765)' },
+  { icon: '🛕', text: '1 min to Sri Maisigandi Maisamma Temple, Kadthal' },
+  { icon: '🌐', text: 'Inside the Regional Ring Road (RRR) Kadthal Junction Corridor (10 mins)' },
+  { icon: '🏭', text: '15 mins to Hyderabad Pharma City, Mucherla Future City & AI City' },
+  { icon: '🚀', text: '20 mins to Kandukur, FAB City & Maheshwaram Aerospace Park' },
+  { icon: '🛣️', text: '25 mins to Outer Ring Road (ORR Exit 14 Tukkuguda)' },
+  { icon: '✈️', text: '32 mins to Rajiv Gandhi International Airport (RGIA) Shamshabad' },
+  { icon: '🎢', text: '26 mins to Wonderla Amusement Park' },
+  { icon: '🏫', text: 'Surrounded by top international schools, colleges & multispeciality hospitals' },
+  { icon: '📈', text: 'Fastest appreciating growth corridor in South Hyderabad' }
+];
+
+// Authoritative Project Highlights matching Plots99 structure
+const projectHighlights = [
+  { icon: '📜', text: 'DTCP Sanctioned Layout (TLP NO. 87/2024/H) & TS RERA Registered (PO2400009081)' },
+  { icon: '✍️', text: 'Immediate Spot Registration with 100% Clear Title Guarantee' },
+  { icon: '✅', text: '100% Vasthu Compliant layout with East, West and Corner plots' },
+  { icon: '🏛️', text: 'Magnificent Grand Entrance Arch with 24/7 Security Gatehouse' },
+  { icon: '💧', text: 'Overhead Water Storage Tank & dedicated 24/7 water distribution lines' },
+  { icon: '🛣️', text: "60' Arterial Highway Approach with 33' Blacktop Internal Boulevards" },
+  { icon: '🕳️', text: 'Concealed Underground Drainage & Storm-Water Sewerage System' },
+  { icon: '💡', text: 'Electricity lines with designer LED street illumination' },
+  { icon: '🌳', text: 'Ac. 0.758 Landscaped Central Park with walking tracks & gazebos' },
+  { icon: '🌲', text: 'Lush Avenue Plantation on both sides of internal roads' },
+  { icon: '🚧', text: 'Comprehensive boundary fencing securing the entire layout' },
+  { icon: '🚌', text: 'Effortless access to public transport & TSRTC bus stations' },
+  { icon: '🍃', text: '100% Pollution-Free, peaceful serene green environment' }
+];
+
+// 15 Master Layout Amenities matching Plots99
+const layoutAmenities = [
+  { title: 'DTCP & RERA Approved', desc: 'TLP No. 87/2024/H & PO2400009081 sanctioned layout', icon: ShieldCheck },
+  { title: '60ft & 33ft BT Roads', desc: 'Heavy-duty blacktop boulevards with kerb stones', icon: Navigation },
+  { title: '24/7 Gated Security', desc: 'Round-the-clock security cabin & boom barrier', icon: ShieldCheck },
+  { title: 'Grand Entrance Arch', desc: 'Imposing architectural arch welcoming residents', icon: Building },
+  { title: 'Overhead Water Tank', desc: 'High-capacity storage tank with pipeline to every plot', icon: Droplets },
+  { title: 'Underground Drainage', desc: 'Concealed sewage network with eco-friendly outlets', icon: Layers },
+  { title: 'LED Street Lighting', desc: 'Energy-efficient illumination with designer poles', icon: Lightbulb },
+  { title: 'Underground Power Cables', desc: 'Concealed electrical lines with dedicated transformers', icon: Award },
+  { title: 'Ac. 0.758 Central Park', desc: 'Lush park with jogging tracks, lawn & gazebo', icon: Trees },
+  { title: "Children's Play Area", desc: 'Safe playground equipment and recreational sandpits', icon: Sparkles },
+  { title: 'Perimeter Walking Track', desc: 'Paved walking paths for senior citizens & walkers', icon: Navigation },
+  { title: 'Avenue Plantation', desc: 'Flowering avenue trees along every internal road', icon: Trees },
+  { title: 'Layout Compound Wall', desc: 'Heavy-duty perimeter security fencing', icon: ShieldCheck },
+  { title: '100% Vasthu Layout', desc: 'Scientifically planned orientation for peace & prosperity', icon: Compass },
+  { title: 'Bank Loan Sanction', desc: 'Pre-approved home loans from SBI, HDFC & ICICI', icon: Award }
+];
 
 // Curated Nearby Landmarks matching Plots99 Screenshot 5
 const nearbyLandmarks = [
@@ -376,6 +431,68 @@ export default function PlotViewerStandalone({ settings }) {
     }
   };
 
+  // Insights Tab Switcher (matching Plots99 Features & Additional Info)
+  const [insightsTab, setInsightsTab] = useState('location');
+
+  // Contact & Site Visit Form State
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    facing: 'Any Facing',
+    visitDate: '',
+    message: ''
+  });
+  const [contactSubmitting, setContactSubmitting] = useState(false);
+  const [contactSuccess, setContactSuccess] = useState(false);
+
+  // Smooth Section Scrolling
+  const scrollToSection = (id) => {
+    const aliasMap = {
+      info: 'sec-info',
+      insights: 'sec-insights',
+      stats: 'sec-stats',
+      nearby: 'sec-landmarks',
+      contact: 'sec-contact',
+      approvals: 'sec-approvals',
+      overview: 'sec-overview'
+    };
+    const targetId = aliasMap[id] || id;
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    if (!contactForm.phone.trim()) return;
+    setContactSubmitting(true);
+    try {
+      await submitLead({
+        name: contactForm.name || 'Site Visit Guest',
+        phone: contactForm.phone,
+        email: contactForm.email || undefined,
+        plotNumber: selectedPlot?.plotNumber ? Number(selectedPlot.plotNumber) : undefined,
+        message: `Inquiry from Master Plan Viewer. Preferred Facing: ${contactForm.facing}. Preferred Date: ${contactForm.visitDate || 'Flexible'}. Notes: ${contactForm.message || 'Booked guided site visit'}`
+      });
+      setContactSuccess(true);
+      setContactForm({
+        name: '',
+        phone: '',
+        email: '',
+        facing: 'Any Facing',
+        visitDate: '',
+        message: ''
+      });
+      setTimeout(() => setContactSuccess(false), 6000);
+    } catch (err) {
+      console.error('Failed to submit contact enquiry:', err);
+    } finally {
+      setContactSubmitting(false);
+    }
+  };
+
   return (
     <div ref={containerRef} className="flex flex-col min-h-screen justify-between bg-slate-100 font-sans text-slate-800">
       <div id="main" className="grow">
@@ -467,24 +584,25 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </header>
 
-        {/* Top-Left Zoom Controls & Compass Rose (matching Screenshot 1, 2, 3) */}
-        <div className="absolute top-20 left-4 z-30 flex flex-col gap-2 pointer-events-auto">
-          {/* Circular Zoom In/Out Buttons (matching Screenshot 1) */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl p-1 flex flex-col gap-1">
+        {/* Top-Left Zoom Controls & Compass Rose (Plots99 Exact Match) */}
+        <div className="absolute top-20 left-4 z-30 flex flex-col gap-2.5 pointer-events-auto">
+          {/* Vertical OpenLayers-style Zoom Pill (matching Plots99 .ol-zoom) */}
+          <div className="bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex flex-col items-center overflow-hidden">
             <button
               onClick={() => {
                 if (viewMode === '2d') {
                   layout2DRef.current?.zoomIn();
                 } else {
                   if (cameraPreset === 'overview') setCameraPreset('topDown');
-                  else if (cameraPreset === 'topDown') setCameraPreset('roadWalk');
+                  else if (cameraPreset === 'topDown') setCameraPreset('park');
                 }
               }}
-              className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
               title="Zoom In (+)"
             >
               <Plus className="w-4 h-4" />
             </button>
+            <div className="w-5 h-px bg-slate-200/80" />
             <button
               onClick={() => {
                 if (viewMode === '2d') {
@@ -493,15 +611,15 @@ export default function PlotViewerStandalone({ settings }) {
                   setCameraPreset('overview');
                 }
               }}
-              className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
+              className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
               title="Zoom Out (−)"
             >
               <Minus className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Compass Rose Needle (matching Screenshot 1, 2, 3) */}
-          <div
+          {/* Compass Needle (matching Plots99 top-left compass) */}
+          <button
             onClick={() => {
               if (viewMode === '2d') {
                 layout2DRef.current?.reset();
@@ -509,11 +627,11 @@ export default function PlotViewerStandalone({ settings }) {
                 setCameraPreset('overview');
               }
             }}
-            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl flex items-center justify-center cursor-pointer group hover:bg-white transition-all"
-            title="True North Indicator (Click to Reset View)"
+            className="w-10 h-10 bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex items-center justify-center group hover:bg-white transition-all"
+            title="Reset to True North (Overview)"
           >
-            <Compass className="w-5 h-5 text-brand-orange group-hover:rotate-45 transition-transform duration-300" />
-          </div>
+            <Compass className="w-5 h-5 text-emerald-600 group-hover:rotate-45 transition-transform duration-300" />
+          </button>
         </div>
 
         {/* Floating Right Circular Toolbar (matching Screenshot 2, 3) */}
@@ -861,11 +979,11 @@ export default function PlotViewerStandalone({ settings }) {
                   <span className="hidden sm:inline">Nearby</span>
                 </button>
                 <button
-                  onClick={() => scrollToSection('sec-approvals')}
+                  onClick={() => scrollToSection('sec-contact')}
                   className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Approvals</span>
+                  <Phone className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Contact</span>
                 </button>
               </nav>
 
@@ -880,11 +998,11 @@ export default function PlotViewerStandalone({ settings }) {
                   <span className="hidden sm:inline">Ask AI</span>
                 </button>
                 <a
-                  href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                  href="https://www.google.com/maps/dir/?api=1&destination=17.0985,78.5085"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
-                  title="Get Directions"
+                  title="Get Directions to Venture"
                 >
                   <Navigation className="w-3.5 h-3.5 text-emerald-600" />
                   <span className="hidden sm:inline">Directions</span>
@@ -1006,472 +1124,844 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
           </section>
 
-      {/* ========================================================== */}
-      {/* 4. NEARBY LANDMARKS & CONNECTIVITY (MATCHING SCREENSHOT 5) */}
-      {/* ========================================================== */}
-      <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
-                <MapPin className="w-4 h-4" />
-                <span>Strategic Location</span>
+          {/* ========================================================== */}
+          {/* 2. VENTURE INSIGHTS & HIGHLIGHTS (PLOTS99 EXACT MATCH)    */}
+          {/* ========================================================== */}
+          <section id="sec-insights" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+                    <Lightbulb className="w-4 h-4" />
+                    <span>Venture Intelligence</span>
+                  </div>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+                    Project &amp; Location Insights
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    Explore authoritative location connectivity, engineering infrastructure, master amenities, and orientation analysis.
+                  </p>
+                </div>
               </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
-                Nearby Landmarks &amp; Connectivity
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Key locations, drive times, and growth infrastructure surrounding Alekhya's Brundavan at Kadthal.
-              </p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {nearbyLandmarks.map((item, idx) => {
-              const IconComp = item.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      <IconComp className="w-5 h-5" />
+              {/* Interactive Tabs matching Plots99 */}
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                {[
+                  { id: 'location', label: 'Location Highlights', icon: MapPin },
+                  { id: 'project', label: 'Project Highlights', icon: Building },
+                  { id: 'amenities', label: 'Master Amenities (15)', icon: Sparkles },
+                  { id: 'vasthu', label: 'Vasthu & Facings Radar', icon: Compass }
+                ].map((tab) => {
+                  const IconC = tab.icon;
+                  const isActive = insightsTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setInsightsTab(tab.id)}
+                      className={`h-9 px-3.5 sm:px-4 rounded-xl text-xs font-semibold gap-2 border transition-all inline-flex items-center whitespace-nowrap shrink-0 ${
+                        isActive
+                          ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                          : 'bg-white text-slate-700 border-slate-200/90 hover:border-emerald-600 hover:text-emerald-700'
+                      }`}
+                    >
+                      <IconC className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Tab 1: Location Highlights */}
+              {insightsTab === 'location' && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-base sm:text-lg">
+                        Strategic Connectivity &amp; Regional Growth Corridors
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        High-speed arterial access along Srisailam Highway (NH 765) and future growth zones.
+                      </p>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
-                      {item.category}
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">
+                      10 Growth Hubs
                     </span>
                   </div>
 
-                  <div className="mt-3">
-                    <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
-                      {item.name}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {locationHighlights.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/50 border border-slate-200/80 hover:border-emerald-200 transition-all flex items-start gap-3 group"
+                      >
+                        <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">
+                          {item.icon}
+                        </span>
+                        <div className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
+                          {item.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 2: Project Highlights */}
+              {insightsTab === 'project' && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-base sm:text-lg">
+                        Master Plan Infrastructure &amp; Statutory Approvals
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        DTCP TLP NO. 87/2024/H &amp; TS RERA PO2400009081 certified specifications.
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">
+                      13 Key Features
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                    {projectHighlights.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/50 border border-slate-200/80 hover:border-emerald-200 transition-all flex items-start gap-3 group"
+                      >
+                        <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">
+                          {item.icon}
+                        </span>
+                        <div className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
+                          {item.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Amenities Grid (15 Amenities) */}
+              {insightsTab === 'amenities' && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6 animate-fadeIn">
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-base sm:text-lg">
+                        Master Layout Amenities &amp; Community Infrastructure
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        15 high-standard civil, green, and safety amenities for comfortable villa living.
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">
+                      15 Amenities
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {layoutAmenities.map((item, idx) => {
+                      const IconA = item.icon;
+                      return (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/50 border border-slate-200/80 hover:border-emerald-200 transition-all flex items-start gap-3.5 group"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-white border border-slate-200/90 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-2xs">
+                            <IconA className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-xs sm:text-sm font-bold text-slate-900">
+                              {item.title}
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                              {item.desc}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 4: Vasthu & Cardinal Orientation Radar */}
+              {insightsTab === 'vasthu' && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6 animate-fadeIn">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-base sm:text-lg">
+                      100% Vasthu Compliant Cardinal Orientation
                     </h4>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
-                      <span className="flex items-center gap-1">
-                        <Navigation className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{item.distance}</span>
-                      </span>
-                      <span className="flex items-center gap-1 text-slate-700 font-semibold">
-                        <Clock className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{item.time}</span>
-                      </span>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Units planned according to classical Vasthu principles ensuring optimal sunlight, airflow, and positive prosperity.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3 Core Property Insights Analytics Cards (Always Visible in Insights) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+              {/* Card 1: Facing Distribution (Photo 3) */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                    <Compass className="w-3.5 h-3.5" />
+                    <span>ANALYSIS</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-lg mt-1">Facing Distribution</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">Units oriented across cardinal directions</p>
+                </div>
+
+                {/* 8-Point Cardinal Compass Radar (Photo 3) */}
+                <div className="relative w-56 h-56 mx-auto my-6 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border border-slate-200" />
+                  <div className="absolute inset-8 rounded-full border border-dashed border-slate-200" />
+                  <div className="absolute inset-16 rounded-full border border-slate-200/70" />
+                  <div className="absolute w-2.5 h-2.5 rounded-full bg-emerald-500" />
+
+                  {/* Dashed axes */}
+                  <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-200" />
+                  <div className="absolute inset-y-3 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-200" />
+
+                  {/* North */}
+                  <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <span className="text-[10px] font-bold text-slate-400">N</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                      {facingCounts.N || 8}
+                    </span>
+                  </div>
+
+                  {/* North-East */}
+                  <div className="absolute top-6 right-6 flex flex-col items-center">
+                    <span className="text-[10px] font-bold text-slate-400">NE</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                      {facingCounts.NE || 6}
+                    </span>
+                  </div>
+
+                  {/* East */}
+                  <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center gap-1">
+                    <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
+                      {facingCounts.E || 44}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">E</span>
+                  </div>
+
+                  {/* South-East */}
+                  <div className="absolute bottom-6 right-6 flex flex-col items-center">
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                      {facingCounts.SE || 4}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">SE</span>
+                  </div>
+
+                  {/* South */}
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                      {facingCounts.S || 6}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">S</span>
+                  </div>
+
+                  {/* South-West */}
+                  <div className="absolute bottom-6 left-6 flex flex-col items-center">
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                      {facingCounts.SW || 4}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">SW</span>
+                  </div>
+
+                  {/* West */}
+                  <div className="absolute top-1/2 left-1 -translate-y-1/2 flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-slate-400">W</span>
+                    <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
+                      {facingCounts.W || 38}
+                    </span>
+                  </div>
+
+                  {/* North-West */}
+                  <div className="absolute top-6 left-6 flex flex-col items-center">
+                    <span className="text-[10px] font-bold text-slate-400">NW</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                      {facingCounts.NW || 6}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center text-xs font-semibold text-emerald-700 bg-emerald-50/60 py-2 rounded-xl border border-emerald-100">
+                  +12 Multi-Facing &amp; Corner Units
+                </div>
+              </div>
+
+              {/* Card 2: Inventory Status (Photo 3) */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                    <Layers className="w-3.5 h-3.5" />
+                    <span>STOCK</span>
+                  </div>
+                  <h4 className="font-bold text-slate-900 text-lg mt-1">Inventory Status</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">Visual breakdown of unit availability</p>
+                </div>
+
+                {/* Pie / Donut Chart */}
+                <div className="w-44 h-44 mx-auto my-6 relative">
+                  <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#68D391"
+                      strokeWidth="24"
+                      strokeDasharray={`${inventoryBreakdown.availPct * 2.38} 238`}
+                      strokeDashoffset="0"
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#FC8181"
+                      strokeWidth="24"
+                      strokeDasharray={`${inventoryBreakdown.soldPct * 2.38} 238`}
+                      strokeDashoffset={`-${inventoryBreakdown.availPct * 2.38}`}
+                    />
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="38"
+                      fill="none"
+                      stroke="#F6E05E"
+                      strokeWidth="24"
+                      strokeDasharray={`${inventoryBreakdown.resPct * 2.38} 238`}
+                      strokeDashoffset={`-${(inventoryBreakdown.availPct + inventoryBreakdown.soldPct) * 2.38}`}
+                    />
+                  </svg>
+                </div>
+
+                {/* Legend below matching Photo 3 */}
+                <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-xs bg-[#68D391]" />
+                    <span>Available {inventoryBreakdown.availPct}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-xs bg-[#FC8181]" />
+                    <span>Sold {inventoryBreakdown.soldPct}%</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-3 h-3 rounded-xs bg-[#F6E05E]" />
+                    <span>Reserved {inventoryBreakdown.resPct}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Project Scale (Photo 3) */}
+              <div className="bg-[#044E46] text-white p-7 rounded-3xl flex flex-col justify-between shadow-lg">
+                <div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                    Project Scale
+                  </div>
+                  <div className="mt-5">
+                    <div className="text-xs text-emerald-200">Total Units</div>
+                    <div className="text-5xl font-extrabold mt-1">96</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 py-6 border-y border-emerald-600/50 my-6">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Total Area</div>
+                    <div className="text-xl font-bold mt-1">24,200.00 yd²</div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">In Acres</div>
+                    <div className="text-xl font-bold mt-1">10.50 ac</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-emerald-200">
+                  <MapPin className="w-4 h-4 text-emerald-300 shrink-0" />
+                  <span>Kadthal, Srisailam Highway</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ========================================================== */}
+          {/* 3. VENTURE STATS & VILLA SIZER CONFIGURATION (PLOTS99)     */}
+          {/* ========================================================== */}
+          <section id="sec-stats" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/30">
+                    <Calculator className="w-3.5 h-3.5" />
+                    <span>Villa Footprint Planner</span>
+                  </div>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold mt-2">
+                    Custom Villa Configuration &amp; Bank Assistance
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                    Select your preferred plot size, facing direction, and villa layout to receive official legal documentation and pre-approved bank loan options.
+                  </p>
+                </div>
+                <div className="text-right hidden md:block">
+                  <span className="text-xs text-slate-400">Direct Developer Terms</span>
+                  <div className="text-base font-bold text-emerald-400">Pre-Approved Bank Loans</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                {/* Sliders Form */}
+                <div className="space-y-5 bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-xs">
+                  <div>
+                    <div className="flex justify-between text-xs font-semibold mb-2">
+                      <span className="text-slate-300">Target Plot Size:</span>
+                      <span className="text-amber-400 font-bold">{calcPlotArea} Sq.Yds (≈ {calcPlotArea * 9} Sq.Ft)</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="183"
+                      max="400"
+                      step="19"
+                      value={calcPlotArea}
+                      onChange={(e) => setCalcPlotArea(Number(e.target.value))}
+                      className="w-full accent-amber-400 cursor-pointer"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                      <span>183 Sq.Yds (Standard)</span>
+                      <span>202 Sq.Yds</span>
+                      <span>264 Sq.Yds</span>
+                      <span>400 Sq.Yds (Corner)</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">
+                      Preferred Facing Orientation:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['East', 'West', 'North-East'].map((face) => (
+                        <button
+                          key={face}
+                          type="button"
+                          onClick={() => setCalcFacingPref(face)}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                            calcFacingPref === face
+                              ? 'bg-amber-400 text-slate-950 border-amber-400'
+                              : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          {face} Facing
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">
+                      Planned Villa Construction:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      {['Duplex Villa', 'Triplex Luxury', 'Custom Estate'].map((vType) => (
+                        <button
+                          key={vType}
+                          type="button"
+                          onClick={() => setCalcVillaType(vType)}
+                          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                            calcVillaType === vType
+                              ? 'bg-amber-400 text-slate-950 border-amber-400'
+                              : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          {vType}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
-      {/* ========================================================== */}
-      {/* 4. PROPERTY INSIGHTS & STATS (MATCHING PHOTO 3)            */}
-      {/* ========================================================== */}
-      <section id="sec-insights" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-6">
-          <div>
-            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
-              Property Insights
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Detailed breakdown of orientations, availability, and area distributions.
-            </p>
-          </div>
+                {/* Configured Summary */}
+                <div className="bg-white/10 p-6 sm:p-8 rounded-2xl border border-white/15 space-y-6">
+                  <div className="grid grid-cols-2 gap-4 pb-6 border-b border-white/10">
+                    <div>
+                      <div className="text-xs text-slate-300">Configured Footprint</div>
+                      <div className="text-xl font-bold text-white mt-1">
+                        {calcPlotArea} Sq.Yds
+                      </div>
+                      <div className="text-[11px] text-amber-400 mt-0.5 font-medium">
+                        {calcFacingPref} Facing &bull; 100% Vasthu
+                      </div>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Card 1: Facing Distribution (Photo 3) */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>ANALYSIS</span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-lg mt-1">Facing Distribution</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Units oriented across cardinal directions</p>
-              </div>
+                    <div>
+                      <div className="text-xs text-slate-300">Bank Loan Eligibility</div>
+                      <div className="text-xl font-bold text-emerald-400 mt-1">
+                        Up to 75%
+                      </div>
+                      <div className="text-[11px] text-slate-300 mt-0.5">
+                        SBI, HDFC, ICICI Approved
+                      </div>
+                    </div>
+                  </div>
 
-              {/* 8-Point Cardinal Compass Radar (Photo 3) */}
-              <div className="relative w-56 h-56 mx-auto my-6 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full border border-slate-200" />
-                <div className="absolute inset-8 rounded-full border border-dashed border-slate-200" />
-                <div className="absolute inset-16 rounded-full border border-slate-200/70" />
-                <div className="absolute w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                  <div className="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl space-y-1">
+                    <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                      Official Developer Terms
+                    </div>
+                    <div className="text-sm font-semibold text-white">
+                      Spot Registration with Clear Title Guarantee
+                    </div>
+                    <div className="text-[11px] text-slate-300 leading-tight">
+                      Transparent terms direct from Skandha Group. Official rate cards and payment schedules provided upon consultation.
+                    </div>
+                  </div>
 
-                {/* Dashed axes */}
-                <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-200" />
-                <div className="absolute inset-y-3 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-200" />
-
-                {/* North */}
-                <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-slate-400">N</span>
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
-                    {facingCounts.N || 8}
-                  </span>
-                </div>
-
-                {/* North-East */}
-                <div className="absolute top-6 right-6 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-slate-400">NE</span>
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
-                    {facingCounts.NE || 6}
-                  </span>
-                </div>
-
-                {/* East */}
-                <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center gap-1">
-                  <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
-                    {facingCounts.E || 44}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">E</span>
-                </div>
-
-                {/* South-East */}
-                <div className="absolute bottom-6 right-6 flex flex-col items-center">
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
-                    {facingCounts.SE || 4}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">SE</span>
-                </div>
-
-                {/* South */}
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
-                    {facingCounts.S || 6}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">S</span>
-                </div>
-
-                {/* South-West */}
-                <div className="absolute bottom-6 left-6 flex flex-col items-center">
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
-                    {facingCounts.SW || 4}
-                  </span>
-                  <span className="text-[10px] font-bold text-slate-400">SW</span>
-                </div>
-
-                {/* West */}
-                <div className="absolute top-1/2 left-1 -translate-y-1/2 flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-slate-400">W</span>
-                  <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
-                    {facingCounts.W || 38}
-                  </span>
-                </div>
-
-                {/* North-West */}
-                <div className="absolute top-6 left-6 flex flex-col items-center">
-                  <span className="text-[10px] font-bold text-slate-400">NW</span>
-                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
-                    {facingCounts.NW || 6}
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-center text-xs font-semibold text-emerald-700 bg-emerald-50/60 py-2 rounded-xl border border-emerald-100">
-                +12 Multi-Facing &amp; Corner Units
-              </div>
-            </div>
-
-            {/* Card 2: Inventory Status (Photo 3) */}
-            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>STOCK</span>
-                </div>
-                <h4 className="font-bold text-slate-900 text-lg mt-1">Inventory Status</h4>
-                <p className="text-xs text-slate-500 mt-0.5">Visual breakdown of unit availability</p>
-              </div>
-
-              {/* Pie / Donut Chart */}
-              <div className="w-44 h-44 mx-auto my-6 relative">
-                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="none"
-                    stroke="#68D391"
-                    strokeWidth="24"
-                    strokeDasharray={`${inventoryBreakdown.availPct * 2.38} 238`}
-                    strokeDashoffset="0"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="none"
-                    stroke="#FC8181"
-                    strokeWidth="24"
-                    strokeDasharray={`${inventoryBreakdown.soldPct * 2.38} 238`}
-                    strokeDashoffset={`-${inventoryBreakdown.availPct * 2.38}`}
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    fill="none"
-                    stroke="#F6E05E"
-                    strokeWidth="24"
-                    strokeDasharray={`${inventoryBreakdown.resPct * 2.38} 238`}
-                    strokeDashoffset={`-${(inventoryBreakdown.availPct + inventoryBreakdown.soldPct) * 2.38}`}
-                  />
-                </svg>
-              </div>
-
-              {/* Legend below matching Photo 3 */}
-              <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-xs bg-[#68D391]" />
-                  <span>Available {inventoryBreakdown.availPct}%</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-xs bg-[#FC8181]" />
-                  <span>Sold {inventoryBreakdown.soldPct}%</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-xs bg-[#F6E05E]" />
-                  <span>Reserved {inventoryBreakdown.resPct}%</span>
+                  <button
+                    onClick={() => setIsEnquiryOpen(true)}
+                    className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-lg"
+                  >
+                    Request Official Pricing Breakdown &amp; Loan Details
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Card 3: Project Scale (Photo 3) */}
-            <div id="sec-stats" className="bg-[#044E46] text-white p-7 rounded-3xl flex flex-col justify-between shadow-lg">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
-                  Project Scale
-                </div>
-                <div className="mt-5">
-                  <div className="text-xs text-emerald-200">Total Units</div>
-                  <div className="text-5xl font-extrabold mt-1">96</div>
-                </div>
+            {/* Statutory Clearances */}
+            <div id="sec-approvals" className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
+                <ShieldCheck className="w-4 h-4" />
+                <span>100% Legal Certainty</span>
               </div>
-
-              <div className="grid grid-cols-2 gap-4 py-6 border-y border-emerald-600/50 my-6">
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Total Area</div>
-                  <div className="text-xl font-bold mt-1">24,200.00 yd²</div>
-                </div>
-                <div>
-                  <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">In Acres</div>
-                  <div className="text-xl font-bold mt-1">10.50 ac</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs text-emerald-200">
-                <MapPin className="w-4 h-4 text-emerald-300 shrink-0" />
-                <span>Kadthal, Srisailam Highway</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================== */}
-      {/* 6. PLOT SIZER & CUSTOM VILLA PLANNER (NO DIRECT COSTS)     */}
-      {/* ========================================================== */}
-      <section id="sec-sizer" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/30">
-                <Calculator className="w-3.5 h-3.5" />
-                <span>Villa Footprint Planner</span>
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold mt-2">
-                Custom Villa Configuration &amp; Bank Assistance
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+                DTCP Approved &amp; TS RERA Registered
               </h3>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-                Select your preferred plot size, facing direction, and villa layout to receive official legal documentation and pre-approved bank loan options.
+              <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
+                Clear title ownership with instant spot registration. Pre-approved for housing and plotted development bank loans.
               </p>
-            </div>
-            <div className="text-right hidden md:block">
-              <span className="text-xs text-slate-400">Direct Developer Terms</span>
-              <div className="text-base font-bold text-emerald-400">Pre-Approved Bank Loans</div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Sliders Form */}
-            <div className="space-y-5 bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-xs">
-              <div>
-                <div className="flex justify-between text-xs font-semibold mb-2">
-                  <span className="text-slate-300">Target Plot Size:</span>
-                  <span className="text-amber-400 font-bold">{calcPlotArea} Sq.Yds (≈ {calcPlotArea * 9} Sq.Ft)</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    DTCP Sanction Order
+                  </div>
+                  <div className="text-lg font-bold text-slate-900">
+                    TLP NO. 87/2024/H
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Directorate of Town and Country Planning official sanctioned layout approval.
+                  </p>
                 </div>
-                <input
-                  type="range"
-                  min="183"
-                  max="400"
-                  step="19"
-                  value={calcPlotArea}
-                  onChange={(e) => setCalcPlotArea(Number(e.target.value))}
-                  className="w-full accent-amber-400 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                  <span>183 Sq.Yds (Standard)</span>
-                  <span>202 Sq.Yds</span>
-                  <span>264 Sq.Yds</span>
-                  <span>400 Sq.Yds (Corner)</span>
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2">
-                  Preferred Facing Orientation:
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['East', 'West', 'North-East'].map((face) => (
-                    <button
-                      key={face}
-                      type="button"
-                      onClick={() => setCalcFacingPref(face)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                        calcFacingPref === face
-                          ? 'bg-amber-400 text-slate-950 border-amber-400'
-                          : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
-                      }`}
-                    >
-                      {face} Facing
-                    </button>
-                  ))}
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    TS RERA Registration
+                  </div>
+                  <div className="text-lg font-bold text-slate-900">
+                    PO2400009081
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Telangana Real Estate Regulatory Authority registered project compliance.
+                  </p>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2">
-                  Planned Villa Construction:
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {['Duplex Villa', 'Triplex Luxury', 'Custom Estate'].map((vType) => (
-                    <button
-                      key={vType}
-                      type="button"
-                      onClick={() => setCalcVillaType(vType)}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                        calcVillaType === vType
-                          ? 'bg-amber-400 text-slate-950 border-amber-400'
-                          : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10'
-                      }`}
-                    >
-                      {vType}
-                    </button>
-                  ))}
+                <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Title &amp; Bank Clearances
+                  </div>
+                  <div className="text-lg font-bold text-slate-900">
+                    100% Clear Title
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Direct spot registration with loan sanction options across SBI, HDFC, and ICICI.
+                  </p>
                 </div>
               </div>
             </div>
+          </section>
 
-            {/* Configured Summary */}
-            <div className="bg-white/10 p-6 sm:p-8 rounded-2xl border border-white/15 space-y-6">
-              <div className="grid grid-cols-2 gap-4 pb-6 border-b border-white/10">
+          {/* ========================================================== */}
+          {/* 4. NEARBY LANDMARKS & CONNECTIVITY (MATCHING SCREENSHOT 5) */}
+          {/* ========================================================== */}
+          <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
-                  <div className="text-xs text-slate-300">Configured Footprint</div>
-                  <div className="text-xl font-bold text-white mt-1">
-                    {calcPlotArea} Sq.Yds
+                  <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
+                    <MapPin className="w-4 h-4" />
+                    <span>Strategic Location</span>
                   </div>
-                  <div className="text-[11px] text-amber-400 mt-0.5 font-medium">
-                    {calcFacingPref} Facing &bull; 100% Vasthu
-                  </div>
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+                    Nearby Landmarks &amp; Connectivity
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                    Key locations, drive times, and growth infrastructure surrounding Alekhya's Brundavan at Kadthal.
+                  </p>
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {nearbyLandmarks.map((item, idx) => {
+                  const IconComp = item.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                          <IconComp className="w-5 h-5" />
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
+                          {item.category}
+                        </span>
+                      </div>
+
+                      <div className="mt-3">
+                        <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
+                          {item.name}
+                        </h4>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
+                          <span className="flex items-center gap-1">
+                            <Navigation className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{item.distance}</span>
+                          </span>
+                          <span className="flex items-center gap-1 text-slate-700 font-semibold">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{item.time}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* ========================================================== */}
+          {/* 5. CONTACT & SITE VISIT SCHEDULER (PLOTS99 EXACT MATCH)    */}
+          {/* ========================================================== */}
+          <section id="sec-contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/90 shadow-xs space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 border-b border-slate-100">
                 <div>
-                  <div className="text-xs text-slate-300">Bank Loan Eligibility</div>
-                  <div className="text-xl font-bold text-emerald-400 mt-1">
-                    Up to 75%
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
+                    <Phone className="w-4 h-4" />
+                    <span>Developer Desk</span>
                   </div>
-                  <div className="text-[11px] text-slate-300 mt-0.5">
-                    SBI, HDFC, ICICI Approved
+                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+                    Connect with Our Project Desk
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
+                    Schedule an on-site visit to Alekhya's Brundavan at Kadthal, receive certified DTCP/RERA documents, or request custom rate cards.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="tel:+919100031199"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-xs"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Call Sales Desk</span>
+                  </a>
+                  <a
+                    href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>WhatsApp</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                {/* Left Column: Office & Site Details */}
+                <div className="space-y-4">
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Developer Information
+                    </div>
+                    <div className="font-serif text-lg font-bold text-slate-900">
+                      Skandha Group
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Trusted real estate developer pioneering premium plotted developments, farm communities, and gated townships across Telangana.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Site Location</span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-900">
+                        Kadthal, Srisailam Highway (NH 765)
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        1 min from Maisigandi Temple
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <Building className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Corporate Office</span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-900">
+                        Hyderabad, Telangana, India
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        info@skandhagroup.com
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900 font-medium">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-emerald-600" />
+                      <span>Site Desk Hours: Mon - Sun (9:00 AM - 7:00 PM)</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-300">
+                      Open 7 Days
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-xl space-y-1">
-                <div className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                  Official Developer Terms
+                {/* Right Column: Site Visit & Plot Inquiry Form */}
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                      Book a Free Guided Site Visit
+                    </h4>
+                    {selectedPlot && (
+                      <span className="text-[11px] font-bold bg-orange-50 text-brand-orange border border-orange-200 px-2.5 py-0.5 rounded-full">
+                        Plot #{selectedPlot.plotNumber} Selected
+                      </span>
+                    )}
+                  </div>
+
+                  {contactSuccess ? (
+                    <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 space-y-2 animate-fadeIn">
+                      <div className="flex items-center gap-2 font-bold text-sm">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+                        <span>Site Visit Request Received!</span>
+                      </div>
+                      <p className="text-xs text-emerald-700 leading-relaxed">
+                        Thank you! Our dedicated site coordinator from Skandha Group will contact you promptly to confirm your visit and provide route assistance.
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleContactSubmit} className="space-y-3.5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                            Your Full Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Ramesh Reddy"
+                            value={contactForm.name}
+                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                            Phone Number <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            placeholder="+91 98765 43210"
+                            value={contactForm.phone}
+                            onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                            Preferred Facing
+                          </label>
+                          <select
+                            value={contactForm.facing}
+                            onChange={(e) => setContactForm({ ...contactForm, facing: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                          >
+                            <option value="Any Facing">Any Facing</option>
+                            <option value="East">East Facing (Vasthu)</option>
+                            <option value="West">West Facing (Vasthu)</option>
+                            <option value="North-East">North-East Facing</option>
+                            <option value="Corner">Corner Plot</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                            Preferred Visit Date
+                          </label>
+                          <input
+                            type="date"
+                            value={contactForm.visitDate}
+                            onChange={(e) => setContactForm({ ...contactForm, visitDate: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                          Notes / Requirements (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Interested in 200 sq.yds East plot, need pickup assistance"
+                          value={contactForm.message}
+                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                          className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={contactSubmitting || !contactForm.phone.trim()}
+                        className="w-full py-3 px-4 rounded-xl bg-brand-orange hover:bg-brand-orange-dark disabled:opacity-50 text-white font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2"
+                      >
+                        {contactSubmitting ? (
+                          <span>Submitting Request...</span>
+                        ) : (
+                          <>
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>Confirm Site Visit &amp; Request Rate Card</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
                 </div>
-                <div className="text-sm font-semibold text-white">
-                  Spot Registration with Clear Title Guarantee
-                </div>
-                <div className="text-[11px] text-slate-300 leading-tight">
-                  Transparent terms direct from Skandha Group. Official rate cards and payment schedules provided upon consultation.
-                </div>
               </div>
-
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-lg"
-              >
-                Request Official Pricing Breakdown &amp; Loan Details
-              </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================== */}
-      {/* 7. STATUTORY CLEARANCES & APPROVALS                        */}
-      {/* ========================================================== */}
-      <section id="sec-approvals" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700">
-            <ShieldCheck className="w-4 h-4" />
-            <span>100% Legal Certainty</span>
-          </div>
-          <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
-            DTCP Approved &amp; TS RERA Registered
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
-            Clear title ownership with instant spot registration. Pre-approved for housing and plotted development bank loans.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                DTCP Sanction Order
-              </div>
-              <div className="text-lg font-bold text-slate-900">
-                TLP NO. 87/2024/H
-              </div>
-              <p className="text-xs text-slate-600">
-                Directorate of Town and Country Planning official sanctioned layout approval.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                TS RERA Registration
-              </div>
-              <div className="text-lg font-bold text-slate-900">
-                PO2400009081
-              </div>
-              <p className="text-xs text-slate-600">
-                Telangana Real Estate Regulatory Authority registered project compliance.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Title &amp; Bank Clearances
-              </div>
-              <div className="text-lg font-bold text-slate-900">
-                100% Clear Title
-              </div>
-              <p className="text-xs text-slate-600">
-                Direct spot registration with loan sanction options across SBI, HDFC, and ICICI.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
 
 
       {/* ========================================================== */}
-      {/* 8. SIGNATURE DARK FOOTER (PLOTS99 EXACT MATCH)             */}
+      {/* 6. SIGNATURE DARK FOOTER (PLOTS99 EXACT MATCH)             */}
       {/* ========================================================== */}
-      <footer className="bg-slate-950 text-slate-400 pt-16 pb-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800/80">
-        <div className="max-w-7xl mx-auto space-y-12">
+      <footer className="relative overflow-hidden bg-slate-950 text-slate-400 pt-16 pb-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800/80">
+        {/* Radial Glow Spheres matching Plots99 */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
             {/* Col 1: Developer Branding */}
             <div className="space-y-4 md:col-span-1">
@@ -1554,14 +2044,14 @@ export default function PlotViewerStandalone({ settings }) {
               </p>
               <div className="space-y-2 pt-1 text-xs">
                 <a
-                  href="tel:+919100000000"
+                  href="tel:+919100031199"
                   className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors font-medium"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>+91 91000 00000 / Site Desk</span>
+                  <span>+91 91000 31199 / Site Desk</span>
                 </a>
                 <a
-                  href="https://wa.me/919100000000?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
+                  href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all font-semibold"
@@ -1573,7 +2063,7 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
           </div>
 
-          {/* Legal Compliance & Disclaimer */}
+          {/* Legal Compliance & Disclaimer matching Plots99 */}
           <div className="pt-8 border-t border-slate-800/80 text-[11px] text-slate-400 space-y-3 leading-relaxed">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-400">
               <div className="flex flex-wrap items-center gap-4">
@@ -1590,9 +2080,15 @@ export default function PlotViewerStandalone({ settings }) {
                 <span>DTCP Approved &bull; RERA Certified</span>
               </div>
             </div>
-            <p className="text-[10px] text-slate-400">
-              Disclaimer: The interactive 2D and 3D layout maps, road visualizations, plot boundaries, and metric estimates displayed on this platform represent the sanctioned DTCP master plan (TLP NO. 87/2024/H). Visual simulations (including street roll-throughs, foliage, and vehicle animations) are artistic impressions created for spatial orientation. Plot availability, pricing tiers, and statutory registrations are subject to change and formal execution of developer conveyance deeds.
-            </p>
+
+            <div className="pt-2">
+              <p className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-1">
+                Legal Disclaimer
+              </p>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                It is the sole responsibility of customers, owners, and marketing individuals to ensure a comprehensive review of plot dimensions and other details related to the plot and venture before proceeding. We act solely as a facilitator and are not liable for any disputes. The interactive 2D and 3D layout maps, road visualizations, plot boundaries, and metric estimates displayed on this platform represent the sanctioned DTCP master plan (TLP NO. 87/2024/H). Visual simulations are artistic impressions created for spatial orientation.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
