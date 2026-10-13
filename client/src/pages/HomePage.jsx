@@ -6,7 +6,8 @@ import {
   CheckCircle2,
   MapPin,
   ArrowRight,
-  Download,
+  HelpCircle,
+  ChevronDown,
   Building,
   Trees,
   Car,
@@ -26,6 +27,8 @@ export default function HomePage() {
   const [gallery, setGallery] = useState([]);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [activeFaqCategory, setActiveFaqCategory] = useState('All');
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { source: 'homepage' });
@@ -57,6 +60,50 @@ export default function HomePage() {
     { claim: 'Kandukur - Maheshwaram Industrial Belt', time: 'Quick access', desc: 'Proximity to high-value IT, aerospace & industrial zones' },
     { claim: 'Major Pharma Investments', time: 'Pharma Corridor', desc: "Dr. Reddy's, Aurobindo, Hetero, Laurus Labs, MSN & Gland Pharma" }
   ];
+
+  const faqs = [
+    {
+      category: 'Legal & Approvals',
+      q: "Is Alekhya's Brundavan approved by DTCP and registered under TS RERA?",
+      a: "Yes. The venture is officially sanctioned by the Directorate of Town and Country Planning (DTCP) under layout permit TLP NO. 87/2024/H and registered with the Telangana State Real Estate Regulatory Authority (TS RERA) under registration PO2400009081. All 96 plots hold 100% clear legal title, guaranteeing instant spot registration without encumbrance."
+    },
+    {
+      category: 'Plots & Vasthu',
+      q: "What plot dimensions and orientations are available in the project?",
+      a: "The project features 96 surveyed residential villa plots ranging from 183 Sq.Yards up to 672 Sq.Yards (1,647 to 6,048 Sq.Ft). The entire layout has been engineered in strict adherence to 100% Vasthu principles, with East-facing and West-facing plot alignments as well as auspicious corner locations."
+    },
+    {
+      category: 'Bank Loans',
+      q: "Are housing and plotted development bank loans pre-approved for this venture?",
+      a: "Yes. Due to full statutory DTCP clearances and RERA certification, pre-approved bank loans up to 70% to 75% are available through leading banks including State Bank of India (SBI), HDFC Bank, and ICICI Bank. Our dedicated customer team assists buyers with seamless loan sanction paperwork."
+    },
+    {
+      category: 'Infrastructure',
+      q: "What on-site infrastructure and amenities are being developed?",
+      a: "The venture features a proposed 60'-0\" wide arterial road connecting directly toward Maisigandi Temple, 33'-0\" wide internal blacktop avenues, comprehensive underground sanitary drainage, overhead water storage tank, electrical lines with dedicated street lights, an Ac. 0.758 landscaped children's park with jogging pathways, boundary wall with 24/7 security cabin, and 2 full years of complimentary site maintenance."
+    },
+    {
+      category: 'Location & Growth',
+      q: "Where is the venture situated and how is connectivity to Hyderabad?",
+      a: "The layout directly adjoins the 4-lane Srisailam Highway (NH 765) in Kadthal, just a 1-minute drive to the famous Maisigandi Maisamma Temple. It offers direct signal-free access to Hyderabad via Outer Ring Road (Exit 14) and Rajiv Gandhi International Airport (Shamshabad)."
+    },
+    {
+      category: 'Location & Growth',
+      q: "What is the economic growth driver in the Kadthal corridor?",
+      a: "Kadthal is situated at the center of South Hyderabad's mega economic expansion, neighboring the upcoming Mucherla Future City (Life Sciences, AI City & Skills University), the massive Hyderabad Pharma City corridor, and the proposed Regional Ring Road (RRR), driving rapid long-term land appreciation."
+    },
+    {
+      category: 'Site Visits',
+      q: "How can I schedule a physical site visit or select a plot?",
+      a: "Skandha Group organizes daily guided site visits directly to the Kadthal project. You can inspect live plot availability on our interactive map, submit an online enquiry, or chat with our verified advisors on WhatsApp to schedule a complimentary visit."
+    }
+  ];
+
+  const faqCategories = ['All', 'Legal & Approvals', 'Plots & Vasthu', 'Infrastructure', 'Bank Loans', 'Location & Growth'];
+
+  const filteredFaqs = activeFaqCategory === 'All'
+    ? faqs
+    : faqs.filter(f => f.category === activeFaqCategory);
 
   return (
     <div className="space-y-20 pb-16">
@@ -110,17 +157,8 @@ export default function HomePage() {
                 onClick={() => setIsEnquiryOpen(true)}
                 className="inline-flex items-center justify-center gap-2 bg-white/95 hover:bg-white text-slate-900 px-6 py-3.5 rounded-xl text-base font-bold shadow-md hover:shadow-lg transition-all duration-200"
               >
-                <span>Request Price & Brochure</span>
+                <span>Schedule Site Visit &amp; Enquire</span>
               </button>
-
-              <a
-                href="/assets/alekhyas_brundavan_brochure.pdf"
-                download="Alekhyas_Brundavan_Brochure.pdf"
-                className="inline-flex items-center gap-2 text-slate-300 hover:text-white px-4 py-3 text-sm font-semibold transition-colors"
-              >
-                <Download className="w-4 h-4 text-orange-400" />
-                <span>Brochure (PDF)</span>
-              </a>
             </div>
 
             {/* Highlights Bar */}
@@ -402,6 +440,106 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comprehensive Interactive FAQ Section */}
+      <section className="bg-slate-50/80 py-16 border-y border-slate-200/80">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+          <div className="text-center space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 inline-flex items-center gap-1.5">
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>Frequently Asked Questions</span>
+            </span>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+              Everything You Need to Know
+            </h2>
+            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages for Alekhya's Brundavan.
+            </p>
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {faqCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveFaqCategory(cat);
+                  setOpenFaqIndex(0);
+                }}
+                className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
+                  activeFaqCategory === cat
+                    ? 'bg-brand-orange text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Accordion List */}
+          <div className="space-y-3.5">
+            {filteredFaqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={faq.q}
+                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+                    isOpen
+                      ? 'border-brand-orange/40 shadow-sm ring-1 ring-orange-500/10'
+                      : 'border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full px-5 sm:px-6 py-4.5 text-left flex items-center justify-between gap-4 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
+                      <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                        {faq.q}
+                      </span>
+                    </div>
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                        isOpen
+                          ? 'bg-orange-50 text-brand-orange rotate-180'
+                          : 'bg-slate-100 text-slate-500'
+                      }`}
+                    >
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50">
+                      <p>{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Still Have Questions Card */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                Have a specific query about an individual plot number?
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Our sales desk provides instant clarity on plot boundaries, current availability, and bank eligibility.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsEnquiryOpen(true)}
+              className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors shrink-0"
+            >
+              Ask Skandha Advisory
+            </button>
           </div>
         </div>
       </section>

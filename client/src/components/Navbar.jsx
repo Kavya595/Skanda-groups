@@ -41,10 +41,6 @@ export default function Navbar({ settings }) {
               <Mail className="w-3.5 h-3.5 text-brand-orange" />
               <span>{email}</span>
             </a>
-            <span className="text-slate-400">|</span>
-            <Link to="/admin" className="text-slate-500 hover:text-brand-orange transition-colors">
-              Admin Portal
-            </Link>
           </div>
         </div>
       </div>
@@ -107,20 +103,6 @@ export default function Navbar({ settings }) {
             })}
           </nav>
 
-          {/* Distinct Action Button: Plot Availability (Opens in New Tab per Section A item 3) */}
-          <div className="hidden sm:flex items-center gap-3">
-            <a
-              href="/plots"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:shadow transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-            >
-              <Compass className="w-4 h-4 text-white" />
-              <span>Explore Plot Availability</span>
-              <ExternalLink className="w-3.5 h-3.5 text-white/80" />
-            </a>
-          </div>
-
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center">
             <button
@@ -173,17 +155,6 @@ export default function Navbar({ settings }) {
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            <a
-              href="/plots"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2.5 rounded-lg text-sm font-bold shadow-sm inline-flex items-center justify-center gap-2"
-            >
-              <Compass className="w-4 h-4" />
-              <span>Explore Interactive 3D Plots (New Tab)</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-            </a>
             <div className="text-xs text-center text-slate-500 pt-1">
               DTCP: {dtcpNo} | TS RERA: {reraNo}
             </div>

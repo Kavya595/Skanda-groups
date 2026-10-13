@@ -1,6 +1,19 @@
-import React, { useState } from 'react';
-import { MapPin, Mail, Send, CheckCircle, MessageCircle, ShieldCheck } from 'lucide-react';
-import { submitLead, trackActivityEvent } from '../api/client';
+import React, { useState, useEffect } from 'react';
+import {
+  MapPin,
+  Mail,
+  Send,
+  CheckCircle,
+  MessageCircle,
+  ShieldCheck,
+  Navigation,
+  Compass,
+  ExternalLink,
+  Sparkles
+} from 'lucide-react';
+import { submitLead, fetchPlots, trackActivityEvent } from '../api/client';
+import Layout2DView from '../visualizer/Layout2DView';
+import { getEnrichedPlots } from '../visualizer/masterPlanData';
 
 export default function ContactPage({ settings }) {
   const [formData, setFormData] = useState({
@@ -16,6 +29,34 @@ export default function ContactPage({ settings }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
+
+  // Interactive Map State
+  const [plots, setPlots] = useState(() => getEnrichedPlots());
+  const [selectedPlot, setSelectedPlot] = useState(null);
+
+  useEffect(() => {
+    fetchPlots({ all: 'true' })
+      .then(res => {
+        if (res.success && res.plots) {
+          setPlots(getEnrichedPlots(res.plots));
+        }
+      })
+      .catch(err => {
+        console.warn('Using enriched plots fallback:', err);
+      });
+  }, []);
+
+  const handleSelectPlotOnMap = (plot) => {
+    setSelectedPlot(plot);
+    if (plot) {
+      setFormData(prev => ({
+        ...prev,
+        message: prev.message && !prev.message.includes('Plot #')
+          ? `${prev.message}\nInterested in Plot #${plot.plotNumber} (${plot.facing} Facing, ${plot.areaSqYds} Sq.Yards).`
+          : `I am interested in Plot #${plot.plotNumber} (${plot.facing} Facing, ${plot.areaSqYds} Sq.Yards). Please share availability, layout demarcations, and spot registration details.`
+      }));
+    }
+  };
 
   const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -57,7 +98,7 @@ export default function ContactPage({ settings }) {
           Connect With Skandha Group
         </h1>
         <p className="text-base text-slate-600 font-light">
-          Have questions about plot dimensions, spot registration dates, or scheduling a personalized site visit to Alekhya's Brundavan, Kadthal? Submit your enquiry below.
+          Have questions about plot dimensions, spot registration dates, or scheduling a personalized site visit to Alekhya's Brundavan, Kadthal? Submit your enquiry below or interact directly with the layout map.
         </p>
       </div>
 
@@ -91,9 +132,16 @@ export default function ContactPage({ settings }) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              <h2 className="text-xl font-serif font-bold text-slate-900">
-                Verified Enquiry Form
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-serif font-bold text-slate-900">
+                  Verified Enquiry Form
+                </h2>
+                {selectedPlot && (
+                  <span className="text-xs bg-orange-50 text-brand-orange border border-orange-200 px-2.5 py-1 rounded-lg font-bold">
+                    Plot #{selectedPlot.plotNumber} Selected
+                  </span>
+                )}
+              </div>
 
               {/* Honeypot field */}
               <div className="hidden" aria-hidden="true">
@@ -254,9 +302,107 @@ export default function ContactPage({ settings }) {
             <div className="pt-4 border-t border-slate-200 text-xs text-slate-500 leading-relaxed">
               <strong>Office Visiting Hours:</strong> Monday through Saturday, 9:30 AM to 6:30 PM. Site visits to Kadthal are organized daily with prior appointment.
             </div>
+
+            <div className="pt-2">
+              <a
+                href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold py-3 px-4 rounded-xl text-xs shadow-xs transition-all"
+              >
+                <Navigation className="w-4 h-4 text-brand-orange" />
+                <span>Get Driving Directions to Kadthal Site</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Interactive Master Plan Layout Map Section */}
+      <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                Interactive Master Plan
+              </span>
+              <span className="text-xs text-slate-500 font-medium">
+                Adjoining Srisailam Highway (NH 765), Kadthal
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-slate-900 mt-1">
+              Alekhya's Brundavan — Layout &amp; Location Map
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              Pan, zoom, or click any plot on the interactive master plan to inspect details and auto-fill your enquiry form.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a
+              href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <Navigation className="w-3.5 h-3.5 text-brand-orange" />
+              <span>Get Site Directions</span>
+            </a>
+            <a
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold shadow-xs transition-colors"
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Full 3D / 2D Explorer</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </a>
+          </div>
+        </div>
+
+        {/* Selected plot details bar if user clicked a plot */}
+        {selectedPlot && (
+          <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-bold text-slate-900 text-sm bg-white px-2.5 py-1 rounded-lg border border-orange-200">
+                Plot #{selectedPlot.plotNumber}
+              </span>
+              <span className="text-slate-700">
+                Facing: <strong>{selectedPlot.facing}</strong>
+              </span>
+              <span className="text-slate-700">
+                Area: <strong>{selectedPlot.areaSqYds} Sq.Yards</strong>
+              </span>
+              <span className="text-slate-700">
+                Dimensions: <strong>{selectedPlot.dimensions}</strong>
+              </span>
+              <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-emerald-600" />
+                100% Vasthu Compliant
+              </span>
+            </div>
+            <button
+              onClick={() => setSelectedPlot(null)}
+              className="text-xs text-slate-500 hover:text-slate-800 font-semibold underline"
+            >
+              Clear Selection
+            </button>
+          </div>
+        )}
+
+        {/* Interactive 2D Map Container */}
+        <div className="relative w-full h-[520px] rounded-2xl overflow-hidden border border-slate-200 bg-[#E8F2E6]">
+          <Layout2DView
+            plots={plots}
+            selectedPlot={selectedPlot}
+            onSelectPlot={handleSelectPlotOnMap}
+            filterStatus="all"
+            filterFacing="all"
+            searchTerm=""
+          />
+        </div>
+      </section>
     </div>
   );
 }

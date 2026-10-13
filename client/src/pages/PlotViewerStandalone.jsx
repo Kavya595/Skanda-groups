@@ -656,9 +656,6 @@ export default function PlotViewerStandalone({ settings }) {
             <button onClick={() => scrollToSection('sec-landmarks')} className="hover:text-brand-orange transition-colors">
               Nearby
             </button>
-            <button onClick={() => setIsEnquiryOpen(true)} className="hover:text-brand-orange transition-colors">
-              Contact
-            </button>
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
@@ -1235,8 +1232,6 @@ export default function PlotViewerStandalone({ settings }) {
           <div className="flex items-center gap-6 text-xs font-semibold">
             <a href="/" className="hover:text-brand-orange transition-colors">Main Website</a>
             <a href="/project" className="hover:text-brand-orange transition-colors">Project Specifications</a>
-            <a href="/gallery" className="hover:text-brand-orange transition-colors">Site Development Photos</a>
-            <a href="/contact" className="hover:text-brand-orange transition-colors">Contact Office</a>
           </div>
         </div>
       </footer>

@@ -19,11 +19,11 @@ export default function ProjectPage() {
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   const chargesTable = [
-    { type: 'N/E & N/W Corner', charge: 'Rs. 800/- per Sq.Yd', notes: 'North-East or North-West corner prime facing' },
-    { type: 'S/E & S/W Corner', charge: 'Rs. 600/- per Sq.Yd', notes: 'South-East or South-West corner plot positions' },
-    { type: 'East Face', charge: 'Rs. 500/- per Sq.Yd', notes: 'Prime morning sun alignment per Vasthu norms' },
-    { type: 'North Face', charge: 'Rs. 500/- per Sq.Yd', notes: 'Auspicious North facing villa plot preference' },
-    { type: '40 Feet Road Frontage', charge: 'Rs. 500/- per Sq.Yd', notes: 'Direct access along 40ft wide boulevard avenues' }
+    { type: 'N/E & N/W Corner', charge: 'Available On Request', notes: 'North-East or North-West corner prime facing' },
+    { type: 'S/E & S/W Corner', charge: 'Available On Request', notes: 'South-East or South-West corner plot positions' },
+    { type: 'East Face', charge: 'Standard Vasthu Tier', notes: 'Prime morning sun alignment per Vasthu norms' },
+    { type: 'North Face', charge: 'Standard Vasthu Tier', notes: 'Auspicious North facing villa plot preference' },
+    { type: '40 Feet Road Frontage', charge: 'Prime Avenue Tier', notes: 'Direct access along 40ft wide boulevard avenues' }
   ];
 
   return (
@@ -66,21 +66,20 @@ export default function ProjectPage() {
             The layout plan for <strong>Alekhya's Brundavan</strong> (Challampally village, Kadthal Mandal) has been officially sanctioned by the Directorate of Town and Country Planning (DTCP) under permit <strong>TLP NO. 87/2024/H</strong>, and registered under Telangana State Real Estate Regulatory Authority (TS RERA) under registration <strong>PO2400009081</strong>.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
-            <a
-              href="/assets/alekhyas_brundavan_brochure.pdf"
-              download
+            <button
+              onClick={() => setIsEnquiryOpen(true)}
               className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-sm transition-all"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download Official Brochure</span>
-            </a>
+              <span>Enquire Layout Details</span>
+            </button>
             <a
-              href="/assets/alekhyas_brundavan_flyer.pdf"
-              download
+              href="/plots"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-xs font-bold px-4 py-2.5 rounded-lg transition-all"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download Project Flyer</span>
+              <span>Open Interactive Layout</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

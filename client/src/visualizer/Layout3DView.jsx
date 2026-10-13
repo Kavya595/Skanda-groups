@@ -300,11 +300,6 @@ function Landscaping() {
       list.push({ pos: [x, 0, -53.5], scale: 1.1 });
       list.push({ pos: [x, 0, -40.5], scale: 1.1 });
     }
-    // Palm trees along Srisailam Highway Service Road
-    for (let z = -48; z <= 58; z += 10) {
-      list.push({ pos: [72.5, 0, z], scale: 1.18 });
-      list.push({ pos: [87.5, 0, z], scale: 1.2 });
-    }
     // Palm trees along Mid 33ft Road curbs (both sides)
     for (let x = -58; x <= 65; x += 12) {
       list.push({ pos: [x, 0, -4.2], scale: 0.96 });
