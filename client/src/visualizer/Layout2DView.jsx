@@ -3,10 +3,7 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
-  Compass,
-  Maximize2,
-  Minimize2,
-  Trees
+  Compass
 } from 'lucide-react';
 import {
   LAYOUT_BOUNDS,
@@ -86,7 +83,7 @@ export default function Layout2DView({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
-      className="relative w-full h-full bg-[#EAF5E8] overflow-hidden select-none cursor-grab active:cursor-grabbing border border-slate-200"
+      className="relative w-full h-full bg-[#DFEFE0] overflow-hidden select-none cursor-grab active:cursor-grabbing"
     >
       {/* Zoom / Pan Controls Floating Pill */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-white/95 backdrop-blur-md p-1.5 rounded-xl border border-slate-200/90 shadow-md">
@@ -117,7 +114,7 @@ export default function Layout2DView({
       <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-200/90 shadow-md flex items-center gap-2">
         <Compass className="w-5 h-5 text-brand-orange animate-pulse" />
         <div className="text-left">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Master Plan</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">2D Master Plan</div>
           <div className="text-xs font-bold text-slate-900">True North</div>
         </div>
       </div>
@@ -132,23 +129,13 @@ export default function Layout2DView({
       >
         <svg
           viewBox="0 0 1200 780"
-          className="w-full h-full max-w-[1400px] max-h-[850px] drop-shadow-lg"
+          className="w-full h-full max-w-[1400px] max-h-[850px]"
           xmlns="http://www.w3.org/2000/svg"
         >
-          <defs>
-            {/* Soft shadow filter */}
-            <filter id="plotShadow" x="-10%" y="-10%" width="120%" height="120%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.25" />
-            </filter>
-            <filter id="selectedGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#F15A24" floodOpacity="0.8" />
-            </filter>
-          </defs>
+          {/* Subtle GIS Map Land Texture */}
+          <rect x="0" y="0" width="1200" height="780" fill="#DFEFE0" />
 
-          {/* Surrounding Natural Grass Terrain */}
-          <rect x="0" y="0" width="1200" height="780" fill="#E2F0DE" />
-
-          {/* Site Boundary Compound Plot */}
+          {/* Site Boundary Compound Surface */}
           <rect
             x="35"
             y="30"
@@ -156,8 +143,8 @@ export default function Layout2DView({
             height="710"
             fill="#D5E8CE"
             stroke="#94C383"
-            strokeWidth="3"
-            rx="12"
+            strokeWidth="2"
+            rx="8"
           />
 
           {/* Connected Asphalt Road Network */}
@@ -175,27 +162,14 @@ export default function Layout2DView({
 
             return (
               <g key={road.id}>
-                {/* Asphalt Bed */}
                 <rect
                   x={xMin}
                   y={yMin}
                   width={w}
                   height={h}
-                  fill={isHighway ? '#1E232A' : isArterial ? '#252A32' : '#2D323A'}
+                  fill={isHighway ? '#1E232A' : '#262A30'}
                 />
 
-                {/* Road Kerbs */}
-                <rect
-                  x={xMin}
-                  y={yMin}
-                  width={w}
-                  height={h}
-                  fill="none"
-                  stroke="#475569"
-                  strokeWidth="1.5"
-                />
-
-                {/* Road Markings */}
                 {isHighway && (
                   <line
                     x1={xMin + w / 2}
@@ -203,7 +177,7 @@ export default function Layout2DView({
                     x2={xMin + w / 2}
                     y2={yMax}
                     stroke="#FBBF24"
-                    strokeWidth="3"
+                    strokeWidth="2.5"
                   />
                 )}
 
@@ -214,15 +188,15 @@ export default function Layout2DView({
                     x2={xMax}
                     y2={yMin + h / 2}
                     stroke="#FFFFFF"
-                    strokeWidth="2.5"
-                    strokeDasharray="12 8"
+                    strokeWidth="2"
+                    strokeDasharray="10 6"
                   />
                 )}
               </g>
             );
           })}
 
-          {/* Road Name Typography */}
+          {/* Road Typography */}
           <text
             x="580"
             y="65"
@@ -267,36 +241,35 @@ export default function Layout2DView({
               y={(parkData.polygon[0][1] + 58) * 5.6}
               width={parkData.width * 6.0}
               height={parkData.depth * 5.6}
-              fill="#5EAB53"
-              stroke="#3B7D31"
+              fill="#86EFAC"
+              stroke="#15803D"
               strokeWidth="2"
-              rx="6"
+              rx="4"
             />
-            {/* Jogging Track Ring */}
             <circle
               cx={(parkData.center[0] + 95) * 6.0}
               cy={(parkData.center[1] + 58) * 5.6}
               r={parkData.width * 1.8}
               fill="none"
               stroke="#D97706"
-              strokeWidth="4"
-              strokeDasharray="6 4"
-              opacity="0.85"
+              strokeWidth="3.5"
+              strokeDasharray="5 4"
+              opacity="0.8"
             />
             <text
               x={(parkData.center[0] + 95) * 6.0}
-              y={(parkData.center[1] + 58) * 5.6 - 8}
-              fill="#FFFFFF"
-              fontSize="13"
+              y={(parkData.center[1] + 58) * 5.6 - 6}
+              fill="#14532D"
+              fontSize="14"
               fontWeight="bold"
               textAnchor="middle"
             >
-              OPEN SPACE PARK
+              Open Space Park
             </text>
             <text
               x={(parkData.center[0] + 95) * 6.0}
               y={(parkData.center[1] + 58) * 5.6 + 12}
-              fill="#FEF08A"
+              fill="#166534"
               fontSize="11"
               fontWeight="semibold"
               textAnchor="middle"
@@ -305,7 +278,7 @@ export default function Layout2DView({
             </text>
           </g>
 
-          {/* Master Plots (All 96 Plots) */}
+          {/* Master Plots (Flat tiles, zero gaps, prominent bold numbers) */}
           {plots.map((plot) => {
             const isSelected = selectedPlot?.plotNumber === plot.plotNumber;
             const isHovered = hoveredPlot?.plotNumber === plot.plotNumber;
@@ -330,35 +303,25 @@ export default function Layout2DView({
                 onMouseEnter={() => setHoveredPlot(plot)}
                 onMouseLeave={() => setHoveredPlot(null)}
                 className="cursor-pointer transition-opacity duration-150"
-                opacity={isDimmed ? 0.35 : 1}
+                opacity={isDimmed ? 0.3 : 1}
               >
-                {/* Plot Surface */}
+                {/* Plot Flat Surface */}
                 <rect
                   x={p0x}
                   y={p0y}
                   width={w}
                   height={h}
                   fill={isSelected ? '#F15A24' : isHovered ? '#FB923C' : meta.bg}
-                  stroke={isSelected ? '#FFFFFF' : '#1E293B'}
+                  stroke={isSelected ? '#FFFFFF' : '#FFFFFF'}
                   strokeWidth={isSelected ? 3 : 1.2}
-                  filter={isSelected ? 'url(#selectedGlow)' : 'url(#plotShadow)'}
-                  rx="2"
                 />
 
-                {/* Circular Number Badge */}
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={Math.min(w, h) * 0.32 > 10 ? 10 : Math.min(w, h) * 0.32}
-                  fill={isSelected ? '#1E293B' : '#FFFFFF'}
-                  stroke={isSelected ? '#FFFFFF' : '#0F172A'}
-                  strokeWidth="1"
-                />
+                {/* Plot Number Clearly Visible */}
                 <text
                   x={cx}
-                  y={cy + 3.5}
-                  fill={isSelected ? '#FFFFFF' : '#0F172A'}
-                  fontSize={Math.min(w, h) * 0.28 > 9.5 ? 9.5 : 8}
+                  y={cy + 4.5}
+                  fill={isSelected ? '#FFFFFF' : plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
+                  fontSize={Math.min(w, h) * 0.34 > 13 ? 13 : Math.max(Math.min(w, h) * 0.3, 10.5)}
                   fontWeight="bold"
                   textAnchor="middle"
                 >
@@ -369,12 +332,12 @@ export default function Layout2DView({
                 {scale > 1.3 && (
                   <text
                     x={cx}
-                    y={cy + 16}
-                    fill="#FFFFFF"
-                    fontSize="7.5"
+                    y={cy + 17}
+                    fill={isSelected ? '#FFFFFF' : '#0F172A'}
+                    fontSize="8.5"
                     fontWeight="semibold"
                     textAnchor="middle"
-                    opacity="0.9"
+                    opacity="0.85"
                   >
                     {plot.areaSqYds} sq.yds
                   </text>
@@ -383,6 +346,11 @@ export default function Layout2DView({
             );
           })}
         </svg>
+      </div>
+
+      {/* OpenStreetMap Attribution Watermark (as seen in Screenshot 4) */}
+      <div className="absolute bottom-2 right-2 text-[10px] text-slate-500 bg-white/70 backdrop-blur-xs px-2 py-0.5 rounded">
+        &copy; OpenStreetMap contributors &bull; DTCP TLP NO. 87/2024/H
       </div>
     </div>
   );

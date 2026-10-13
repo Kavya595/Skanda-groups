@@ -24,35 +24,35 @@ export const LAYOUT_BOUNDS = {
 
 export const statusColors = {
   available: {
-    bg: '#22C55E',         // Vibrant Natural Green
-    border: '#15803D',
-    text: '#FFFFFF',
+    bg: '#9BD89E',         // Plots99 Soft Map Green
+    border: '#6BBF6F',
+    text: '#064E3B',
     badge: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-    threeColor: '#22C55E',
+    threeColor: '#9BD89E',
     label: 'Available'
   },
   reserved: {
-    bg: '#EAB308',         // Warm Golden Amber / Yellow
-    border: '#CA8A04',
+    bg: '#FBE38E',         // Plots99 Warm Sunny Yellow
+    border: '#EAB308',
     text: '#78350F',
     badge: 'bg-amber-100 text-amber-800 border-amber-300',
-    threeColor: '#EAB308',
+    threeColor: '#FBE38E',
     label: 'Reserved'
   },
   sold: {
-    bg: '#EF4444',         // Coral / Red
-    border: '#B91C1C',
-    text: '#FFFFFF',
+    bg: '#F89898',         // Plots99 Soft Coral Red
+    border: '#EF4444',
+    text: '#7F1D1D',
     badge: 'bg-rose-100 text-rose-800 border-rose-300',
-    threeColor: '#EF4444',
-    label: 'Sold Out'
+    threeColor: '#F89898',
+    label: 'Sold'
   },
   blocked: {
-    bg: '#64748B',         // Ash / Slate Grey
-    border: '#475569',
-    text: '#FFFFFF',
+    bg: '#CBD5E1',         // Plots99 Soft Ash Grey
+    border: '#94A3B8',
+    text: '#1E293B',
     badge: 'bg-slate-200 text-slate-800 border-slate-400',
-    threeColor: '#64748B',
+    threeColor: '#CBD5E1',
     label: 'Blocked'
   }
 };
