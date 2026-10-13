@@ -126,33 +126,76 @@ function Plot3D({
       <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(w, d)]} />
         <lineBasicMaterial
-          color={isSelected ? '#FFFFFF' : '#FFFFFF'}
+          color={isSelected ? '#FFFFFF' : '#CBD5E1'}
           linewidth={isSelected ? 3 : 1.2}
-          opacity={isSelected ? 1.0 : 0.8}
+          opacity={isSelected ? 1.0 : 0.9}
           transparent
         />
       </lineSegments>
 
-      {/* Plot Number Rendered Bold Directly on Surface (Plots99 Screenshot 2) */}
-      <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Text
-          fontSize={Math.min(w, d) * 0.32 > 1.85 ? 1.85 : Math.max(Math.min(w, d) * 0.28, 1.35)}
-          color={isSelected ? '#FFFFFF' : plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
-          anchorX="center"
-          anchorY="middle"
-          fontWeight="bold"
-        >
-          {String(plot.plotNumber)}
-        </Text>
-      </group>
+      {/* When Selected: Center Circular White Badge matching Photo 4 */}
+      {isSelected ? (
+        <group position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          {/* Subtle Outer Drop Ring */}
+          <mesh position={[0, 0, -0.002]}>
+            <circleGeometry args={[Math.min(w, d) * 0.36, 32]} />
+            <meshBasicMaterial color="#94A3B8" />
+          </mesh>
+          {/* Pure White Badge Disk */}
+          <mesh position={[0, 0, 0]}>
+            <circleGeometry args={[Math.min(w, d) * 0.34, 32]} />
+            <meshBasicMaterial color="#FFFFFF" />
+          </mesh>
+          {/* Horizontal Divider Line */}
+          <mesh position={[0, 0, 0.005]}>
+            <planeGeometry args={[Math.min(w, d) * 0.52, 0.08]} />
+            <meshBasicMaterial color="#CBD5E1" />
+          </mesh>
+          {/* Plot Number on Top */}
+          <Text
+            position={[0, Math.min(w, d) * 0.14, 0.01]}
+            fontSize={Math.min(w, d) * 0.2}
+            color="#0F172A"
+            fontWeight="bold"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {String(plot.plotNumber)}
+          </Text>
+          {/* Area yd² on Bottom */}
+          <Text
+            position={[0, -Math.min(w, d) * 0.14, 0.01]}
+            fontSize={Math.min(w, d) * 0.12}
+            color="#64748B"
+            fontWeight="600"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {`${plot.areaSqYds} yd²`}
+          </Text>
+        </group>
+      ) : (
+        /* When Unselected: Bold Number on Surface */
+        <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <Text
+            fontSize={Math.min(w, d) * 0.32 > 1.85 ? 1.85 : Math.max(Math.min(w, d) * 0.28, 1.35)}
+            color={plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
+            anchorX="center"
+            anchorY="middle"
+            fontWeight="bold"
+          >
+            {String(plot.plotNumber)}
+          </Text>
+        </group>
+      )}
 
-      {/* Edge Dimensions when Selected or Hovered (Plots99 Screenshot 2 & 4: 50', 55', 33') */}
+      {/* Edge Dimensions when Selected or Hovered (Photo 2 & 4: 50', 55', 33') */}
       {(isSelected || hovered) && (
         <group position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           {/* North edge dimension */}
           <Text
             position={[0, d / 2 - 0.7, 0]}
-            fontSize={0.9}
+            fontSize={0.95}
             color={isSelected ? '#FFFFFF' : '#0F172A'}
             anchorX="center"
             anchorY="middle"
@@ -163,7 +206,7 @@ function Plot3D({
           {/* South edge dimension */}
           <Text
             position={[0, -d / 2 + 0.7, 0]}
-            fontSize={0.9}
+            fontSize={0.95}
             color={isSelected ? '#FFFFFF' : '#0F172A'}
             anchorX="center"
             anchorY="middle"
@@ -175,7 +218,7 @@ function Plot3D({
           <Text
             position={[-w / 2 + 0.7, 0, 0]}
             rotation={[0, 0, Math.PI / 2]}
-            fontSize={0.9}
+            fontSize={0.95}
             color={isSelected ? '#FFFFFF' : '#0F172A'}
             anchorX="center"
             anchorY="middle"
@@ -187,7 +230,7 @@ function Plot3D({
           <Text
             position={[w / 2 - 0.7, 0, 0]}
             rotation={[0, 0, -Math.PI / 2]}
-            fontSize={0.9}
+            fontSize={0.95}
             color={isSelected ? '#FFFFFF' : '#0F172A'}
             anchorX="center"
             anchorY="middle"
@@ -201,31 +244,46 @@ function Plot3D({
   );
 }
 
-// Broad Palm Tree matching Plots99 Screenshot 3, 4, 5
+// Realistic Broad Palm Tree matching Photo 1 and Photo 2 (slender organic trunk, 6 broad golden-lime arching leaves, ground shadow)
 function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
+  const leafAngles = [0, 60, 120, 180, 240, 300];
+
   return (
     <group position={position} scale={scale}>
-      {/* Palm Trunk */}
-      <mesh position={[0, 1.25, 0]}>
-        <cylinderGeometry args={[0.16, 0.25, 2.5, 7]} />
-        <meshBasicMaterial color="#6E4720" />
+      {/* Ground Soft Decal Shadow on Sidewalk (Photo 1 & 2) */}
+      <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[1.3, 16]} />
+        <meshBasicMaterial color="#000000" opacity={0.22} transparent />
       </mesh>
-      {/* Broad Arching Palm Leaves (Drooping outward over curb/road) */}
-      {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, idx) => (
+
+      {/* Slender Tapered Trunk */}
+      <mesh position={[0, 1.45, 0]}>
+        <cylinderGeometry args={[0.13, 0.22, 2.9, 8]} />
+        <meshBasicMaterial color="#8F785C" />
+      </mesh>
+
+      {/* Crown Joint */}
+      <mesh position={[0, 2.9, 0]}>
+        <sphereGeometry args={[0.22, 8, 8]} />
+        <meshBasicMaterial color="#6B5944" />
+      </mesh>
+
+      {/* 6 Broad Tropical Fronds radiating and drooping down */}
+      {leafAngles.map((angle, idx) => (
         <group
           key={idx}
-          position={[0, 2.45, 0]}
-          rotation={[0.38, (angle * Math.PI) / 180, -0.48]}
+          position={[0, 2.85, 0]}
+          rotation={[0.32, (angle * Math.PI) / 180, -0.42]}
         >
-          {/* Upper Frond */}
-          <mesh position={[0.75, 0, 0]} rotation={[0, 0, -0.25]}>
-            <coneGeometry args={[0.42, 1.7, 5]} />
-            <meshBasicMaterial color="#2E7D32" />
+          {/* Main Arched Leaf Blade */}
+          <mesh position={[1.3, -0.22, 0]} rotation={[0, 0, -0.28]} scale={[2.5, 0.06, 1.1]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#9EB226" />
           </mesh>
-          {/* Drooping Leaf Tip */}
-          <mesh position={[1.45, -0.25, 0]} rotation={[0, 0, -0.55]}>
-            <coneGeometry args={[0.3, 1.1, 4]} />
-            <meshBasicMaterial color="#38A169" />
+          {/* Leaf Tip Drooping Downward */}
+          <mesh position={[2.6, -0.75, 0]} rotation={[0, 0, -0.62]} scale={[1.4, 0.05, 0.85]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#ADC32F" />
           </mesh>
         </group>
       ))}
@@ -233,28 +291,31 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
-// Avenue Landscaping along Road Curbs
+// Avenue Landscaping along Road Curbs lining both sides of roads (Photo 1 & 2)
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
-    // Palm trees along 60ft Road curb
-    for (let x = -88; x <= 80; x += 13) {
-      list.push({ pos: [x, 0, -41], scale: 1.1 });
+    // Palm trees along 60ft Road curb (both sides)
+    for (let x = -86; x <= 76; x += 11) {
+      list.push({ pos: [x, 0, -53.5], scale: 1.1 });
+      list.push({ pos: [x, 0, -40.5], scale: 1.1 });
     }
     // Palm trees along Srisailam Highway Service Road
-    for (let z = -48; z <= 60; z += 12) {
-      list.push({ pos: [62.2, 0, z], scale: 1.15 });
-      list.push({ pos: [70.8, 0, z], scale: 1.2 });
+    for (let z = -48; z <= 58; z += 10) {
+      list.push({ pos: [72.5, 0, z], scale: 1.18 });
+      list.push({ pos: [87.5, 0, z], scale: 1.2 });
     }
-    // Palm trees along Mid 33ft Road curbs
-    for (let x = -60; x <= 55; x += 14) {
-      list.push({ pos: [x, 0, -3.7], scale: 0.95 });
-      list.push({ pos: [x, 0, 3.7], scale: 0.95 });
+    // Palm trees along Mid 33ft Road curbs (both sides)
+    for (let x = -58; x <= 65; x += 12) {
+      list.push({ pos: [x, 0, -4.2], scale: 0.96 });
+      list.push({ pos: [x, 0, 5.2], scale: 0.96 });
     }
-    // Palm trees along Vertical Roads V1 & V3
-    for (let z = 8; z <= 54; z += 12) {
-      list.push({ pos: [-36.5, 0, z], scale: 0.9 });
-      list.push({ pos: [21.5, 0, z], scale: 0.9 });
+    // Palm trees along Vertical Roads V1 & V3 (both sides)
+    for (let z = 9; z <= 54; z += 10) {
+      list.push({ pos: [-37.2, 0, z], scale: 0.92 });
+      list.push({ pos: [-27.8, 0, z], scale: 0.92 });
+      list.push({ pos: [21.0, 0, z], scale: 0.92 });
+      list.push({ pos: [30.0, 0, z], scale: 0.92 });
     }
     // Trees in Ac. 0.758 Park Perimeter & Interior
     const parkTrees = [
@@ -389,8 +450,64 @@ function MovingVehicles({ animate }) {
   );
 }
 
-// Connected Road Network with Stone Cobblestone Sidewalks (Plots99 Screenshot 3, 4, 5)
+// Connected Road Network with Realistic Asphalt and Stone Cobblestone Sidewalks (Photo 1 & 2)
 function ConnectedRoadNetwork() {
+  // Procedural dark asphalt tarmac texture with mineral speckles
+  const asphaltTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#1D2126';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 4000; i++) {
+      const x = Math.random() * 256;
+      const y = Math.random() * 256;
+      const size = Math.random() * 1.5 + 0.5;
+      const rnd = Math.random();
+      ctx.fillStyle = rnd > 0.6 ? '#2A3037' : rnd > 0.3 ? '#131518' : '#383F47';
+      ctx.fillRect(x, y, size, size);
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(8, 8);
+    return texture;
+  }, []);
+
+  // Procedural stone cobblestone / paver-block sidewalk texture (Photo 1 & 2)
+  const cobblestoneTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#475569'; // Grout line
+    ctx.fillRect(0, 0, 256, 256);
+    const rows = 16;
+    const cols = 8;
+    const rh = 256 / rows;
+    const cw = 256 / cols;
+    for (let r = 0; r < rows; r++) {
+      const offset = (r % 2) * (cw / 2);
+      for (let c = -1; c <= cols; c++) {
+        const x = c * cw + offset + 1.5;
+        const y = r * rh + 1.5;
+        const w = cw - 3;
+        const h = rh - 3;
+        const val = 135 + Math.floor(Math.random() * 28);
+        ctx.fillStyle = `rgb(${val}, ${val + 4}, ${val + 8})`;
+        ctx.fillRect(x, y, w, h);
+      }
+    }
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(6, 6);
+    return texture;
+  }, []);
+
   return (
     <group>
       {layoutRoads.map((road) => {
@@ -409,22 +526,34 @@ function ConnectedRoadNetwork() {
 
         return (
           <group key={road.id} position={[cx, 0.02, cz]}>
-            {/* Paved Stone Sidewalk Berms underneath edges */}
+            {/* Wide Stone Cobblestone Sidewalk Pavement (Photo 1 & 2) */}
             <mesh position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[w + 1.2, d + 1.2]} />
-              <meshBasicMaterial color="#D6D3D1" />
+              <planeGeometry args={[w + 2.2, d + 2.2]} />
+              <meshBasicMaterial
+                map={cobblestoneTexture || undefined}
+                color={cobblestoneTexture ? '#FFFFFF' : '#CBD5E1'}
+              />
             </mesh>
 
-            {/* Dark Asphalt Road Bed */}
+            {/* Crisp Concrete Curb Demarcation Edge */}
+            <lineSegments position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <edgesGeometry args={[new THREE.PlaneGeometry(w + 2.2, d + 2.2)]} />
+              <lineBasicMaterial color="#E2E8F0" linewidth={2} />
+            </lineSegments>
+
+            {/* Realistic Dark Asphalt Road Bed (Photo 1 & 2) */}
             <mesh rotation={[-Math.PI / 2, 0, 0]}>
               <planeGeometry args={[w, d]} />
-              <meshBasicMaterial color={isHighway ? '#1E232A' : '#262A30'} />
+              <meshBasicMaterial
+                map={asphaltTexture || undefined}
+                color={asphaltTexture ? (isHighway ? '#E2E8F0' : '#CBD5E1') : (isHighway ? '#1A1E24' : '#22262C')}
+              />
             </mesh>
 
             {/* Center Yellow Divider for Highway */}
             {isHighway && (
               <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[0.3, d]} />
+                <planeGeometry args={[0.35, d]} />
                 <meshBasicMaterial color="#FBBF24" />
               </mesh>
             )}
@@ -432,8 +561,8 @@ function ConnectedRoadNetwork() {
             {/* Center Dashed Line for 60ft Road */}
             {isArterial && (
               <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[w, 0.25]} />
-                <meshBasicMaterial color="#FFFFFF" opacity={0.85} transparent />
+                <planeGeometry args={[w, 0.28]} />
+                <meshBasicMaterial color="#FFFFFF" opacity={0.9} transparent />
               </mesh>
             )}
           </group>

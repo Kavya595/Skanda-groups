@@ -37,7 +37,6 @@ import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
 import Layout3DView from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
-import PlotDrawer from '../components/PlotDrawer';
 import EnquiryModal from '../components/EnquiryModal';
 
 // Curated Nearby Landmarks matching Plots99 Screenshot 5
@@ -140,60 +139,6 @@ const nearbyLandmarks = [
   }
 ];
 
-// Luxury Infrastructure Highlights
-const luxuryAmenities = [
-  {
-    title: "60' & 33' Blacktop Asphalt Roads",
-    desc: 'Wide, heavy-duty blacktop internal arterial roads with curbed stormwater drainage and road markings.',
-    image: '/assets/site_bt_roads.jpg'
-  },
-  {
-    title: 'Ac. 0.758 Cents Landscaped Park',
-    desc: 'Dedicated open green space with manicured grass lawns, ornamental flora, and seating gazebos.',
-    image: '/assets/site_landscape_park.jpg'
-  },
-  {
-    title: 'Children’s Play Arena & Jogging Track',
-    desc: 'Safe, rubberized play equipment for kids and a continuous jogging track surrounded by lush palm trees.',
-    image: '/assets/site_children_park.jpg'
-  },
-  {
-    title: 'Royal Palm Avenue Landscaping',
-    desc: 'Hundreds of planted royal palms line every boulevard and layout boundary, providing shade and fresh air.',
-    image: '/assets/site_avenue_plantation.jpg'
-  },
-  {
-    title: '24/7 Overhead Water Storage Tank',
-    desc: 'Dedicated high-capacity overhead reservoir supplying pressurized, continuous water to every plot.',
-    image: '/assets/site_overhead_tank.jpg'
-  },
-  {
-    title: 'Modern Underground Drainage Network',
-    desc: 'Full-fledged underground drainage and rainwater harvesting pits for zero waterlogging.',
-    image: '/assets/site_drainage_system.jpg'
-  }
-];
-
-// Interactive FAQs
-const faqItems = [
-  {
-    q: "Is Alekhya's Brundavan fully DTCP and TS RERA approved?",
-    a: "Yes. The layout is officially approved under DTCP TLP NO. 87/2024/H and registered under TS RERA PO2400009081 with 100% clear legal titles and instant spot registration clearance."
-  },
-  {
-    q: "What are the plot dimensions and area ranges available?",
-    a: "Standard residential plots range from 183 Sq.Yds (33' x 50') to 202 Sq.Yds (33' x 55'), 241 Sq.Yds (37' x 58'), 264 Sq.Yds, and up to 672 Sq.Yds for premium highway-facing corner plots."
-  },
-  {
-    q: "Are bank loans available for purchasing plots here?",
-    a: "Yes. Due to clean DTCP approvals and title clearance, bank loans of up to 70% to 75% are pre-sanctioned through major banks including SBI, HDFC, ICICI, and Union Bank."
-  },
-  {
-    q: "How does the Mucherla Future City & Pharma City impact capital appreciation?",
-    a: "Located directly along the Srisailam Highway (NH-765) growth corridor, Alekhya's Brundavan is just 12-15 minutes from the designated 19,000-acre Pharma City and the upcoming AI-driven Mucherla Future City, offering substantial high-yield capital growth."
-  }
-];
-
 export default function PlotViewerStandalone({ settings }) {
   const [viewMode, setViewMode] = useState('3d');
   const [plots, setPlots] = useState([]);
@@ -207,7 +152,6 @@ export default function PlotViewerStandalone({ settings }) {
 
   // Selected Plot & Modals
   const [selectedPlot, setSelectedPlot] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
 
@@ -218,8 +162,39 @@ export default function PlotViewerStandalone({ settings }) {
   const [isMeasureMode, setIsMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
 
-  // Active FAQ accordion
-  const [openFaq, setOpenFaq] = useState(0);
+  // Dynamic facing distribution calculation for Property Insights (Photo 3)
+  const facingCounts = React.useMemo(() => {
+    const counts = { N: 0, NE: 0, E: 0, SE: 0, S: 0, SW: 0, W: 0, NW: 0 };
+    plots.forEach(p => {
+      const f = (p.facing || '').toLowerCase();
+      if (f.includes('north-east') || f.includes('northeast')) counts.NE++;
+      else if (f.includes('north-west') || f.includes('northwest')) counts.NW++;
+      else if (f.includes('south-east') || f.includes('southeast')) counts.SE++;
+      else if (f.includes('south-west') || f.includes('southwest')) counts.SW++;
+      else if (f.includes('north')) counts.N++;
+      else if (f.includes('south')) counts.S++;
+      else if (f.includes('west')) counts.W++;
+      else counts.E++;
+    });
+    return counts;
+  }, [plots]);
+
+  // Inventory breakdown percentages for Property Insights Pie Chart (Photo 3)
+  const inventoryBreakdown = React.useMemo(() => {
+    const total = plots.length || 96;
+    const avail = plots.filter(p => p.status === 'available').length || 81;
+    const sold = plots.filter(p => p.status === 'sold').length || 8;
+    const res = plots.filter(p => p.status === 'reserved').length || 7;
+    return {
+      total,
+      available: avail,
+      sold,
+      reserved: res,
+      availPct: Math.round((avail / total) * 100),
+      soldPct: Math.round((sold / total) * 100),
+      resPct: Math.round((res / total) * 100)
+    };
+  }, [plots]);
 
   // Interactive Plot Sizer Form (NO hardcoded costs mentioned directly!)
   const [calcPlotArea, setCalcPlotArea] = useState(202);
@@ -261,7 +236,6 @@ export default function PlotViewerStandalone({ settings }) {
         const found = loadedPlots.find(p => String(p.plotNumber) === String(targetPlotNum));
         if (found) {
           setSelectedPlot(found);
-          setIsDrawerOpen(true);
         }
       }
     } catch (err) {
@@ -275,7 +249,6 @@ export default function PlotViewerStandalone({ settings }) {
         const found = fallbackPlots.find(p => String(p.plotNumber) === String(targetPlotNum));
         if (found) {
           setSelectedPlot(found);
-          setIsDrawerOpen(true);
         }
       }
     } finally {
@@ -285,7 +258,6 @@ export default function PlotViewerStandalone({ settings }) {
 
   const handleSelectPlot = (plot) => {
     setSelectedPlot(plot);
-    setIsDrawerOpen(true);
     trackActivityEvent('plot_viewed', plot.plotNumber, {
       status: plot.status,
       facing: plot.facing
@@ -521,61 +493,83 @@ export default function PlotViewerStandalone({ settings }) {
           )}
         </div>
 
-        {/* Floating Upper-Right Quick Plot Card (Plots99 Screenshot 2 & 4 replica) */}
+        {/* Floating Upper-Right Quick Plot Card (Small Tab matching Photo 4) */}
         {selectedPlot && (
-          <div className="absolute top-18 right-16 z-30 hidden lg:block w-72 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 animate-fadeIn">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div className="absolute top-16 right-3 sm:right-6 z-30 w-72 sm:w-80 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 sm:p-5 animate-fadeIn pointer-events-auto">
+            {/* Top Header matching Photo 4 */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="font-bold text-slate-900 text-sm">
+                <span className={`w-2.5 h-2.5 rounded-full ${
+                  selectedPlot.status === 'sold'
+                    ? 'bg-[#F89898]'
+                    : selectedPlot.status === 'reserved'
+                    ? 'bg-[#FBE38E]'
+                    : 'bg-[#68D391]'
+                }`} />
+                <span className="font-bold text-slate-900 text-base">
                   {selectedPlot.plotNumber}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                   {selectedPlot.status}
                 </span>
               </div>
               <button
                 onClick={() => setSelectedPlot(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-full"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-full transition-colors"
+                title="Close"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="py-3 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Facing:</span>
-                <strong className="text-slate-900">{selectedPlot.facing}</strong>
+            {/* Key-Value Details matching Photo 4 */}
+            <div className="py-3.5 space-y-2.5 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Facing</span>
+                <strong className="text-slate-900 font-bold">{selectedPlot.facing}</strong>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Area:</span>
-                <strong className="text-slate-900">{selectedPlot.areaSqYds} yd² ({selectedPlot.areaSqYds * 9} sq.ft)</strong>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Area</span>
+                <strong className="text-slate-900 font-bold">{selectedPlot.areaSqYds}.00 yd²</strong>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Dimensions:</span>
-                <strong className="text-slate-900">{selectedPlot.dimensions}</strong>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500 font-medium">Dimensions</span>
+                <strong className="text-slate-900 font-bold">{selectedPlot.dimensions}</strong>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
-              <div className="p-1.5 rounded-lg bg-emerald-50 text-[10px] text-emerald-800 font-semibold text-center border border-emerald-200">
-                100% Vasthu
+            {/* Actions Grid matching Photo 4 */}
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+              <div className="p-2 rounded-xl bg-emerald-50 text-[11px] text-emerald-800 font-semibold text-center border border-emerald-200 flex items-center justify-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>100% Vasthu</span>
               </div>
               <button
                 onClick={() => handleShareCurrentPlot(selectedPlot)}
-                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-[10px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1"
+                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
               >
-                {copiedShare ? <Check className="w-3 h-3 text-emerald-600" /> : <Share2 className="w-3 h-3" />}
-                <span>{copiedShare ? 'Copied!' : 'Share Plot'}</span>
+                {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+                <span>{copiedShare ? 'Copied' : 'Share'}</span>
               </button>
             </div>
 
-            <button
-              onClick={() => setIsEnquiryOpen(true)}
-              className="mt-3 w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-2 rounded-xl text-xs transition-colors shadow-xs"
-            >
-              Enquire for Plot #{selectedPlot.plotNumber}
-            </button>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <a
+                href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
+              >
+                <Navigation className="w-3.5 h-3.5 text-brand-orange" />
+                <span>Directions</span>
+              </a>
+              <button
+                onClick={() => setIsEnquiryOpen(true)}
+                className="p-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-[11px] text-white font-bold text-center transition-colors shadow-xs"
+              >
+                Enquire Plot
+              </button>
+            </div>
           </div>
         )}
 
@@ -653,20 +647,17 @@ export default function PlotViewerStandalone({ settings }) {
             <button onClick={() => scrollToSection('sec-overview')} className="hover:text-brand-orange transition-colors">
               Overview
             </button>
+            <button onClick={() => scrollToSection('sec-insights')} className="hover:text-brand-orange transition-colors">
+              Insights
+            </button>
+            <button onClick={() => scrollToSection('sec-stats')} className="hover:text-brand-orange transition-colors">
+              Stats
+            </button>
             <button onClick={() => scrollToSection('sec-landmarks')} className="hover:text-brand-orange transition-colors">
-              Nearby Landmarks
+              Nearby
             </button>
-            <button onClick={() => scrollToSection('sec-amenities')} className="hover:text-brand-orange transition-colors">
-              Infrastructure
-            </button>
-            <button onClick={() => scrollToSection('sec-sizer')} className="hover:text-brand-orange transition-colors">
-              Plot Sizer
-            </button>
-            <button onClick={() => scrollToSection('sec-approvals')} className="hover:text-brand-orange transition-colors">
-              Approvals
-            </button>
-            <button onClick={() => scrollToSection('sec-faqs')} className="hover:text-brand-orange transition-colors">
-              FAQs
+            <button onClick={() => setIsEnquiryOpen(true)} className="hover:text-brand-orange transition-colors">
+              Contact
             </button>
           </div>
 
@@ -823,46 +814,204 @@ export default function PlotViewerStandalone({ settings }) {
       </section>
 
       {/* ========================================================== */}
-      {/* 5. INFRASTRUCTURE & LUXURY AMENITIES SHOWCASE               */}
+      {/* 4. PROPERTY INSIGHTS & STATS (MATCHING PHOTO 3)            */}
       {/* ========================================================== */}
-      <section id="sec-amenities" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200/80 shadow-xs space-y-8">
+      <section id="sec-insights" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="space-y-6">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-brand-orange">
-              World-Class Plotted Infrastructure
-            </div>
-            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
-              Engineered for Enduring Capital Value &amp; Villa Living
+            <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+              Property Insights
             </h3>
-            <p className="text-sm text-slate-500 mt-1 max-w-2xl">
-              Constructed to stringent DTCP guidelines with underground utilities, wide roads, and continuous landscaping.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Detailed breakdown of orientations, availability, and area distributions.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {luxuryAmenities.map((amenity, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl border border-slate-200 overflow-hidden bg-slate-50/50 hover:shadow-md transition-all duration-200 group"
-              >
-                <div className="h-44 overflow-hidden relative">
-                  <img
-                    src={amenity.image}
-                    alt={amenity.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+            {/* Card 1: Facing Distribution (Photo 3) */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                  <Compass className="w-3.5 h-3.5" />
+                  <span>ANALYSIS</span>
                 </div>
-                <div className="p-5">
-                  <h4 className="font-bold text-slate-900 text-base group-hover:text-brand-orange transition-colors">
-                    {amenity.title}
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
-                    {amenity.desc}
-                  </p>
+                <h4 className="font-bold text-slate-900 text-lg mt-1">Facing Distribution</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Units oriented across cardinal directions</p>
+              </div>
+
+              {/* 8-Point Cardinal Compass Radar (Photo 3) */}
+              <div className="relative w-56 h-56 mx-auto my-6 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border border-slate-200" />
+                <div className="absolute inset-8 rounded-full border border-dashed border-slate-200" />
+                <div className="absolute inset-16 rounded-full border border-slate-200/70" />
+                <div className="absolute w-2.5 h-2.5 rounded-full bg-emerald-500" />
+
+                {/* Dashed axes */}
+                <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 border-t border-dashed border-slate-200" />
+                <div className="absolute inset-y-3 left-1/2 -translate-x-1/2 border-l border-dashed border-slate-200" />
+
+                {/* North */}
+                <div className="absolute top-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-slate-400">N</span>
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                    {facingCounts.N || 8}
+                  </span>
+                </div>
+
+                {/* North-East */}
+                <div className="absolute top-6 right-6 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-slate-400">NE</span>
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                    {facingCounts.NE || 6}
+                  </span>
+                </div>
+
+                {/* East */}
+                <div className="absolute top-1/2 right-1 -translate-y-1/2 flex items-center gap-1">
+                  <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
+                    {facingCounts.E || 44}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">E</span>
+                </div>
+
+                {/* South-East */}
+                <div className="absolute bottom-6 right-6 flex flex-col items-center">
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                    {facingCounts.SE || 4}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">SE</span>
+                </div>
+
+                {/* South */}
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                    {facingCounts.S || 6}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">S</span>
+                </div>
+
+                {/* South-West */}
+                <div className="absolute bottom-6 left-6 flex flex-col items-center">
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mb-0.5">
+                    {facingCounts.SW || 4}
+                  </span>
+                  <span className="text-[10px] font-bold text-slate-400">SW</span>
+                </div>
+
+                {/* West */}
+                <div className="absolute top-1/2 left-1 -translate-y-1/2 flex items-center gap-1">
+                  <span className="text-[10px] font-bold text-slate-400">W</span>
+                  <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs">
+                    {facingCounts.W || 38}
+                  </span>
+                </div>
+
+                {/* North-West */}
+                <div className="absolute top-6 left-6 flex flex-col items-center">
+                  <span className="text-[10px] font-bold text-slate-400">NW</span>
+                  <span className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center border border-emerald-200 shadow-2xs mt-0.5">
+                    {facingCounts.NW || 6}
+                  </span>
                 </div>
               </div>
-            ))}
+
+              <div className="text-center text-xs font-semibold text-emerald-700 bg-emerald-50/60 py-2 rounded-xl border border-emerald-100">
+                +12 Multi-Facing &amp; Corner Units
+              </div>
+            </div>
+
+            {/* Card 2: Inventory Status (Photo 3) */}
+            <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-emerald-700">
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>STOCK</span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-lg mt-1">Inventory Status</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Visual breakdown of unit availability</p>
+              </div>
+
+              {/* Pie / Donut Chart */}
+              <div className="w-44 h-44 mx-auto my-6 relative">
+                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="none"
+                    stroke="#68D391"
+                    strokeWidth="24"
+                    strokeDasharray={`${inventoryBreakdown.availPct * 2.38} 238`}
+                    strokeDashoffset="0"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="none"
+                    stroke="#FC8181"
+                    strokeWidth="24"
+                    strokeDasharray={`${inventoryBreakdown.soldPct * 2.38} 238`}
+                    strokeDashoffset={`-${inventoryBreakdown.availPct * 2.38}`}
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="none"
+                    stroke="#F6E05E"
+                    strokeWidth="24"
+                    strokeDasharray={`${inventoryBreakdown.resPct * 2.38} 238`}
+                    strokeDashoffset={`-${(inventoryBreakdown.availPct + inventoryBreakdown.soldPct) * 2.38}`}
+                  />
+                </svg>
+              </div>
+
+              {/* Legend below matching Photo 3 */}
+              <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-xs bg-[#68D391]" />
+                  <span>Available {inventoryBreakdown.availPct}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-xs bg-[#FC8181]" />
+                  <span>Sold {inventoryBreakdown.soldPct}%</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-xs bg-[#F6E05E]" />
+                  <span>Reserved {inventoryBreakdown.resPct}%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Project Scale (Photo 3) */}
+            <div id="sec-stats" className="bg-[#044E46] text-white p-7 rounded-3xl flex flex-col justify-between shadow-lg">
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                  Project Scale
+                </div>
+                <div className="mt-5">
+                  <div className="text-xs text-emerald-200">Total Units</div>
+                  <div className="text-5xl font-extrabold mt-1">96</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 py-6 border-y border-emerald-600/50 my-6">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">Total Area</div>
+                  <div className="text-xl font-bold mt-1">24,200.00 yd²</div>
+                </div>
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-emerald-300 font-semibold">In Acres</div>
+                  <div className="text-xl font-bold mt-1">10.50 ac</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs text-emerald-200">
+                <MapPin className="w-4 h-4 text-emerald-300 shrink-0" />
+                <span>Kadthal, Srisailam Highway</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1064,49 +1213,10 @@ export default function PlotViewerStandalone({ settings }) {
         </div>
       </section>
 
-      {/* ========================================================== */}
-      {/* 8. INTERACTIVE FAQ ACCORDION                                */}
-      {/* ========================================================== */}
-      <section id="sec-faqs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-orange">
-            <HelpCircle className="w-4 h-4" />
-            <span>Buyer Due Diligence</span>
-          </div>
-          <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
-            Frequently Asked Questions
-          </h3>
 
-          <div className="space-y-3 pt-2">
-            {faqItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="border border-slate-200 rounded-2xl overflow-hidden transition-all"
-              >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-                  className="w-full p-4 sm:p-5 text-left font-bold text-slate-900 text-sm sm:text-base flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
-                >
-                  <span>{item.q}</span>
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${
-                      openFaq === idx ? 'rotate-180 text-brand-orange' : ''
-                    }`}
-                  />
-                </button>
-                {openFaq === idx && (
-                  <div className="px-5 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
-                    {item.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ========================================================== */}
-      {/* 9. BOTTOM FOOTER                                           */}
+      {/* BOTTOM FOOTER                                              */}
       {/* ========================================================== */}
       <footer className="bg-slate-900 text-slate-400 py-10 px-4 sm:px-6 border-t border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
@@ -1130,17 +1240,6 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
       </footer>
-
-      {/* Specification Drawer / Bottom Sheet */}
-      <PlotDrawer
-        plot={selectedPlot}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onEnquire={(p) => {
-          setIsDrawerOpen(false);
-          setIsEnquiryOpen(true);
-        }}
-      />
 
       {/* Enquiry Modal */}
       <EnquiryModal

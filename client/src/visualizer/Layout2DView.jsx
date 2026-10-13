@@ -372,24 +372,65 @@ export default function Layout2DView({
                   strokeWidth={isSelected ? 3 : 1.2}
                 />
 
-                {/* Plot Number Clearly Visible */}
-                <text
-                  x={cx}
-                  y={cy + 4.5}
-                  fill={isSelected ? '#FFFFFF' : plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
-                  fontSize={Math.min(w, h) * 0.34 > 13 ? 13 : Math.max(Math.min(w, h) * 0.3, 10.5)}
-                  fontWeight="bold"
-                  textAnchor="middle"
-                >
-                  {plot.plotNumber}
-                </text>
+                {/* When Selected: Center Circular Badge matching Photo 4 */}
+                {isSelected ? (
+                  <g>
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={Math.min(w, h) * 0.38}
+                      fill="#FFFFFF"
+                      stroke="#94A3B8"
+                      strokeWidth="1.2"
+                    />
+                    <line
+                      x1={cx - Math.min(w, h) * 0.3}
+                      y1={cy}
+                      x2={cx + Math.min(w, h) * 0.3}
+                      y2={cy}
+                      stroke="#CBD5E1"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={cx}
+                      y={cy - 3}
+                      fill="#0F172A"
+                      fontSize="11"
+                      fontWeight="bold"
+                      textAnchor="middle"
+                    >
+                      {plot.plotNumber}
+                    </text>
+                    <text
+                      x={cx}
+                      y={cy + 10}
+                      fill="#64748B"
+                      fontSize="7.5"
+                      fontWeight="600"
+                      textAnchor="middle"
+                    >
+                      {plot.areaSqYds} yd²
+                    </text>
+                  </g>
+                ) : (
+                  <text
+                    x={cx}
+                    y={cy + 4.5}
+                    fill={plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
+                    fontSize={Math.min(w, h) * 0.34 > 13 ? 13 : Math.max(Math.min(w, h) * 0.3, 10.5)}
+                    fontWeight="bold"
+                    textAnchor="middle"
+                  >
+                    {plot.plotNumber}
+                  </text>
+                )}
 
-                {/* Area Label on Zoom (Screenshot 2: 183.33 yd²) */}
-                {scale > 1.25 && (
+                {/* Area Label on Zoom (Screenshot 2: 183.33 yd²) when unselected */}
+                {!isSelected && scale > 1.25 && (
                   <text
                     x={cx}
                     y={cy + 17}
-                    fill={isSelected ? '#FFFFFF' : '#0F172A'}
+                    fill="#0F172A"
                     fontSize="8.5"
                     fontWeight="semibold"
                     textAnchor="middle"
