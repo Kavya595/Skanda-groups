@@ -10,7 +10,8 @@ import {
   Eye,
   CheckCircle,
   Clock,
-  Compass
+  Compass,
+  Box
 } from 'lucide-react';
 import {
   fetchPlotStats,
@@ -130,17 +131,35 @@ export default function AdminDashboard() {
 
       {/* Inventory Progress Overview */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 className="font-bold text-base text-slate-900">Inventory Distribution</h3>
             <p className="text-xs text-slate-500">Real-time status breakdown of Alekhya's Brundavan plots</p>
           </div>
-          <div className="flex items-center gap-4 text-xs font-semibold">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500" /> Available ({available})</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400" /> Reserved ({reserved})</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-slate-400" /> Sold ({sold})</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-zinc-600" /> Blocked ({blocked})</span>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/admin/plots?view=2d"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-xl transition-all shadow-2xs"
+            >
+              <Compass className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Interactive 2D Map</span>
+            </Link>
+            <Link
+              to="/admin/plots?view=3d"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-brand-orange border border-orange-200 text-xs font-bold rounded-xl transition-all shadow-2xs"
+            >
+              <Box className="w-3.5 h-3.5 text-brand-orange" />
+              <span>3D Master Plan</span>
+            </Link>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold pt-1 border-t border-slate-100">
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500" /> Available ({available})</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400" /> Reserved ({reserved})</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-slate-400" /> Sold ({sold})</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-zinc-600" /> Blocked ({blocked})</span>
         </div>
 
         {/* Multi-segment Progress Bar */}

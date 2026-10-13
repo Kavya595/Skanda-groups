@@ -32,7 +32,6 @@ import {
   MessageCircle,
   HelpCircle,
   Check,
-  Footprints,
   Plus,
   Minus,
   Eye,
@@ -45,7 +44,7 @@ import {
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
-import Layout3DView, { WALK_ROADS } from '../visualizer/Layout3DView';
+import Layout3DView from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
 import EnquiryModal from '../components/EnquiryModal';
 
@@ -206,9 +205,6 @@ export default function PlotViewerStandalone({ settings }) {
 
   // Tools & State
   const [cameraPreset, setCameraPreset] = useState('overview');
-  const [walkRoadIndex, setWalkRoadIndex] = useState(0);
-  const [walkProgress, setWalkProgress] = useState(0.0);
-  const [isAutoStrolling, setIsAutoStrolling] = useState(false);
   const [animateVehicles, setAnimateVehicles] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
@@ -362,46 +358,10 @@ export default function PlotViewerStandalone({ settings }) {
     setStatusFilter(prev => prev === status ? 'all' : status);
   };
 
-  // Auto-roll / Walk simulation along roads
-  useEffect(() => {
-    if (!isAutoStrolling || cameraPreset !== 'roadWalk' || viewMode !== '3d') return;
-    const interval = setInterval(() => {
-      setWalkProgress(prev => {
-        if (prev >= 1) return 0;
-        return Math.min(1, prev + 0.005);
-      });
-    }, 50);
-    return () => clearInterval(interval);
-  }, [isAutoStrolling, cameraPreset, viewMode]);
-
-  // Click on a road in 3D drops camera into street walk level on that road
-  const handleRoadClick = (road) => {
-    setViewMode('3d');
-    const roadNameLower = (road?.shortName || road?.name || '').toLowerCase();
-    let idx = 0;
-    if (roadNameLower.includes('60')) idx = 3;
-    else if (roadNameLower.includes('hwy') || roadNameLower.includes('srisailam')) idx = 4;
-    else if (roadNameLower.includes('v1')) idx = 1;
-    else if (roadNameLower.includes('v3')) idx = 2;
-    setWalkRoadIndex(idx);
-    setWalkProgress(0);
-    setCameraPreset('roadWalk');
-  };
-
   // Click on park drops camera into park ground walk
   const handleParkClick = () => {
     if (viewMode === '3d') {
       setCameraPreset(prev => prev === 'parkGround' ? 'park' : 'parkGround');
-    }
-  };
-
-  const handleToggleWalkMode = () => {
-    if (viewMode !== '3d') setViewMode('3d');
-    if (cameraPreset === 'roadWalk') {
-      setCameraPreset('overview');
-      setIsAutoStrolling(false);
-    } else {
-      setCameraPreset('roadWalk');
     }
   };
 
@@ -413,13 +373,6 @@ export default function PlotViewerStandalone({ settings }) {
       setCameraPreset('overview');
     } else {
       setCameraPreset('parkGround');
-    }
-  };
-
-  const handleMapWheel = (e) => {
-    if (cameraPreset === 'roadWalk' && viewMode === '3d') {
-      const step = e.deltaY > 0 ? 0.03 : -0.03;
-      setWalkProgress(prev => Math.max(0, Math.min(1, prev + step)));
     }
   };
 
@@ -580,18 +533,6 @@ export default function PlotViewerStandalone({ settings }) {
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          {/* Travel Roads / Street Walk (USER REQUIREMENT) */}
-          <button
-            onClick={handleToggleWalkMode}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              cameraPreset === 'roadWalk'
-                ? 'bg-brand-orange text-white border-orange-600 ring-2 ring-orange-400/50'
-                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90 hover:bg-white'
-            }`}
-            title="Travel on Roads (Walk Tour Mode - Roll over roads with gestures)"
-          >
-            <Footprints className="w-4 h-4" />
-          </button>
 
           {/* Park View (2D / 3D Analysis) (USER REQUIREMENT) */}
           <button
@@ -776,90 +717,6 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         )}
 
-        {/* Floating Street Walk & Road Travel Controller Bar (USER REQUIREMENT) */}
-        {cameraPreset === 'roadWalk' && viewMode === '3d' && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 sm:p-4 space-y-3 pointer-events-auto animate-fadeIn">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
-                  Street Walk &bull; {WALK_ROADS[walkRoadIndex]?.name}
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  setCameraPreset('overview');
-                  setIsAutoStrolling(false);
-                }}
-                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2.5 py-1 rounded-lg bg-slate-100 transition-colors"
-              >
-                Exit Walk
-              </button>
-            </div>
-
-            {/* Road Selector Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-              {WALK_ROADS.map((r, idx) => (
-                <button
-                  key={r.id}
-                  onClick={() => {
-                    setWalkRoadIndex(idx);
-                    setWalkProgress(0);
-                  }}
-                  className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all ${
-                    walkRoadIndex === idx
-                      ? 'bg-brand-orange text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {r.shortName}
-                </button>
-              ))}
-            </div>
-
-            {/* Interactive Progress Slider & Controls */}
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              <button
-                onClick={() => setWalkProgress(prev => Math.max(0, prev - 0.08))}
-                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors"
-                title="Walk Backward"
-              >
-                &larr; Back
-              </button>
-
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.005"
-                value={walkProgress}
-                onChange={(e) => setWalkProgress(parseFloat(e.target.value))}
-                className="flex-1 accent-orange-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
-              />
-
-              <button
-                onClick={() => setWalkProgress(prev => Math.min(1, prev + 0.08))}
-                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors"
-                title="Walk Forward"
-              >
-                Fwd &rarr;
-              </button>
-
-              <button
-                onClick={() => setIsAutoStrolling(!isAutoStrolling)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-colors shrink-0 ${
-                  isAutoStrolling ? 'bg-amber-600' : 'bg-emerald-600 hover:bg-emerald-700'
-                }`}
-              >
-                {isAutoStrolling ? 'Pause' : 'Auto-Roll'}
-              </button>
-            </div>
-
-            <div className="text-[10px] text-slate-500 text-center font-medium">
-              Roll mouse wheel or touch-drag along avenue to travel &bull; Observe side palm trees, curbs &amp; plot numbers
-            </div>
-          </div>
-        )}
 
         {/* Floating Park Ground Walk Controller (USER REQUIREMENT matching Screenshot 5) */}
         {cameraPreset === 'parkGround' && viewMode === '3d' && (

@@ -5,6 +5,8 @@ import { adminChangePassword } from '../../api/client';
 import {
   LayoutDashboard,
   Layers,
+  Compass,
+  Box,
   Users,
   Activity,
   Settings,
@@ -33,6 +35,8 @@ export default function AdminLayout() {
   const menuItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { label: 'Plots Inventory', path: '/admin/plots', icon: Layers },
+    { label: '2D Layout Map', path: '/admin/plots?view=2d', icon: Compass },
+    { label: '3D Master Plan', path: '/admin/plots?view=3d', icon: Box },
     { label: 'Leads & Enquiries', path: '/admin/leads', icon: Users },
     { label: 'Activity & Analytics', path: '/admin/analytics', icon: Activity },
     { label: 'Site Content & Settings', path: '/admin/settings', icon: Settings },
@@ -109,10 +113,13 @@ export default function AdminLayout() {
           <nav className="mt-6 space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
+              const currentFull = location.pathname + location.search;
               const isActive =
                 item.path === '/admin'
-                  ? location.pathname === '/admin'
-                  : location.pathname.startsWith(item.path);
+                  ? location.pathname === '/admin' && !location.search
+                  : item.path.includes('?')
+                  ? currentFull === item.path
+                  : location.pathname === item.path && !location.search;
 
               return (
                 <Link
