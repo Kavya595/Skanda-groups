@@ -290,18 +290,19 @@ export default function Layout2DView({
             PROPOSED 33'-0" WIDE ROAD
           </text>
 
-          {/* Reserved Open Park (Ac. 0.758 cents) */}
+          {/* Reserved Open Park (Ac. 0.758 cents) - matching Screenshot 1 with sprinkled flower blossoms */}
           <g>
             <rect
               x={(parkData.polygon[0][0] + 95) * 6.0}
               y={(parkData.polygon[0][1] + 58) * 5.6}
               width={parkData.width * 6.0}
               height={parkData.depth * 5.6}
-              fill="#86EFAC"
-              stroke="#15803D"
-              strokeWidth="2"
-              rx="4"
+              fill="#84CC16"
+              stroke="#4D7C0F"
+              strokeWidth="2.5"
+              rx="6"
             />
+            {/* Jogging Track Loop */}
             <circle
               cx={(parkData.center[0] + 95) * 6.0}
               cy={(parkData.center[1] + 58) * 5.6}
@@ -312,22 +313,50 @@ export default function Layout2DView({
               strokeDasharray="5 4"
               opacity="0.8"
             />
+
+            {/* Sprinkled Daisy & Orange Flower Blossoms (matching Screenshot 1) */}
+            {[
+              [-60, -50, '#FFFFFF'],
+              [40, -60, '#FB923C'],
+              [-20, -25, '#FFFFFF'],
+              [50, 30, '#FFFFFF'],
+              [-45, 45, '#FB923C'],
+              [15, 55, '#FFFFFF'],
+              [-70, 15, '#FFFFFF'],
+              [65, -15, '#FB923C'],
+              [-35, -65, '#FFFFFF'],
+              [25, -35, '#FFFFFF'],
+              [-15, 60, '#FB923C'],
+              [55, 65, '#FFFFFF']
+            ].map(([dx, dy, col], idx) => {
+              const fx = (parkData.center[0] + 95) * 6.0 + dx;
+              const fy = (parkData.center[1] + 58) * 5.6 + dy;
+              return (
+                <g key={`flower-${idx}`}>
+                  <circle cx={fx} cy={fy} r="3.2" fill={col} />
+                  <circle cx={fx} cy={fy} r="1.4" fill="#FBBF24" />
+                </g>
+              );
+            })}
+
+            {/* "Park" Label in Center (matching Screenshot 1) */}
             <text
               x={(parkData.center[0] + 95) * 6.0}
-              y={(parkData.center[1] + 58) * 5.6 - 6}
+              y={(parkData.center[1] + 58) * 5.6 - 4}
               fill="#14532D"
-              fontSize="14"
+              fontSize="16"
               fontWeight="bold"
               textAnchor="middle"
+              fontStyle="italic"
             >
-              Open Space Park
+              Park
             </text>
             <text
               x={(parkData.center[0] + 95) * 6.0}
-              y={(parkData.center[1] + 58) * 5.6 + 12}
+              y={(parkData.center[1] + 58) * 5.6 + 14}
               fill="#166534"
               fontSize="11"
-              fontWeight="semibold"
+              fontWeight="bold"
               textAnchor="middle"
             >
               Ac. 0.758 Cents

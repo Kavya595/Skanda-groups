@@ -31,11 +31,16 @@ import {
   ChevronRight,
   MessageCircle,
   HelpCircle,
-  Check
+  Check,
+  Footprints,
+  Plus,
+  Minus,
+  Eye,
+  Sliders
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
-import Layout3DView from '../visualizer/Layout3DView';
+import Layout3DView, { WALK_ROADS } from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
 import EnquiryModal from '../components/EnquiryModal';
 
@@ -157,6 +162,9 @@ export default function PlotViewerStandalone({ settings }) {
 
   // Tools & State
   const [cameraPreset, setCameraPreset] = useState('overview');
+  const [walkRoadIndex, setWalkRoadIndex] = useState(0);
+  const [walkProgress, setWalkProgress] = useState(0.0);
+  const [isAutoStrolling, setIsAutoStrolling] = useState(false);
   const [animateVehicles, setAnimateVehicles] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
@@ -309,10 +317,64 @@ export default function PlotViewerStandalone({ settings }) {
     setStatusFilter(prev => prev === status ? 'all' : status);
   };
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+  // Auto-roll / Walk simulation along roads
+  useEffect(() => {
+    if (!isAutoStrolling || cameraPreset !== 'roadWalk' || viewMode !== '3d') return;
+    const interval = setInterval(() => {
+      setWalkProgress(prev => {
+        if (prev >= 1) return 0;
+        return Math.min(1, prev + 0.005);
+      });
+    }, 50);
+    return () => clearInterval(interval);
+  }, [isAutoStrolling, cameraPreset, viewMode]);
+
+  // Click on a road in 3D drops camera into street walk level on that road
+  const handleRoadClick = (road) => {
+    setViewMode('3d');
+    const roadNameLower = (road?.shortName || road?.name || '').toLowerCase();
+    let idx = 0;
+    if (roadNameLower.includes('60')) idx = 3;
+    else if (roadNameLower.includes('hwy') || roadNameLower.includes('srisailam')) idx = 4;
+    else if (roadNameLower.includes('v1')) idx = 1;
+    else if (roadNameLower.includes('v3')) idx = 2;
+    setWalkRoadIndex(idx);
+    setWalkProgress(0);
+    setCameraPreset('roadWalk');
+  };
+
+  // Click on park drops camera into park ground walk
+  const handleParkClick = () => {
+    if (viewMode === '3d') {
+      setCameraPreset(prev => prev === 'parkGround' ? 'park' : 'parkGround');
+    }
+  };
+
+  const handleToggleWalkMode = () => {
+    if (viewMode !== '3d') setViewMode('3d');
+    if (cameraPreset === 'roadWalk') {
+      setCameraPreset('overview');
+      setIsAutoStrolling(false);
+    } else {
+      setCameraPreset('roadWalk');
+    }
+  };
+
+  const handleToggleParkView = () => {
+    if (viewMode !== '3d') setViewMode('3d');
+    if (cameraPreset === 'parkGround') {
+      setCameraPreset('park');
+    } else if (cameraPreset === 'park') {
+      setCameraPreset('overview');
+    } else {
+      setCameraPreset('parkGround');
+    }
+  };
+
+  const handleMapWheel = (e) => {
+    if (cameraPreset === 'roadWalk' && viewMode === '3d') {
+      const step = e.deltaY > 0 ? 0.03 : -0.03;
+      setWalkProgress(prev => Math.max(0, Math.min(1, prev + step)));
     }
   };
 
@@ -407,8 +469,42 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </header>
 
-        {/* Floating Right Circular Toolbar */}
+        {/* Top-Left Zoom Controls & Compass Rose (matching Screenshot 1, 2, 3) */}
+        <div className="absolute top-20 left-4 z-30 flex flex-col gap-2 pointer-events-auto">
+          {/* Circular Zoom In/Out Buttons (matching Screenshot 1) */}
+          <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl p-1 flex flex-col gap-1">
+            <button
+              onClick={() => {
+                if (cameraPreset === 'overview') setCameraPreset('topDown');
+                else if (cameraPreset === 'topDown') setCameraPreset('roadWalk');
+              }}
+              className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
+              title="Zoom In"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCameraPreset('overview')}
+              className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors"
+              title="Zoom Out to Overview"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Compass Rose Needle (matching Screenshot 1, 2, 3) */}
+          <div
+            onClick={() => setCameraPreset('overview')}
+            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-xl flex items-center justify-center cursor-pointer group hover:bg-white transition-all"
+            title="True North Indicator (Click to Reset View)"
+          >
+            <Compass className="w-5 h-5 text-brand-orange group-hover:rotate-45 transition-transform duration-300" />
+          </div>
+        </div>
+
+        {/* Floating Right Circular Toolbar (matching Screenshot 2, 3) */}
         <aside className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto">
+          {/* Fit Overview */}
           <button
             onClick={() => setCameraPreset('overview')}
             className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-brand-orange hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
@@ -417,14 +513,46 @@ export default function PlotViewerStandalone({ settings }) {
             <RotateCcw className="w-4 h-4" />
           </button>
 
+          {/* Travel Roads / Street Walk (USER REQUIREMENT) */}
+          <button
+            onClick={handleToggleWalkMode}
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'roadWalk'
+                ? 'bg-brand-orange text-white border-orange-600 ring-2 ring-orange-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90 hover:bg-white'
+            }`}
+            title="Travel on Roads (Walk Tour Mode - Roll over roads with gestures)"
+          >
+            <Footprints className="w-4 h-4" />
+          </button>
+
+          {/* Park View (2D / 3D Analysis) (USER REQUIREMENT) */}
+          <button
+            onClick={handleToggleParkView}
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'parkGround' || cameraPreset === 'park'
+                ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:bg-white'
+            }`}
+            title="Park View (Analyze Ac. 0.758 Central Park from Ground & Above)"
+          >
+            <Trees className="w-4 h-4" />
+          </button>
+
+          {/* Top-Down Orthographic */}
           <button
             onClick={() => setCameraPreset('topDown')}
-            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-brand-orange hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
-            title="Top-Down Orthographic View"
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'topDown'
+                ? 'bg-slate-900 text-white border-slate-950'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90 hover:bg-white'
+            }`}
+            title="Top-Down Overhead View"
           >
             <Layers className="w-4 h-4" />
           </button>
 
+          {/* Distance Measurement */}
           <button
             onClick={() => {
               setIsMeasureMode(!isMeasureMode);
@@ -440,6 +568,7 @@ export default function PlotViewerStandalone({ settings }) {
             <Ruler className="w-4 h-4" />
           </button>
 
+          {/* Moving Vehicles Toggle */}
           <button
             onClick={() => setAnimateVehicles(!animateVehicles)}
             className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
@@ -452,6 +581,7 @@ export default function PlotViewerStandalone({ settings }) {
             <Car className="w-4 h-4" />
           </button>
 
+          {/* Fullscreen */}
           <button
             onClick={handleToggleFullscreen}
             className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-brand-orange hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
@@ -462,7 +592,7 @@ export default function PlotViewerStandalone({ settings }) {
         </aside>
 
         {/* Map Canvas (3D or 2D) */}
-        <div className="w-full h-full">
+        <div className="w-full h-full" onWheel={handleMapWheel}>
           {loading ? (
             <div className="w-full h-full flex items-center justify-center bg-[#DFEFE0]">
               <div className="text-center space-y-2">
@@ -476,10 +606,15 @@ export default function PlotViewerStandalone({ settings }) {
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
               cameraPreset={cameraPreset}
+              walkRoadIndex={walkRoadIndex}
+              walkProgress={walkProgress}
+              onWalkProgressChange={setWalkProgress}
               animateVehicles={animateVehicles}
               isMeasureMode={isMeasureMode}
               measurePoints={measurePoints}
               onMeasurePoint={handleMeasurePoint}
+              onRoadClick={handleRoadClick}
+              onParkClick={handleParkClick}
             />
           ) : (
             <Layout2DView
@@ -493,10 +628,10 @@ export default function PlotViewerStandalone({ settings }) {
           )}
         </div>
 
-        {/* Floating Upper-Right Quick Plot Card (Small Tab matching Photo 4) */}
+        {/* Floating Upper-Right Quick Plot Card (Exact Match to Screenshot 1 & 3) */}
         {selectedPlot && (
-          <div className="absolute top-16 right-3 sm:right-6 z-30 w-72 sm:w-80 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 sm:p-5 animate-fadeIn pointer-events-auto">
-            {/* Top Header matching Photo 4 */}
+          <div className="absolute top-16 right-3 sm:right-6 z-30 w-72 sm:w-84 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 sm:p-5 animate-fadeIn pointer-events-auto">
+            {/* Top Header matching Screenshot 1 & 3 */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${
@@ -510,7 +645,7 @@ export default function PlotViewerStandalone({ settings }) {
                   {selectedPlot.plotNumber}
                 </span>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                  {selectedPlot.status}
+                  {selectedPlot.status.toUpperCase()}
                 </span>
               </div>
               <button
@@ -522,8 +657,8 @@ export default function PlotViewerStandalone({ settings }) {
               </button>
             </div>
 
-            {/* Key-Value Details matching Photo 4 */}
-            <div className="py-3.5 space-y-2.5 text-xs">
+            {/* Key-Value Details matching Screenshot 1 & 3 */}
+            <div className="py-3.5 space-y-2 text-xs">
               <div className="flex justify-between items-center">
                 <span className="text-slate-500 font-medium">Facing</span>
                 <strong className="text-slate-900 font-bold">{selectedPlot.facing}</strong>
@@ -538,11 +673,11 @@ export default function PlotViewerStandalone({ settings }) {
               </div>
             </div>
 
-            {/* Actions Grid matching Photo 4 */}
+            {/* 4 Action Buttons matching Screenshot 1 & 3 */}
             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
               <div className="p-2 rounded-xl bg-emerald-50 text-[11px] text-emerald-800 font-semibold text-center border border-emerald-200 flex items-center justify-center gap-1">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>100% Vasthu</span>
+                <span>RFA Score 96%</span>
               </div>
               <button
                 onClick={() => handleShareCurrentPlot(selectedPlot)}
@@ -568,6 +703,120 @@ export default function PlotViewerStandalone({ settings }) {
                 className="p-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-[11px] text-white font-bold text-center transition-colors shadow-xs"
               >
                 Enquire Plot
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Street Walk & Road Travel Controller Bar (USER REQUIREMENT) */}
+        {cameraPreset === 'roadWalk' && viewMode === '3d' && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 sm:p-4 space-y-3 pointer-events-auto animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-900">
+                  Street Walk &bull; {WALK_ROADS[walkRoadIndex]?.name}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setCameraPreset('overview');
+                  setIsAutoStrolling(false);
+                }}
+                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2.5 py-1 rounded-lg bg-slate-100 transition-colors"
+              >
+                Exit Walk
+              </button>
+            </div>
+
+            {/* Road Selector Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {WALK_ROADS.map((r, idx) => (
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    setWalkRoadIndex(idx);
+                    setWalkProgress(0);
+                  }}
+                  className={`text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap transition-all ${
+                    walkRoadIndex === idx
+                      ? 'bg-brand-orange text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {r.shortName}
+                </button>
+              ))}
+            </div>
+
+            {/* Interactive Progress Slider & Controls */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <button
+                onClick={() => setWalkProgress(prev => Math.max(0, prev - 0.08))}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors"
+                title="Walk Backward"
+              >
+                &larr; Back
+              </button>
+
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.005"
+                value={walkProgress}
+                onChange={(e) => setWalkProgress(parseFloat(e.target.value))}
+                className="flex-1 accent-orange-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+              />
+
+              <button
+                onClick={() => setWalkProgress(prev => Math.min(1, prev + 0.08))}
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors"
+                title="Walk Forward"
+              >
+                Fwd &rarr;
+              </button>
+
+              <button
+                onClick={() => setIsAutoStrolling(!isAutoStrolling)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-colors shrink-0 ${
+                  isAutoStrolling ? 'bg-amber-600' : 'bg-emerald-600 hover:bg-emerald-700'
+                }`}
+              >
+                {isAutoStrolling ? 'Pause' : 'Auto-Roll'}
+              </button>
+            </div>
+
+            <div className="text-[10px] text-slate-500 text-center font-medium">
+              Roll mouse wheel or touch-drag along avenue to travel &bull; Observe side palm trees, curbs &amp; plot numbers
+            </div>
+          </div>
+        )}
+
+        {/* Floating Park Ground Walk Controller (USER REQUIREMENT matching Screenshot 5) */}
+        {cameraPreset === 'parkGround' && viewMode === '3d' && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-md bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 space-y-2 pointer-events-auto animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-slate-900">
+                  Ac. 0.758 Central Park &bull; Ground-Level Walk
+                </span>
+              </div>
+              <button
+                onClick={() => setCameraPreset('overview')}
+                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2 py-0.5 rounded-lg bg-slate-100"
+              >
+                Exit
+              </button>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-600">
+              <span>Flowering lawn &bull; Cycad palm shrubs &bull; Perimeter palms</span>
+              <button
+                onClick={() => setCameraPreset('park')}
+                className="text-brand-orange font-bold hover:underline"
+              >
+                Birds-Eye View &rarr;
               </button>
             </div>
           </div>

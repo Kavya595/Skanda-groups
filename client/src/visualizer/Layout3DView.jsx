@@ -9,10 +9,71 @@ import {
   statusColors
 } from './masterPlanData';
 
-// Camera Controller for Smooth Transitions and Framing
+// Road definitions for the interactive Street Walk / Road Travel mode
+export const WALK_ROADS = [
+  {
+    id: 'road-mid-33',
+    name: "33' Internal Main Boulevard",
+    shortName: "33' Road",
+    startX: -58,
+    endX: 58,
+    z: 0.5,
+    dir: 'east',
+    cameraHeight: 2.1,
+    lookAhead: 15
+  },
+  {
+    id: 'road-v1-33',
+    name: "33' Vertical Avenue 1 (West)",
+    shortName: "Avenue 1",
+    x: -32.5,
+    startZ: 50,
+    endZ: -38,
+    dir: 'north',
+    cameraHeight: 2.1,
+    lookAhead: 15
+  },
+  {
+    id: 'road-v3-33',
+    name: "33' Vertical Avenue 3 (East)",
+    shortName: "Avenue 3",
+    x: 25.5,
+    startZ: 50,
+    endZ: -38,
+    dir: 'north',
+    cameraHeight: 2.1,
+    lookAhead: 15
+  },
+  {
+    id: 'road-top-60',
+    name: "60' Arterial Road (to Maisigandi Temple)",
+    shortName: "60' Road",
+    startX: -78,
+    endX: 72,
+    z: -47,
+    dir: 'east',
+    cameraHeight: 2.3,
+    lookAhead: 18
+  },
+  {
+    id: 'road-hwy-100',
+    name: "Srisailam Highway (NH 765)",
+    shortName: "NH-765",
+    x: 77,
+    startZ: -48,
+    endZ: 58,
+    dir: 'south',
+    cameraHeight: 2.6,
+    lookAhead: 20
+  }
+];
+
+// Camera Controller for Smooth Transitions, Street Walk, and Park Ground Inspections
 function CameraController({
   selectedPlot,
   cameraPreset,
+  walkRoadIndex = 0,
+  walkProgress = 0,
   onResetComplete
 }) {
   const { camera } = useThree();
@@ -24,35 +85,62 @@ function CameraController({
   useEffect(() => {
     if (selectedPlot && selectedPlot.center) {
       const [cx, cz] = selectedPlot.center;
-      targetPos.current.set(cx, 22, cz + 20);
+      targetPos.current.set(cx, 20, cz + 18);
       targetLook.current.set(cx, 0.1, cz);
       animatingRef.current = true;
-    } else if (cameraPreset) {
-      if (cameraPreset === 'overview') {
-        targetPos.current.set(0, 68, 76);
-        targetLook.current.set(0, 0, 4);
-      } else if (cameraPreset === 'topDown') {
-        targetPos.current.set(0, 100, 0.1);
-        targetLook.current.set(0, 0, 0);
-      } else if (cameraPreset === 'highway') {
-        targetPos.current.set(78, 25, 20);
-        targetLook.current.set(50, 0, -5);
-      } else if (cameraPreset === 'park') {
-        targetPos.current.set(-68, 24, -10);
-        targetLook.current.set(-60, 0, -25);
+    } else if (cameraPreset === 'roadWalk') {
+      // Human eye-level Street Walk mode along the roads
+      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
+      const prog = Math.max(0, Math.min(1, walkProgress));
+
+      if (road.dir === 'east') {
+        const curX = road.startX + (road.endX - road.startX) * prog;
+        targetPos.current.set(curX, road.cameraHeight, road.z);
+        targetLook.current.set(curX + road.lookAhead, road.cameraHeight * 0.9, road.z);
+      } else if (road.dir === 'north') {
+        const curZ = road.startZ + (road.endZ - road.startZ) * prog;
+        targetPos.current.set(road.x, road.cameraHeight, curZ);
+        targetLook.current.set(road.x, road.cameraHeight * 0.9, curZ - road.lookAhead);
+      } else if (road.dir === 'south') {
+        const curZ = road.startZ + (road.endZ - road.startZ) * prog;
+        targetPos.current.set(road.x, road.cameraHeight, curZ);
+        targetLook.current.set(road.x, road.cameraHeight * 0.9, curZ + road.lookAhead);
       }
       animatingRef.current = true;
+    } else if (cameraPreset === 'parkGround') {
+      // Ground-level walk view inside Ac. 0.758 park (matching Screenshot 5)
+      targetPos.current.set(-74, 1.4, -18);
+      targetLook.current.set(-71, 0.9, -32);
+      animatingRef.current = true;
+    } else if (cameraPreset === 'park') {
+      // Elevated isometric view of the park (matching Screenshot 2 & 4)
+      targetPos.current.set(-73, 32, -4);
+      targetLook.current.set(-73, 0.1, -26);
+      animatingRef.current = true;
+    } else if (cameraPreset === 'topDown') {
+      targetPos.current.set(0, 105, 0.1);
+      targetLook.current.set(0, 0, 0);
+      animatingRef.current = true;
+    } else if (cameraPreset === 'highway') {
+      targetPos.current.set(78, 22, 22);
+      targetLook.current.set(50, 0, -4);
+      animatingRef.current = true;
+    } else {
+      // Overview preset (default)
+      targetPos.current.set(0, 68, 76);
+      targetLook.current.set(0, 0, 4);
+      animatingRef.current = true;
     }
-  }, [selectedPlot, cameraPreset]);
+  }, [selectedPlot, cameraPreset, walkRoadIndex, walkProgress]);
 
   useFrame((_, delta) => {
     if (animatingRef.current && controlsRef.current) {
-      const step = Math.min(delta * 4.0, 1);
+      const step = Math.min(delta * 4.2, 1);
       camera.position.lerp(targetPos.current, step);
       controlsRef.current.target.lerp(targetLook.current, step);
       controlsRef.current.update();
 
-      if (camera.position.distanceTo(targetPos.current) < 0.25) {
+      if (camera.position.distanceTo(targetPos.current) < 0.22) {
         animatingRef.current = false;
         if (onResetComplete) onResetComplete();
       }
@@ -62,16 +150,16 @@ function CameraController({
   return (
     <OrbitControls
       ref={controlsRef}
-      maxPolarAngle={Math.PI / 2.08}
-      minDistance={8}
-      maxDistance={160}
+      maxPolarAngle={cameraPreset === 'roadWalk' || cameraPreset === 'parkGround' ? Math.PI / 2.02 : Math.PI / 2.08}
+      minDistance={cameraPreset === 'roadWalk' || cameraPreset === 'parkGround' ? 1.5 : 4}
+      maxDistance={170}
       enableDamping
       dampingFactor={0.06}
     />
   );
 }
 
-// Flat Master Plot Tile (Zero gaps, no shadows, bold legible numbers, dimension labels on selection)
+// Flat Master Plot Tile (Bold legible numbers, dimension labels, zero gaps)
 function Plot3D({
   plot,
   isSelected,
@@ -80,7 +168,6 @@ function Plot3D({
   onMeasurePoint
 }) {
   const [hovered, setHovered] = useState(false);
-
   const meta = statusColors[plot.status] || statusColors.available;
 
   const color = useMemo(() => {
@@ -89,7 +176,7 @@ function Plot3D({
     return meta.threeColor;
   }, [plot.status, isSelected, hovered, meta.threeColor]);
 
-  const elevY = isSelected ? 0.35 : hovered ? 0.18 : 0.04;
+  const elevY = isSelected ? 0.32 : hovered ? 0.16 : 0.04;
   const [cx, cz] = plot.center || [0, 0];
   const w = plot.bounds?.width || 10;
   const d = plot.bounds?.depth || 10;
@@ -122,7 +209,7 @@ function Plot3D({
         <meshBasicMaterial color={color} />
       </mesh>
 
-      {/* Crisp Survey Demarcation Border */}
+      {/* Crisp Demarcation Boundary Lines */}
       <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(w, d)]} />
         <lineBasicMaterial
@@ -133,25 +220,21 @@ function Plot3D({
         />
       </lineSegments>
 
-      {/* When Selected: Center Circular White Badge matching Photo 4 */}
+      {/* When Selected: Center Circular White Badge */}
       {isSelected ? (
         <group position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          {/* Subtle Outer Drop Ring */}
           <mesh position={[0, 0, -0.002]}>
             <circleGeometry args={[Math.min(w, d) * 0.36, 32]} />
             <meshBasicMaterial color="#94A3B8" />
           </mesh>
-          {/* Pure White Badge Disk */}
           <mesh position={[0, 0, 0]}>
             <circleGeometry args={[Math.min(w, d) * 0.34, 32]} />
             <meshBasicMaterial color="#FFFFFF" />
           </mesh>
-          {/* Horizontal Divider Line */}
           <mesh position={[0, 0, 0.005]}>
             <planeGeometry args={[Math.min(w, d) * 0.52, 0.08]} />
             <meshBasicMaterial color="#CBD5E1" />
           </mesh>
-          {/* Plot Number on Top */}
           <Text
             position={[0, Math.min(w, d) * 0.14, 0.01]}
             fontSize={Math.min(w, d) * 0.2}
@@ -162,7 +245,6 @@ function Plot3D({
           >
             {String(plot.plotNumber)}
           </Text>
-          {/* Area yd² on Bottom */}
           <Text
             position={[0, -Math.min(w, d) * 0.14, 0.01]}
             fontSize={Math.min(w, d) * 0.12}
@@ -189,10 +271,9 @@ function Plot3D({
         </group>
       )}
 
-      {/* Edge Dimensions when Selected or Hovered (Photo 2 & 4: 50', 55', 33') */}
+      {/* Edge Dimensions when Selected or Hovered (matching Screenshot 3: 50', 30') */}
       {(isSelected || hovered) && (
         <group position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          {/* North edge dimension */}
           <Text
             position={[0, d / 2 - 0.7, 0]}
             fontSize={0.95}
@@ -203,7 +284,6 @@ function Plot3D({
           >
             {plot.dimensions?.split('x')[0]?.trim() || `${Math.round(w * 3.28)}'`}
           </Text>
-          {/* South edge dimension */}
           <Text
             position={[0, -d / 2 + 0.7, 0]}
             fontSize={0.95}
@@ -214,7 +294,6 @@ function Plot3D({
           >
             {plot.dimensions?.split('x')[0]?.trim() || `${Math.round(w * 3.28)}'`}
           </Text>
-          {/* West edge dimension */}
           <Text
             position={[-w / 2 + 0.7, 0, 0]}
             rotation={[0, 0, Math.PI / 2]}
@@ -226,7 +305,6 @@ function Plot3D({
           >
             {plot.dimensions?.split('x')[1]?.trim() || `${Math.round(d * 3.28)}'`}
           </Text>
-          {/* East edge dimension */}
           <Text
             position={[w / 2 - 0.7, 0, 0]}
             rotation={[0, 0, -Math.PI / 2]}
@@ -244,16 +322,16 @@ function Plot3D({
   );
 }
 
-// Realistic Broad Palm Tree matching Photo 1 and Photo 2 (slender organic trunk, 6 broad golden-lime arching leaves, ground shadow)
+// Realistic Broad Palm Tree along avenues and park perimeter
 function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   const leafAngles = [0, 60, 120, 180, 240, 300];
 
   return (
     <group position={position} scale={scale}>
-      {/* Ground Soft Decal Shadow on Sidewalk (Photo 1 & 2) */}
+      {/* Ground Soft Decal Shadow on Sidewalk */}
       <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.3, 16]} />
-        <meshBasicMaterial color="#000000" opacity={0.22} transparent />
+        <meshBasicMaterial color="#000000" opacity={0.2} transparent />
       </mesh>
 
       {/* Slender Tapered Trunk */}
@@ -275,12 +353,10 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
           position={[0, 2.85, 0]}
           rotation={[0.32, (angle * Math.PI) / 180, -0.42]}
         >
-          {/* Main Arched Leaf Blade */}
           <mesh position={[1.3, -0.22, 0]} rotation={[0, 0, -0.28]} scale={[2.5, 0.06, 1.1]}>
             <boxGeometry args={[1, 1, 1]} />
             <meshBasicMaterial color="#9EB226" />
           </mesh>
-          {/* Leaf Tip Drooping Downward */}
           <mesh position={[2.6, -0.75, 0]} rotation={[0, 0, -0.62]} scale={[1.4, 0.05, 0.85]}>
             <boxGeometry args={[1, 1, 1]} />
             <meshBasicMaterial color="#ADC32F" />
@@ -291,7 +367,50 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
-// Avenue Landscaping along Road Curbs lining both sides of roads (Photo 1 & 2)
+// Low Cycad Palm Shrub for the Park Lawn (matching Screenshot 4 & 5)
+function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
+  const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+
+  return (
+    <group position={position} scale={scale}>
+      {/* Small Brown Trunk Base */}
+      <mesh position={[0, 0.2, 0]}>
+        <cylinderGeometry args={[0.1, 0.16, 0.38, 6]} />
+        <meshBasicMaterial color="#6E563B" />
+      </mesh>
+
+      {/* Radiating Arching Leaves */}
+      {angles.map((ang, idx) => (
+        <group key={idx} position={[0, 0.35, 0]} rotation={[0.4, (ang * Math.PI) / 180, -0.3]}>
+          <mesh position={[0.65, -0.1, 0]} rotation={[0, 0, -0.2]} scale={[1.2, 0.04, 0.42]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#558B1F" />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+// Little Flower Patch for Park Lawn (matching Screenshot 1 & 5: white and orange flowers)
+function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
+  return (
+    <group position={position}>
+      {/* 4 Petals Disk */}
+      <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.22, 5]} />
+        <meshBasicMaterial color={isOrange ? '#FB923C' : '#FFFFFF'} />
+      </mesh>
+      {/* Flower Core */}
+      <mesh position={[0, 0.045, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.08, 6]} />
+        <meshBasicMaterial color="#FBBF24" />
+      </mesh>
+    </group>
+  );
+}
+
+// Avenue Landscaping along Road Curbs
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
@@ -312,17 +431,6 @@ function Landscaping() {
       list.push({ pos: [21.0, 0, z], scale: 0.92 });
       list.push({ pos: [30.0, 0, z], scale: 0.92 });
     }
-    // Trees in Ac. 0.758 Park Perimeter & Interior
-    const parkTrees = [
-      [-85, -13], [-80, -13], [-70, -13], [-60, -13],
-      [-86, -22], [-86, -32], [-86, -40],
-      [-60, -22], [-60, -32], [-60, -40],
-      [-73, -24], [-75, -30], [-68, -28], [-78, -35]
-    ];
-    parkTrees.forEach(([px, pz]) => {
-      list.push({ pos: [px, 0, pz], scale: 1.25 });
-    });
-
     return list;
   }, []);
 
@@ -335,7 +443,7 @@ function Landscaping() {
   );
 }
 
-// Low-poly Moving Vehicles
+// Low-poly Moving Vehicles (matching Screenshot 3: Red sedan on road!)
 function LowPolyCar({ color = '#FFFFFF', position = [0, 0, 0], rotation = [0, 0, 0] }) {
   return (
     <group position={position} rotation={rotation}>
@@ -369,7 +477,7 @@ function LowPolyCar({ color = '#FFFFFF', position = [0, 0, 0], rotation = [0, 0,
   );
 }
 
-// Moving Vehicles across Highway AND Internal Layout Roads (User requirement!)
+// Moving Vehicles across Highway AND Internal Layout Roads (Screenshot 3 Red Sedan!)
 function MovingVehicles({ animate }) {
   const hwySouthRef = useRef();
   const hwyNorthRef = useRef();
@@ -395,7 +503,7 @@ function MovingVehicles({ animate }) {
       road60Ref.current.position.x += delta * 12;
       if (road60Ref.current.position.x > 84) road60Ref.current.position.x = -88;
     }
-    // Internal 33' Mid Road (Eastbound)
+    // INTERNAL ROAD: Red Sedan driving on 33' Mid Road (matching Screenshot 3!)
     if (roadMidEastRef.current) {
       roadMidEastRef.current.position.x += delta * 9;
       if (roadMidEastRef.current.position.x > 60) roadMidEastRef.current.position.x = -62;
@@ -420,34 +528,33 @@ function MovingVehicles({ animate }) {
       </group>
       {/* Highway Northbound Sedan */}
       <group ref={hwyNorthRef} position={[83, 0, 30]} rotation={[0, Math.PI, 0]}>
-        <LowPolyCar color="#EF4444" />
+        <LowPolyCar color="#10B981" />
       </group>
-      {/* 60ft Road Sedan */}
+      {/* 60ft Road Blue Sedan */}
       <group ref={road60Ref} position={[-30, 0, -47]} rotation={[0, Math.PI / 2, 0]}>
         <LowPolyCar color="#2563EB" />
       </group>
 
-      {/* INTERNAL ROAD 1: 33' Mid Horizontal Road Car (Silver Hatchback) */}
+      {/* INTERNAL ROAD: Iconic RED CAR matching Screenshot 3! */}
       <group ref={roadMidEastRef} position={[-15, 0, 0.5]} rotation={[0, Math.PI / 2, 0]}>
-        <LowPolyCar color="#E2E8F0" />
+        <LowPolyCar color="#DC2626" />
       </group>
 
-      {/* INTERNAL ROAD 2: 33' Vertical Road V1 Car (Yellow Hatchback) */}
+      {/* Internal Road V1 (Yellow Car) */}
       <group ref={roadV1SouthRef} position={[-32.5, 0, 15]}>
         <LowPolyCar color="#FBBF24" />
       </group>
 
-      {/* INTERNAL ROAD 3: 33' Vertical Road V3 Car (Blue Sedan) */}
+      {/* Internal Road V3 (Silver Car) */}
       <group ref={roadV3NorthRef} position={[25.5, 0, 45]} rotation={[0, Math.PI, 0]}>
-        <LowPolyCar color="#0284C7" />
+        <LowPolyCar color="#E2E8F0" />
       </group>
     </group>
   );
 }
 
-// Connected Road Network with Realistic Asphalt and Stone Cobblestone Sidewalks (Photo 1 & 2)
-function ConnectedRoadNetwork() {
-  // Procedural dark asphalt tarmac texture with mineral speckles
+// Connected Road Network with Realistic Asphalt, Cobblestone Sidewalks, and Printed Road Names
+function ConnectedRoadNetwork({ onRoadClick }) {
   const asphaltTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
@@ -471,14 +578,13 @@ function ConnectedRoadNetwork() {
     return texture;
   }, []);
 
-  // Procedural stone cobblestone / paver-block sidewalk texture (Photo 1 & 2)
   const cobblestoneTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#475569'; // Grout line
+    ctx.fillStyle = '#475569';
     ctx.fillRect(0, 0, 256, 256);
     const rows = 16;
     const cols = 8;
@@ -520,8 +626,15 @@ function ConnectedRoadNetwork() {
         const isArterial = road.type === 'arterial';
 
         return (
-          <group key={road.id} position={[cx, 0.02, cz]}>
-            {/* Wide Stone Cobblestone Sidewalk Pavement (Photo 1 & 2) */}
+          <group
+            key={road.id}
+            position={[cx, 0.02, cz]}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onRoadClick) onRoadClick(road);
+            }}
+          >
+            {/* Wide Stone Cobblestone Sidewalk Pavement (matching Screenshot 1, 2, 3) */}
             <mesh position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
               <planeGeometry args={[w + 2.2, d + 2.2]} />
               <meshBasicMaterial
@@ -536,7 +649,7 @@ function ConnectedRoadNetwork() {
               <lineBasicMaterial color="#E2E8F0" linewidth={2} />
             </lineSegments>
 
-            {/* Realistic Dark Asphalt Road Bed (Photo 1 & 2) */}
+            {/* Realistic Dark Asphalt Road Bed */}
             <mesh rotation={[-Math.PI / 2, 0, 0]}>
               <planeGeometry args={[w, d]} />
               <meshBasicMaterial
@@ -553,7 +666,7 @@ function ConnectedRoadNetwork() {
               </mesh>
             )}
 
-            {/* Center Dashed Line for 60ft Road */}
+            {/* Center White Dashed Line for 60ft Road */}
             {isArterial && (
               <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[w, 0.28]} />
@@ -564,9 +677,9 @@ function ConnectedRoadNetwork() {
         );
       })}
 
-      {/* Street Name Typography printed along roads */}
+      {/* Street Name Typography printed along roads (matching Screenshot 3: 40' Road text!) */}
       <Text
-        position={[0, 0.03, -47]}
+        position={[0, 0.035, -47]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={1.75}
         color="#F8FAFC"
@@ -578,7 +691,7 @@ function ConnectedRoadNetwork() {
       </Text>
 
       <Text
-        position={[80, 0.03, 5]}
+        position={[80, 0.035, 5]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.8}
         color="#FEF08A"
@@ -590,7 +703,7 @@ function ConnectedRoadNetwork() {
       </Text>
 
       <Text
-        position={[0, 0.03, 0.5]}
+        position={[0, 0.035, 0.5]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={1.4}
         color="#CBD5E1"
@@ -602,7 +715,7 @@ function ConnectedRoadNetwork() {
       </Text>
 
       <Text
-        position={[-32.5, 0.03, 20]}
+        position={[-32.5, 0.035, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -613,7 +726,7 @@ function ConnectedRoadNetwork() {
       </Text>
 
       <Text
-        position={[-3.5, 0.03, 20]}
+        position={[-3.5, 0.035, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -624,7 +737,7 @@ function ConnectedRoadNetwork() {
       </Text>
 
       <Text
-        position={[25.5, 0.03, 20]}
+        position={[25.5, 0.035, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -637,50 +750,146 @@ function ConnectedRoadNetwork() {
   );
 }
 
-// Ac. 0.758 Park Area
-function ParkArea() {
+// Ac. 0.758 Park Area (matching Screenshot 1, 2, 4, 5: flowers, perimeter palms, cycad shrubs, 3D Park text)
+function ParkArea3D({ onParkClick }) {
   const [cx, cz] = parkData.center;
   const w = parkData.width;
   const d = parkData.depth;
 
+  // Perimeter small palm trees (matching Screenshot 2 & 4 perimeter!)
+  const perimeterPalms = useMemo(() => {
+    const list = [];
+    const minX = cx - w / 2;
+    const maxX = cx + w / 2;
+    const minZ = cz - d / 2;
+    const maxZ = cz + d / 2;
+
+    // North & South edges
+    for (let x = minX; x <= maxX; x += 3.8) {
+      list.push([x, minZ]);
+      list.push([x, maxZ]);
+    }
+    // West & East edges
+    for (let z = minZ + 3.8; z < maxZ; z += 3.8) {
+      list.push([minX, z]);
+      list.push([maxX, z]);
+    }
+    return list;
+  }, [cx, cz, w, d]);
+
+  // Scattered cycad shrubs inside the park lawn (matching Screenshot 4 & 5!)
+  const cycads = useMemo(() => {
+    const list = [];
+    for (let i = 0; i < 32; i++) {
+      const rx = cx - w * 0.42 + Math.random() * (w * 0.84);
+      const rz = cz - d * 0.42 + Math.random() * (d * 0.84);
+      list.push({ pos: [rx, 0.04, rz], scale: 0.8 + Math.random() * 0.35 });
+    }
+    return list;
+  }, [cx, cz, w, d]);
+
+  // Sprinkled white & orange flower clusters (matching Screenshot 1 & 5!)
+  const flowers = useMemo(() => {
+    const list = [];
+    for (let i = 0; i < 48; i++) {
+      const fx = cx - w * 0.44 + Math.random() * (w * 0.88);
+      const fz = cz - d * 0.44 + Math.random() * (d * 0.88);
+      list.push({ pos: [fx, 0.04, fz], isOrange: i % 2 === 0 });
+    }
+    return list;
+  }, [cx, cz, w, d]);
+
   return (
-    <group position={[cx, 0.03, cz]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+    <group
+      onClick={(e) => {
+        e.stopPropagation();
+        if (onParkClick) onParkClick();
+      }}
+    >
+      {/* Vibrant Grass Lawn (matching Plots99 #7CB518) */}
+      <mesh position={[cx, 0.03, cz]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[w, d]} />
-        <meshBasicMaterial color="#86EFAC" />
+        <meshBasicMaterial color="#7CB518" />
       </mesh>
 
-      <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+      {/* Dark green perimeter outline */}
+      <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[cx, 0.035, cz]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(w, d)]} />
-        <lineBasicMaterial color="#15803D" linewidth={1.5} />
+        <lineBasicMaterial color="#4A7C12" linewidth={2} />
       </lineSegments>
 
-      {/* Jogging Track Ring */}
-      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Jogging Track Loop */}
+      <mesh position={[cx, 0.038, cz]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[w * 0.32, w * 0.38, 32]} />
-        <meshBasicMaterial color="#D97706" opacity={0.75} transparent />
+        <meshBasicMaterial color="#D97706" opacity={0.65} transparent />
       </mesh>
 
-      <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 3D "Park" Label in Center (matching Screenshot 1, 2, 4) */}
+      <group position={[cx, 0.06, cz]} rotation={[-Math.PI / 2, 0, 0]}>
         <Text
-          fontSize={1.6}
+          fontSize={2.2}
           color="#14532D"
           anchorX="center"
           anchorY="middle"
           fontWeight="bold"
         >
-          Open Space Park
+          Park
         </Text>
         <Text
-          position={[0, -1.8, 0]}
-          fontSize={1.15}
+          position={[0, -2.4, 0]}
+          fontSize={1.2}
           color="#166534"
           anchorX="center"
           anchorY="middle"
+          fontWeight="semibold"
         >
           Ac. 0.758 Cents
         </Text>
       </group>
+
+      {/* Perimeter Palm Trees (matching Screenshot 2 & 4) */}
+      {perimeterPalms.map(([px, pz], idx) => (
+        <PalmTree key={`perm-${idx}`} position={[px, 0.03, pz]} scale={0.72} />
+      ))}
+
+      {/* Scattered Cycad Palm Shrubs (matching Screenshot 4 & 5) */}
+      {cycads.map((c, idx) => (
+        <ParkCycadShrub key={`cycad-${idx}`} position={c.pos} scale={c.scale} />
+      ))}
+
+      {/* Scattered Daisy & Orange Flower Blossoms (matching Screenshot 1 & 5) */}
+      {flowers.map((fl, idx) => (
+        <FlowerPatch key={`fl-${idx}`} position={fl.pos} isOrange={fl.isOrange} />
+      ))}
+    </group>
+  );
+}
+
+// Google Maps / Cartographic Terrain Backdrop Plane
+function CartographicMapTerrain() {
+  return (
+    <group>
+      {/* Light pastel green map terrain plane (matching OpenStreetMap / Google Maps base) */}
+      <mesh position={[0, -0.015, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[420, 300]} />
+        <meshBasicMaterial color="#CFE2CC" />
+      </mesh>
+
+      {/* Layout Compound Boundary Base */}
+      <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[186, 126]} />
+        <meshBasicMaterial color="#D5E8CE" />
+      </mesh>
+
+      {/* Surrounding Terrain Arterial Grid & Approach Highway Veins */}
+      <mesh position={[0, 0.006, -75]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[260, 4]} />
+        <meshBasicMaterial color="#CBD5E1" />
+      </mesh>
+      <mesh position={[0, 0.006, 85]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[260, 4]} />
+        <meshBasicMaterial color="#CBD5E1" />
+      </mesh>
     </group>
   );
 }
@@ -747,47 +956,46 @@ export default function Layout3DView({
   plots,
   selectedPlot,
   onSelectPlot,
-  cameraPreset,
+  cameraPreset = 'overview',
+  walkRoadIndex = 0,
+  walkProgress = 0,
+  onWalkProgressChange,
   animateVehicles = true,
   isMeasureMode = false,
   measurePoints = [],
-  onMeasurePoint
+  onMeasurePoint,
+  onRoadClick,
+  onParkClick
 }) {
   return (
-    <div className="w-full h-full relative bg-[#DFEFE0] select-none">
+    <div className="w-full h-full relative bg-[#CFE2CC] select-none">
       <Canvas
         shadows={false} // NO SHADOWS per user directive
-        camera={{ position: [0, 68, 76], fov: 42, near: 1, far: 500 }}
+        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 550 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
-        <color attach="background" args={['#DFEFE0']} />
+        <color attach="background" args={['#CFE2CC']} />
 
         {/* Clean, Bright, Shadowless Illumination */}
-        <ambientLight intensity={1.15} />
-        <directionalLight position={[30, 80, 40]} intensity={0.7} />
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[30, 80, 40]} intensity={0.65} />
 
+        {/* Camera Controller supporting Street Walk & Park Ground views */}
         <CameraController
           selectedPlot={selectedPlot}
           cameraPreset={cameraPreset}
+          walkRoadIndex={walkRoadIndex}
+          walkProgress={walkProgress}
         />
 
-        {/* Natural Grass Terrain Plane */}
-        <mesh position={[0, -0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[380, 260]} />
-          <meshBasicMaterial color="#DFEFE0" />
-        </mesh>
-
-        {/* Layout Compound Base Surface */}
-        <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[186, 126]} />
-          <meshBasicMaterial color="#D5E8CE" />
-        </mesh>
+        {/* Google Maps / Cartographic Terrain Backdrop */}
+        <CartographicMapTerrain />
 
         {/* Connected Asphalt Road Network with Sidewalks */}
-        <ConnectedRoadNetwork />
+        <ConnectedRoadNetwork onRoadClick={onRoadClick} />
 
-        {/* Ac. 0.758 Park Area */}
-        <ParkArea />
+        {/* Ac. 0.758 Park Area with Flowers, Perimeter Palms & Cycads */}
+        <ParkArea3D onParkClick={onParkClick} />
 
         {/* Avenue Royal Palms Landscaping */}
         <Landscaping />
