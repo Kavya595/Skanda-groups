@@ -159,7 +159,7 @@ function CameraController({
   );
 }
 
-// Flat Master Plot Tile (Bold legible numbers, dimension labels, zero gaps)
+// 3D Volumetric Plot Tile with physical Height, Width, Depth and Plinth Base
 function Plot3D({
   plot,
   isSelected,
@@ -179,23 +179,30 @@ function Plot3D({
     return meta.threeColor;
   }, [plot.status, isSelected, isSearchedMatch, hovered, meta.threeColor]);
 
-  const elevY = isSelected ? 0.38 : isSearchedMatch ? 0.28 : hovered ? 0.16 : isDimmed ? 0.02 : 0.04;
   const [cx, cz] = plot.center || [0, 0];
   const w = plot.bounds?.width || 10;
   const d = plot.bounds?.depth || 10;
 
+  // Realistic Physical 3D Tile Dimensions: Height (0.22m plinth slab), Width and Depth
+  const tileHeight = 0.22;
+  const liftY = isSelected ? 0.32 : isSearchedMatch ? 0.22 : hovered ? 0.12 : 0;
+  const posY = (tileHeight / 2) + 0.02 + liftY;
+  const tileW = Math.max(w - 0.08, 0.5);
+  const tileD = Math.max(d - 0.08, 0.5);
+  const topSurfaceY = (tileHeight / 2) + 0.005;
+
   const handleClick = (e) => {
     e.stopPropagation();
     if (isMeasureMode && onMeasurePoint) {
-      onMeasurePoint([cx, 0.4, cz]);
+      onMeasurePoint([cx, tileHeight + liftY + 0.1, cz]);
     } else {
       onSelect(plot);
     }
   };
 
   return (
-    <group position={[cx, elevY, cz]}>
-      {/* Plot Flat Surface Mesh */}
+    <group position={[cx, posY, cz]}>
+      {/* 3D Volumetric Foundation Plinth Box with Height, Width, and Depth */}
       <mesh
         onClick={handleClick}
         onPointerOver={(e) => {
@@ -206,30 +213,36 @@ function Plot3D({
           e.stopPropagation();
           setHovered(false);
         }}
-        rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[w, d]} />
-        <meshBasicMaterial
-          color={color}
-          opacity={isDimmed ? 0.22 : 1.0}
-          transparent={isDimmed}
-        />
+        <boxGeometry args={[tileW, tileHeight, tileD]} />
+        {/* +X (Right side) */}
+        <meshStandardMaterial attach="material-0" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+        {/* -X (Left side) */}
+        <meshStandardMaterial attach="material-1" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+        {/* +Y (Top surface) with vibrant status color */}
+        <meshStandardMaterial attach="material-2" color={color} roughness={0.5} opacity={isDimmed ? 0.25 : 1.0} transparent={isDimmed} />
+        {/* -Y (Bottom) */}
+        <meshStandardMaterial attach="material-3" color="#94A3B8" roughness={0.9} />
+        {/* +Z (Front side) */}
+        <meshStandardMaterial attach="material-4" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+        {/* -Z (Back side) */}
+        <meshStandardMaterial attach="material-5" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
       </mesh>
 
-      {/* Crisp Demarcation Boundary Lines */}
-      <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-        <edgesGeometry args={[new THREE.PlaneGeometry(w, d)]} />
+      {/* Crisp 3D Demarcation Bevel Edges highlighting Height, Width, Depth */}
+      <lineSegments>
+        <edgesGeometry args={[new THREE.BoxGeometry(tileW, tileHeight, tileD)]} />
         <lineBasicMaterial
-          color={isSelected || isSearchedMatch ? '#FFFFFF' : isDimmed ? '#94A3B8' : '#CBD5E1'}
-          linewidth={isSelected || isSearchedMatch ? 3 : 1.2}
-          opacity={isDimmed ? 0.3 : (isSelected || isSearchedMatch ? 1.0 : 0.9)}
-          transparent
+          color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
+          linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
+          opacity={isDimmed ? 0.3 : 1.0}
+          transparent={isDimmed}
         />
       </lineSegments>
 
       {/* Glowing Target Ring on Searched Match */}
       {isSearchedMatch && (
-        <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <group position={[0, topSurfaceY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <mesh>
             <ringGeometry args={[Math.min(w, d) * 0.38, Math.min(w, d) * 0.46, 32]} />
             <meshBasicMaterial color="#EA580C" />
@@ -239,7 +252,7 @@ function Plot3D({
 
       {/* When Selected: Center Circular White Badge */}
       {isSelected ? (
-        <group position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <group position={[0, topSurfaceY + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <mesh position={[0, 0, -0.002]}>
             <circleGeometry args={[Math.min(w, d) * 0.36, 32]} />
             <meshBasicMaterial color="#94A3B8" />
@@ -275,7 +288,7 @@ function Plot3D({
         </group>
       ) : (
         /* When Unselected: Bold Number on Surface */
-        <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <group position={[0, topSurfaceY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <Text
             fontSize={Math.min(w, d) * 0.32 > 1.85 ? 1.85 : Math.max(Math.min(w, d) * 0.28, 1.35)}
             color={plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
@@ -290,7 +303,7 @@ function Plot3D({
 
       {/* Edge Dimensions when Selected or Hovered (matching Screenshot 3: 50', 30') */}
       {(isSelected || hovered) && (
-        <group position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <group position={[0, topSurfaceY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <Text
             position={[0, d / 2 - 0.7, 0]}
             fontSize={0.95}
@@ -429,27 +442,75 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   );
 }
 
-// Avenue Landscaping along Road Curbs
+// Avenue Landscaping between Block to Block along Internal Road Curbs
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
-    // Palm trees along 60ft Road curb (both sides, layout interior only, removed from highway route x > 56)
+
+    // 1. Top 60ft Road Curbs (North boundary of Blocks A, B, C, D, E; inside layout X <= 56)
+    for (let x = -86; x <= 56; x += 12) {
+      list.push({ pos: [x, 0.18, -52.9], scale: 1.05 });
+      list.push({ pos: [x, 0.18, -41.1], scale: 1.05 });
+    }
+
+    // 2. Central Main Boulevard (between North Blocks and South Blocks; inside layout X <= 56)
     for (let x = -86; x <= 56; x += 11) {
-      list.push({ pos: [x, 0.18, -52.9], scale: 1.1 });
-      list.push({ pos: [x, 0.18, -41.1], scale: 1.1 });
+      list.push({ pos: [x, 0.18, -3.9], scale: 0.95 });
+      list.push({ pos: [x, 0.18, 4.9], scale: 0.95 });
     }
-    // Palm trees along Mid 33ft Road curbs (both sides, layout interior only, removed from highway route x > 56)
-    for (let x = -58; x <= 56; x += 11) {
-      list.push({ pos: [x, 0.18, -3.9], scale: 0.96 });
-      list.push({ pos: [x, 0.18, 4.9], scale: 0.96 });
+
+    // 3. Road V0 (between Block F and Central Park / Block G, South section Z: 8 to 56)
+    for (let z = 8; z <= 56; z += 12) {
+      list.push({ pos: [-65.9, 0.18, z], scale: 0.92 });
+      list.push({ pos: [-57.1, 0.18, z], scale: 0.92 });
     }
-    // Palm trees along Vertical Roads V1 & V3 (both sides)
-    for (let z = 9; z <= 54; z += 10) {
+
+    // 4. Road V1 (between Block A & B in North, Block G & H in South)
+    // North section (Z: -40 to -6)
+    for (let z = -40; z <= -6; z += 11) {
       list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
+    }
+    // South section (Z: 8 to 56)
+    for (let z = 8; z <= 56; z += 12) {
+      list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
+      list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
+    }
+
+    // 5. Road V2 (between Block B & C in North, Block H & I in South)
+    // North section (Z: -40 to -6)
+    for (let z = -40; z <= -6; z += 11) {
+      list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
+      list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
+    }
+    // South section (Z: 8 to 56)
+    for (let z = 8; z <= 56; z += 12) {
+      list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
+      list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
+    }
+
+    // 6. Road V3 (between Block C & D in North, Block I & J in South)
+    // North section (Z: -40 to -6)
+    for (let z = -40; z <= -6; z += 11) {
       list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
       list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
     }
+    // South section (Z: 8 to 56)
+    for (let z = 8; z <= 56; z += 12) {
+      list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
+      list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
+    }
+
+    // 7. Road V4 (between Block D & E in North, Block J & K in South, west curb at X: 49.1)
+    // North section (Z: -40 to -6)
+    for (let z = -40; z <= -6; z += 11) {
+      list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
+    }
+    // South section (Z: 8 to 56)
+    for (let z = 8; z <= 56; z += 12) {
+      list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
+    }
+
     return list;
   }, []);
 
@@ -1042,19 +1103,18 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Module-level cache for terrain textures
-const terrainTextureCache = { satellite: null, osm: null };
+// Module-level cache for OpenStreetMap terrain texture
+let osmTerrainTextureCache = null;
 
-// Real-World Kadthal / Srisailam Highway Geographic Map & Satellite Terrain Backdrop
-function GeographicMapTerrain({ mapTileType = 'satellite' }) {
-  const [terrainTexture, setTerrainTexture] = useState(() => terrainTextureCache[mapTileType] || null);
-  const isSat = mapTileType === 'satellite';
+// Real-World Kadthal / Srisailam Highway Map View Terrain Backdrop (Clean OpenStreetMap)
+function RealWorldMapTerrain() {
+  const [terrainTexture, setTerrainTexture] = useState(() => osmTerrainTextureCache);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    if (terrainTextureCache[mapTileType]) {
-      setTerrainTexture(terrainTextureCache[mapTileType]);
+    if (osmTerrainTextureCache) {
+      setTerrainTexture(osmTerrainTextureCache);
       return;
     }
 
@@ -1063,12 +1123,12 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
     canvas.height = 768;
     const ctx = canvas.getContext('2d');
 
-    // Base background tone while tiles load
-    ctx.fillStyle = isSat ? '#3B4A3A' : '#E5ECE3';
+    // Clean OpenStreetMap pastel map tone
+    ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 768, 768);
 
-    // Subtle coordinate grid on base
-    ctx.strokeStyle = isSat ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+    // Subtle cartographic grid
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 768; i += 64) {
       ctx.beginPath();
@@ -1080,10 +1140,10 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
-    terrainTextureCache[mapTileType] = tex;
+    osmTerrainTextureCache = tex;
     setTerrainTexture(tex);
 
-    // Zoom 17 tile coordinates for Kadthal [17.0985, 78.5085]
+    // Zoom 17 OpenStreetMap tile coordinates for Kadthal [17.0985, 78.5085]
     const zoom = 17;
     const startX = 94119;
     const startY = 59215;
@@ -1095,112 +1155,41 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
-        const tileUrl = isSat
-          ? `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
-          : `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-
         img.onload = () => {
           ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
           tex.needsUpdate = true;
         };
-        img.src = tileUrl;
+        img.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
       }
     }
-  }, [mapTileType, isSat]);
+  }, []);
 
   return (
     <group>
-      {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad) */}
+      {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad - Map View) */}
       <mesh position={[125, -0.02, 119]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[877, 917]} />
         {terrainTexture ? (
           <meshBasicMaterial map={terrainTexture} />
         ) : (
-          <meshBasicMaterial color={isSat ? '#3B4A3A' : '#E5ECE3'} />
+          <meshBasicMaterial color="#E5ECE3" />
         )}
       </mesh>
 
       {/* Layout Compound Boundary Base Ground Tile */}
       <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[186, 126]} />
-        <meshBasicMaterial
-          color={isSat ? '#2E4733' : '#D5E8CE'}
-          opacity={isSat ? 0.35 : 0.85}
-          transparent
-        />
+        <meshBasicMaterial color="#D5E8CE" opacity={0.88} transparent />
       </mesh>
 
       {/* DTCP Sanctioned Layout Boundary Perimeter Fencing */}
       <lineSegments position={[0, 0.012, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(186, 126)]} />
-        <lineBasicMaterial color={isSat ? '#4ADE80' : '#15803D'} linewidth={3} />
+        <lineBasicMaterial color="#15803D" linewidth={3} />
       </lineSegments>
 
       {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
-
-      {/* Floating 3D Location Marker Pin right over the layout center */}
-      <Billboard position={[0, 10, 5]} follow={true}>
-        <group>
-          {/* Elevated Capsule Badge */}
-          <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[24, 4.2]} />
-            <meshBasicMaterial color="#0F172A" opacity={0.92} transparent />
-          </mesh>
-          <lineSegments position={[0, 0, 0.01]}>
-            <edgesGeometry args={[new THREE.PlaneGeometry(24, 4.2)]} />
-            <lineBasicMaterial color="#EA580C" linewidth={2} />
-          </lineSegments>
-          {/* Vertical Stem */}
-          <mesh position={[0, -2.8, 0]}>
-            <cylinderGeometry args={[0.08, 0.08, 5.6, 8]} />
-            <meshBasicMaterial color="#EA580C" />
-          </mesh>
-          <Text position={[0, 0.8, 0.05]} fontSize={1.4} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
-            📍 ALEKHYA'S BRUNDAVAN
-          </Text>
-          <Text position={[0, -0.7, 0.05]} fontSize={0.88} color="#FDBA74" fontWeight="semibold" anchorX="center" anchorY="middle">
-            Kadthal, Srisailam Hwy NH-765 &bull; DTCP Approved
-          </Text>
-        </group>
-      </Billboard>
-
-      {/* Real-World GIS Milestone Markers on 3D Map */}
-      <Billboard position={[80, 5, -110]} follow={true}>
-        <group>
-          <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[28, 3.4]} />
-            <meshBasicMaterial color="#1E3A8A" opacity={0.92} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
-            ▲ to Hyderabad / RGIA Airport / ORR Exit 14 (34 km)
-          </Text>
-        </group>
-      </Billboard>
-
-      <Billboard position={[80, 5, 120]} follow={true}>
-        <group>
-          <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[28, 3.4]} />
-            <meshBasicMaterial color="#1E3A8A" opacity={0.92} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
-            ▼ to Kadthal Town / Dindi / Srisailam (NH-765)
-          </Text>
-        </group>
-      </Billboard>
-
-      <Billboard position={[-125, 5, -47]} follow={true}>
-        <group>
-          <mesh position={[0, 0, 0]}>
-            <planeGeometry args={[26, 3.4]} />
-            <meshBasicMaterial color="#92400E" opacity={0.92} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
-            ◄ to Maisigandi Maisamma Temple (0.8 km)
-          </Text>
-        </group>
-      </Billboard>
     </group>
   );
 }
@@ -1279,15 +1268,13 @@ export default function Layout3DView({
   measurePoints = [],
   onMeasurePoint,
   onRoadClick,
-  onParkClick,
-  mapTileType = 'satellite'
+  onParkClick
 }) {
   const cleanSearch = (searchTerm || '').trim();
-  const isSat = mapTileType === 'satellite';
-  const bgColor = isSat ? '#2E3A2D' : '#CFE2CC';
+  const bgColor = '#E5ECE3';
 
   return (
-    <div className={`w-full h-full relative ${isSat ? 'bg-[#2E3A2D]' : 'bg-[#CFE2CC]'} select-none transition-colors duration-500`}>
+    <div className="w-full h-full relative bg-[#E5ECE3] select-none">
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 550 }}
@@ -1307,8 +1294,8 @@ export default function Layout3DView({
           walkProgress={walkProgress}
         />
 
-        {/* Real-World Geographic Kadthal Map & Satellite Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
-        <GeographicMapTerrain mapTileType={mapTileType} />
+        {/* Real-World Geographic Kadthal Map View Terrain (Clean OpenStreetMap) */}
+        <RealWorldMapTerrain />
 
         {/* Connected Asphalt Road Network with Sidewalks */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />

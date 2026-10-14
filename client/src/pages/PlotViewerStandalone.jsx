@@ -205,7 +205,6 @@ const nearbyLandmarks = [
 
 export default function PlotViewerStandalone({ settings }) {
   const [viewMode, setViewMode] = useState('3d');
-  const [mapTileType, setMapTileType] = useState('satellite');
   const [plots, setPlots] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -791,7 +790,6 @@ export default function PlotViewerStandalone({ settings }) {
               measurePoints={measurePoints}
               onMeasurePoint={handleMeasurePoint}
               onParkClick={handleParkClick}
-              mapTileType={mapTileType}
             />
           ) : (
             <Layout2DView
@@ -803,7 +801,6 @@ export default function PlotViewerStandalone({ settings }) {
               filterFacing={facingFilter}
               searchTerm={searchTerm}
               animateVehicles={animateVehicles}
-              activeTileType={mapTileType}
             />
           )}
         </div>
@@ -979,37 +976,15 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
-        {/* Bottom Right Attribution & Layer / View Mode Controls */}
-        <div className="absolute bottom-4 right-4 z-30 pointer-events-auto flex items-center gap-2">
-          {/* Map / Satellite Layer Toggle (Synchronized for both 2D and 3D) */}
-          <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
-            <button
-              onClick={() => setMapTileType('satellite')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                mapTileType === 'satellite'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-              title="Aerial Satellite Photography (Esri World Imagery)"
-            >
-              <span>🛰️</span>
-              <span className="hidden sm:inline">Satellite</span>
-            </button>
-            <button
-              onClick={() => setMapTileType('osm')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                mapTileType === 'osm'
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-              title="Road & Street Map View (OpenStreetMap)"
-            >
-              <span>🗺️</span>
-              <span className="hidden sm:inline">Map</span>
-            </button>
+        {/* Bottom Right Map Attribution (Single Clean Text) */}
+        <div className="absolute bottom-4 right-24 z-20 pointer-events-auto hidden md:block select-none">
+          <div className="text-[10px] text-slate-500 font-sans tracking-wide">
+            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">OpenStreetMap contributors</a>
           </div>
+        </div>
 
-          {/* 2D / 3D Mode Pill */}
+        {/* Bottom Right 2D/3D Pill */}
+        <div className="absolute bottom-4 right-4 z-30 pointer-events-auto">
           <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
             <button
               onClick={() => handleViewModeToggle('2d')}
@@ -1031,17 +1006,6 @@ export default function PlotViewerStandalone({ settings }) {
             >
               3D
             </button>
-          </div>
-        </div>
-
-        {/* Map Attribution (Single Clean Text) */}
-        <div className="absolute bottom-4 right-72 z-20 pointer-events-auto hidden md:block select-none">
-          <div className="text-[10px] text-slate-500 font-sans tracking-wide">
-            {mapTileType === 'satellite' ? (
-              <span>Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">Esri, Maxar</a></span>
-            ) : (
-              <span>&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">OpenStreetMap contributors</a></span>
-            )}
           </div>
         </div>
       </div>

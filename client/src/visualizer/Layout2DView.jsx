@@ -10,22 +10,13 @@ import {
   statusColors
 } from './masterPlanData';
 
-// Clean watermark-free Map tile providers
-const TILE_LAYERS = {
-  osm: {
-    name: 'Map View',
-    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
-    subdomains: '',
-    maxZoom: 19
-  },
-  satellite: {
-    name: 'Satellite View (Esri)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri',
-    subdomains: '',
-    maxZoom: 19
-  }
+// Clean watermark-free Map tile provider (OpenStreetMap)
+const OSM_TILE_CONFIG = {
+  name: 'Map View',
+  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+  subdomains: '',
+  maxZoom: 19
 };
 
 const Layout2DView = React.forwardRef(function Layout2DView({
@@ -35,8 +26,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   filterStatus = 'all',
   filterFacing = 'all',
   searchTerm = '',
-  animateVehicles = false,
-  activeTileType: propTileType = 'satellite'
+  animateVehicles = false
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -45,23 +35,13 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   const carsGroupRef = useRef(null);
   const animationFrameRef = useRef(null);
 
-  const [activeTileType, setActiveTileType] = useState(propTileType);
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
-
-  useEffect(() => {
-    if (propTileType && TILE_LAYERS[propTileType]) {
-      setActiveTileType(propTileType);
-    }
-  }, [propTileType]);
 
   // Expose imperative methods for external toolbar
   React.useImperativeHandle(ref, () => ({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
-    reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
-    setTileType: (type) => {
-      if (TILE_LAYERS[type]) setActiveTileType(type);
-    }
+    reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true })
   }));
 
   // 1. Initialize Leaflet Map
@@ -84,12 +64,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     mapInstanceRef.current = map;
 
-    // Add initial base tile layer (OSM watermark-free)
-    const tileConfig = TILE_LAYERS[activeTileType] || TILE_LAYERS.osm;
-    const tileLayer = L.tileLayer(tileConfig.url, {
-      attribution: tileConfig.attribution,
-      subdomains: tileConfig.subdomains,
-      maxZoom: tileConfig.maxZoom
+    // Add base tile layer (OSM watermark-free map)
+    const tileLayer = L.tileLayer(OSM_TILE_CONFIG.url, {
+      attribution: OSM_TILE_CONFIG.attribution,
+      subdomains: OSM_TILE_CONFIG.subdomains,
+      maxZoom: OSM_TILE_CONFIG.maxZoom
     }).addTo(map);
     tileLayerRef.current = tileLayer;
 
@@ -114,23 +93,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     };
   }, []);
 
-  // 2. Handle Base Tile Layer Switch (OSM vs Satellite)
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    const map = mapInstanceRef.current;
-    if (tileLayerRef.current) {
-      map.removeLayer(tileLayerRef.current);
-    }
-    const tileConfig = TILE_LAYERS[activeTileType] || TILE_LAYERS.osm;
-    const newLayer = L.tileLayer(tileConfig.url, {
-      attribution: tileConfig.attribution,
-      subdomains: tileConfig.subdomains,
-      maxZoom: tileConfig.maxZoom
-    }).addTo(map);
-    tileLayerRef.current = newLayer;
-  }, [activeTileType]);
-
-  // 3. Render Site Layers: Boundary, Roads, Park (Clean Plots99 Look)
+  // 2. Render Site Layers: Boundary, Roads, Park (Clean Plots99 Look)
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
@@ -143,7 +106,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       weight: 2.5,
       dashArray: '6, 4',
       fillColor: '#C6F6D5',
-      fillOpacity: activeTileType === 'satellite' ? 0.15 : 0.35,
+      fillOpacity: 0.35,
       interactive: false
     }).addTo(staticGroup);
 
