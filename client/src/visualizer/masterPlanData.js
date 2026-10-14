@@ -29,8 +29,8 @@ export const LAYOUT_BOUNDS = {
 export const SITE_GEO = {
   center: [17.0985, 78.5085], // [lat, lng] Kadthal, Telangana
   zoom: 18,
-  minZoom: 13,
-  maxZoom: 20,
+  minZoom: 10,
+  maxZoom: 21,
   locality: "Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",
   state: "Telangana"

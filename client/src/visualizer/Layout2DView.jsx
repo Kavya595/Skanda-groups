@@ -10,13 +10,32 @@ import {
   statusColors
 } from './masterPlanData';
 
-// Clean watermark-free Map tile provider (OpenStreetMap)
-const OSM_TILE_CONFIG = {
-  name: 'Map View',
-  url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
-  subdomains: '',
-  maxZoom: 19
+// Real Google Maps & OpenStreetMap watermark-free tile providers (Zero API Key Required)
+export const MAP_LAYERS = {
+  google: {
+    id: 'google',
+    name: 'Google Map',
+    url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps &bull; Kadthal, Srisailam Highway',
+    subdomains: ['0', '1', '2', '3'],
+    maxZoom: 21
+  },
+  satellite: {
+    id: 'satellite',
+    name: 'Satellite',
+    url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Imagery &bull; Kadthal, Srisailam Highway',
+    subdomains: ['0', '1', '2', '3'],
+    maxZoom: 21
+  },
+  osm: {
+    id: 'osm',
+    name: 'OSM',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+    subdomains: '',
+    maxZoom: 19
+  }
 };
 
 const Layout2DView = React.forwardRef(function Layout2DView({
@@ -35,20 +54,21 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   const carsGroupRef = useRef(null);
   const animationFrameRef = useRef(null);
 
+  const [activeTileType, setActiveTileType] = useState('google');
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
 
   // Expose imperative methods for external toolbar
   React.useImperativeHandle(ref, () => ({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
-    reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true })
+    reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
+    setMapType: (type) => setActiveTileType(type)
   }));
 
   // 1. Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // Prevent duplicate map initialization
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
     }
@@ -58,17 +78,18 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       zoom: SITE_GEO.zoom,
       minZoom: SITE_GEO.minZoom,
       maxZoom: SITE_GEO.maxZoom,
-      zoomControl: false, // External controls in PlotViewerStandalone handle zoom
-      attributionControl: false // External attribution placed cleanly at bottom-right
+      zoomControl: false,
+      attributionControl: false
     });
 
     mapInstanceRef.current = map;
 
-    // Add base tile layer (OSM watermark-free map)
-    const tileLayer = L.tileLayer(OSM_TILE_CONFIG.url, {
-      attribution: OSM_TILE_CONFIG.attribution,
-      subdomains: OSM_TILE_CONFIG.subdomains,
-      maxZoom: OSM_TILE_CONFIG.maxZoom
+    // Add base tile layer (Google Maps watermark-free map)
+    const layerCfg = MAP_LAYERS[activeTileType] || MAP_LAYERS.google;
+    const tileLayer = L.tileLayer(layerCfg.url, {
+      attribution: layerCfg.attribution,
+      subdomains: layerCfg.subdomains,
+      maxZoom: layerCfg.maxZoom
     }).addTo(map);
     tileLayerRef.current = tileLayer;
 
@@ -92,6 +113,22 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     };
   }, []);
+
+  // 1B. Dynamic Base Map Tile Layer Switcher (Google Map vs Satellite vs OSM)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+    const layerCfg = MAP_LAYERS[activeTileType] || MAP_LAYERS.google;
+    const tileLayer = L.tileLayer(layerCfg.url, {
+      attribution: layerCfg.attribution,
+      subdomains: layerCfg.subdomains,
+      maxZoom: layerCfg.maxZoom
+    }).addTo(map);
+    tileLayerRef.current = tileLayer;
+  }, [activeTileType]);
 
   // 2. Render Site Layers: Boundary, Roads, Park (Clean Plots99 Look)
   useEffect(() => {
@@ -450,6 +487,48 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         className="w-full h-full bg-[#E5ECE3] z-0"
         style={{ cursor: 'grab' }}
       />
+
+      {/* Top-Left Google Map / Satellite Switcher Pill (matching Google Maps & Plots99 standard) */}
+      <div className="absolute top-20 left-16 sm:left-20 z-20 pointer-events-auto flex items-center">
+        <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-xl flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setActiveTileType('google')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTileType === 'google'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+            title="Google Maps Roadmap View"
+          >
+            Google Map
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTileType('satellite')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTileType === 'satellite'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+            title="Google Satellite Imagery"
+          >
+            Satellite
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTileType('osm')}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              activeTileType === 'osm'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
+            title="OpenStreetMap View"
+          >
+            OSM
+          </button>
+        </div>
+      </div>
     </div>
   );
 });

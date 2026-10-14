@@ -28,29 +28,45 @@ router.get('/plots', plotCtrl.getPlots);
 router.get('/plots/stats', plotCtrl.getPlotStats);
 router.get('/plots/:plotNumber', plotCtrl.getPlotDetail);
 
-// Clean Watermark-Free OpenStreetMap Tile Proxy (Zero API Key, CORS-enabled matching 2D View)
+// Clean Watermark-Free Map Tile Proxy (Google Maps & OpenStreetMap, Zero API Key Required)
 router.get('/tiles/:z/:x/:y.png', async (req, res) => {
   const { z, x, y } = req.params;
-  try {
-    const osmUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
-    const response = await fetch(osmUrl, {
-      headers: {
-        'User-Agent': 'SkandhaGroup-AlekhyasBrundavan/1.0 (info@skandhagroup.com)'
-      }
-    });
-    if (!response.ok) {
-      return res.status(response.status).send('Tile error');
-    }
-    const buffer = await response.arrayBuffer();
-    res.set({
-      'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=604800, immutable',
-      'Access-Control-Allow-Origin': '*'
-    });
-    res.send(Buffer.from(buffer));
-  } catch (err) {
-    res.status(500).send('Tile fetch error');
+  const type = req.query.type || 'google';
+
+  const urlsToTry = [];
+  if (type === 'hybrid' || type === 'satellite') {
+    urlsToTry.push(`https://mt1.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}`);
+  } else if (type === 'osm') {
+    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+  } else {
+    // Default: Google Maps Roadmap
+    urlsToTry.push(`https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}`);
+    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
   }
+
+  for (const tileUrl of urlsToTry) {
+    try {
+      const response = await fetch(tileUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+      if (response.ok) {
+        const buffer = await response.arrayBuffer();
+        const contentType = response.headers.get('content-type') || 'image/png';
+        res.set({
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=604800, immutable',
+          'Access-Control-Allow-Origin': '*'
+        });
+        return res.send(Buffer.from(buffer));
+      }
+    } catch {
+      // Continue to fallback
+    }
+  }
+
+  res.status(500).send('Tile fetch error');
 });
 
 // Leads & Enquiry Capture

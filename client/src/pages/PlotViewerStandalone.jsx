@@ -1078,7 +1078,7 @@ export default function PlotViewerStandalone({ settings }) {
         {/* Bottom Right Map Attribution (Single Clean Text) */}
         <div className="absolute bottom-4 right-24 z-20 pointer-events-auto hidden md:block select-none">
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
-            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">OpenStreetMap contributors</a>
+            &copy; Google Maps &bull; Kadthal, Srisailam Highway (NH-765)
           </div>
         </div>
 

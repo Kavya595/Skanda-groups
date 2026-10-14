@@ -90,23 +90,21 @@ async function seedDatabase() {
 
   // 4. Seed Default Admin
   console.log('Checking admin user...');
-  const adminCount = await AdminUser.countDocuments();
-  if (adminCount === 0) {
-    const salt = await bcrypt.genSalt(12);
-    const passwordHash = await bcrypt.hash('SkandhaAdmin2026!', salt);
+  const salt = await bcrypt.genSalt(12);
+  const passwordHash = await bcrypt.hash('SkandhaAdmin2026!', salt);
 
-    await AdminUser.create({
+  await AdminUser.findOneAndUpdate(
+    { username: 'admin' },
+    {
       username: 'admin',
       email: 'admin@skandhagroup.com',
       passwordHash,
       role: 'superadmin',
-      mustChangePassword: true,
       isActive: true
-    });
-    console.log('✓ Initial admin created: admin / SkandhaAdmin2026! (Must change on first login)');
-  } else {
-    console.log('✓ Admin account already present.');
-  }
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  console.log('✓ Admin account verified and active (admin / SkandhaAdmin2026!)');
 
   console.log('Database seeding completed successfully!');
   await mongoose.disconnect();

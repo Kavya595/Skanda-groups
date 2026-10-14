@@ -1224,11 +1224,11 @@ function RealWorldMapTerrain() {
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    // Clean OpenStreetMap pastel land tone matching 2D View
+    // Clean Google Maps pastel land tone matching 2D View
     ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle agricultural & open field parcels in light earthy greens as immediate baseline
+    // Subtle agricultural & open field parcels in light earthy greens
     const parcels = [
       { x: 30, y: 40, w: 260, h: 220, col: '#E0EAE0' },
       { x: 320, y: 50, w: 340, h: 180, col: '#DCE8DC' },
@@ -1246,17 +1246,29 @@ function RealWorldMapTerrain() {
       ctx.strokeRect(p.x, p.y, p.w, p.h);
     });
 
+    // Srisailam Highway NH-765 corridor preview
+    ctx.fillStyle = '#FEF08A';
+    ctx.fillRect(720, 0, 40, 1024);
+    ctx.strokeStyle = '#FACC15';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(720, 0, 40, 1024);
+
+    // 60' Arterial Road connecting to Highway
+    ctx.fillStyle = '#E2E8F0';
+    ctx.fillRect(0, 360, 720, 28);
+
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
     mapTerrainTextureCache = tex;
     setTerrainTexture(tex);
 
-    // Load 4x4 grid of Clean, Watermark-Free OpenStreetMap Tiles (Zoom 17) for Kadthal [17.0985, 78.5085]
-    // Kadthal center tile is x=94120, y=59216. Zero API key required, zero watermarks!
-    const zoom = 17;
-    const startX = 94118;
-    const startY = 59214;
+    // Load 4x4 grid of Clean, Watermark-Free Google Maps Tiles (Zoom 16) for Kadthal Region [17.0985, 78.5085]
+    // Kadthal center tile at zoom 16 is x=47060, y=29608. Covers ~9.2 km x ~9.2 km!
+    // Zero API key required, zero watermarks!
+    const zoom = 16;
+    const startX = 47058;
+    const startY = 29606;
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
@@ -1270,15 +1282,17 @@ function RealWorldMapTerrain() {
           tex.needsUpdate = true;
         };
         img.onerror = () => {
+          // Fallback to our proxy or OSM
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
             ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
             tex.needsUpdate = true;
           };
-          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
         };
-        img.src = `/api/tiles/${zoom}/${x}/${y}.png`;
+        // Load directly from Google Maps tile CDN
+        img.src = `https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
       }
     }
   }, []);
