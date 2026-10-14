@@ -128,6 +128,34 @@ export default function AdminPlots() {
     }
   };
 
+  const [searchNotFound, setSearchNotFound] = useState(false);
+
+  const handleAdminExecuteSearch = (e) => {
+    e?.preventDefault();
+    const clean = search.trim();
+    if (!clean) {
+      setSearchNotFound(false);
+      return;
+    }
+    let found = allPlots.find(p => String(p.plotNumber) === clean);
+    if (!found) {
+      const digits = clean.replace(/\D/g, '');
+      if (digits) {
+        found = allPlots.find(p => String(p.plotNumber) === digits);
+      }
+    }
+    if (found) {
+      setSearchNotFound(false);
+      setSelectedPlot(found);
+      if (viewMode === '3d' && adminCameraPreset === 'park') {
+        setAdminCameraPreset('overview');
+      }
+    } else {
+      setSearchNotFound(true);
+      setTimeout(() => setSearchNotFound(false), 3000);
+    }
+  };
+
   // Inventory stats computed across all plots
   const invStats = React.useMemo(() => {
     const totalCount = allPlots.length || total || 96;
@@ -435,17 +463,53 @@ export default function AdminPlots() {
           {/* Visualizer Toolbar */}
           <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2.5">
-              {/* Search Plot */}
-              <div className="relative w-44 sm:w-52">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Find Plot # (e.g. 24)..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                />
-              </div>
+              {/* Search Plot with explicit Search Button */}
+              <form
+                onSubmit={handleAdminExecuteSearch}
+                className="relative flex items-center gap-1.5"
+              >
+                <div className="relative w-36 sm:w-48">
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Find Plot # (e.g. 24)..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      if (!e.target.value.trim()) setSearchNotFound(false);
+                    }}
+                    className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-slate-900"
+                  />
+                  {search && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setSearchNotFound(false);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                      title="Clear search"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-2.5 py-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-lg shadow-2xs transition-all hover:scale-105 flex items-center gap-1 shrink-0 cursor-pointer"
+                  title="Search Plot"
+                >
+                  <Search className="w-3 h-3" />
+                  <span>Search</span>
+                </button>
+
+                {searchNotFound && (
+                  <div className="absolute top-10 left-0 bg-red-600 text-white text-[11px] font-semibold px-2 py-0.5 rounded shadow-lg animate-fadeIn whitespace-nowrap z-50">
+                    Plot not found (1-96)
+                  </div>
+                )}
+              </form>
 
               {/* Status Quick Filter Buttons */}
               <div className="flex items-center gap-1">

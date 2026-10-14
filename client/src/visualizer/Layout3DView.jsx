@@ -163,6 +163,8 @@ function CameraController({
 function Plot3D({
   plot,
   isSelected,
+  isDimmed = false,
+  isSearchedMatch = false,
   onSelect,
   isMeasureMode,
   onMeasurePoint
@@ -172,11 +174,12 @@ function Plot3D({
 
   const color = useMemo(() => {
     if (isSelected) return '#F15A24'; // Skandha Brand Orange
+    if (isSearchedMatch) return '#EA580C';
     if (hovered) return '#FB923C';
     return meta.threeColor;
-  }, [plot.status, isSelected, hovered, meta.threeColor]);
+  }, [plot.status, isSelected, isSearchedMatch, hovered, meta.threeColor]);
 
-  const elevY = isSelected ? 0.32 : hovered ? 0.16 : 0.04;
+  const elevY = isSelected ? 0.38 : isSearchedMatch ? 0.28 : hovered ? 0.16 : isDimmed ? 0.02 : 0.04;
   const [cx, cz] = plot.center || [0, 0];
   const w = plot.bounds?.width || 10;
   const d = plot.bounds?.depth || 10;
@@ -206,19 +209,33 @@ function Plot3D({
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[w, d]} />
-        <meshBasicMaterial color={color} />
+        <meshBasicMaterial
+          color={color}
+          opacity={isDimmed ? 0.22 : 1.0}
+          transparent={isDimmed}
+        />
       </mesh>
 
       {/* Crisp Demarcation Boundary Lines */}
       <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(w, d)]} />
         <lineBasicMaterial
-          color={isSelected ? '#FFFFFF' : '#CBD5E1'}
-          linewidth={isSelected ? 3 : 1.2}
-          opacity={isSelected ? 1.0 : 0.9}
+          color={isSelected || isSearchedMatch ? '#FFFFFF' : isDimmed ? '#94A3B8' : '#CBD5E1'}
+          linewidth={isSelected || isSearchedMatch ? 3 : 1.2}
+          opacity={isDimmed ? 0.3 : (isSelected || isSearchedMatch ? 1.0 : 0.9)}
           transparent
         />
       </lineSegments>
+
+      {/* Glowing Target Ring on Searched Match */}
+      {isSearchedMatch && (
+        <group position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <mesh>
+            <ringGeometry args={[Math.min(w, d) * 0.38, Math.min(w, d) * 0.46, 32]} />
+            <meshBasicMaterial color="#EA580C" />
+          </mesh>
+        </group>
+      )}
 
       {/* When Selected: Center Circular White Badge */}
       {isSelected ? (
@@ -989,6 +1006,9 @@ export default function Layout3DView({
   selectedPlot,
   onSelectPlot,
   cameraPreset = 'overview',
+  searchTerm = '',
+  filterStatus = 'all',
+  filterFacing = 'all',
   walkRoadIndex = 0,
   walkProgress = 0,
   onWalkProgressChange,
@@ -999,6 +1019,8 @@ export default function Layout3DView({
   onRoadClick,
   onParkClick
 }) {
+  const cleanSearch = (searchTerm || '').trim();
+
   return (
     <div className="w-full h-full relative bg-[#CFE2CC] select-none">
       <Canvas
@@ -1037,16 +1059,28 @@ export default function Layout3DView({
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>
-          {plots.map((plot) => (
-            <Plot3D
-              key={plot.plotNumber}
-              plot={plot}
-              isSelected={selectedPlot?.plotNumber === plot.plotNumber}
-              onSelect={onSelectPlot}
-              isMeasureMode={isMeasureMode}
-              onMeasurePoint={onMeasurePoint}
-            />
-          ))}
+          {plots.map((plot) => {
+            const matchesSearch = !cleanSearch || String(plot.plotNumber).includes(cleanSearch);
+            const matchesStatus = !filterStatus || filterStatus === 'all' || plot.status === filterStatus;
+            const matchesFacing = !filterFacing || filterFacing === 'all' || (plot.facing && plot.facing.toLowerCase().includes(filterFacing.toLowerCase()));
+            const isMatch = matchesSearch && matchesStatus && matchesFacing;
+            const hasActiveFilter = Boolean(cleanSearch) || (filterStatus && filterStatus !== 'all') || (filterFacing && filterFacing !== 'all');
+            const isDimmed = hasActiveFilter && !isMatch;
+            const isSearchedMatch = Boolean(cleanSearch) && String(plot.plotNumber) === cleanSearch;
+
+            return (
+              <Plot3D
+                key={plot.plotNumber}
+                plot={plot}
+                isSelected={selectedPlot?.plotNumber === plot.plotNumber}
+                isDimmed={isDimmed}
+                isSearchedMatch={isSearchedMatch}
+                onSelect={onSelectPlot}
+                isMeasureMode={isMeasureMode}
+                onMeasurePoint={onMeasurePoint}
+              />
+            );
+          })}
         </group>
 
         {/* Interactive Measure Tool Line */}

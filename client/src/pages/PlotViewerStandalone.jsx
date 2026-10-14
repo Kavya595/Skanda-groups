@@ -213,11 +213,42 @@ export default function PlotViewerStandalone({ settings }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [facingFilter, setFacingFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchNotFound, setSearchNotFound] = useState(false);
 
   // Selected Plot & Modals
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+
+  const handleExecuteSearch = (query) => {
+    const clean = (query !== undefined ? query : searchTerm).trim();
+    if (!clean) {
+      setSearchNotFound(false);
+      return;
+    }
+
+    // Try exact plot number match first (e.g. "24")
+    let found = plots.find(p => String(p.plotNumber) === clean);
+    // If not exact match, look for numeric digits in string (e.g. user typed "plot 24" or "#24")
+    if (!found) {
+      const digits = clean.replace(/\D/g, '');
+      if (digits) {
+        found = plots.find(p => String(p.plotNumber) === digits);
+      }
+    }
+
+    if (found) {
+      setSearchNotFound(false);
+      handleSelectPlot(found);
+      // In 3D mode, ensure camera is in overview/topDown so it smoothly flies directly to the plot
+      if (viewMode === '3d' && (cameraPreset === 'parkGround' || cameraPreset === 'park')) {
+        setCameraPreset('overview');
+      }
+    } else {
+      setSearchNotFound(true);
+      setTimeout(() => setSearchNotFound(false), 3500);
+    }
+  };
   const [aiChatMessages, setAiChatMessages] = useState([
     {
       role: 'assistant',
@@ -530,24 +561,58 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
 
           <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center gap-2.5">
-            <div className="relative w-44 sm:w-56">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search Plot # (e.g. 24)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleExecuteSearch();
+              }}
+              className="relative flex items-center gap-1.5"
+            >
+              <div className="relative w-36 sm:w-52">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search Plot # (e.g. 24)"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    if (!e.target.value.trim()) {
+                      setSearchNotFound(false);
+                    }
+                  }}
+                  className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all font-semibold text-slate-900"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      setSearchNotFound(false);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    title="Clear search"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Explicit Clickable Search Button */}
+              <button
+                type="submit"
+                className="btn-shimmer px-3 py-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-xl shadow-xs transition-all hover:scale-105 flex items-center gap-1 shrink-0 cursor-pointer"
+                title="Search and focus plot"
+              >
+                <Search className="w-3 h-3" />
+                <span>Search</span>
+              </button>
+
+              {searchNotFound && (
+                <div className="absolute top-10 left-0 bg-red-600 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-xl animate-fadeIn whitespace-nowrap z-50">
+                  Plot not found (Plots 1 to 96 available)
+                </div>
               )}
-            </div>
+            </form>
 
             <div className="hidden md:flex items-center gap-1.5 border-l border-slate-200 pl-2.5">
               <button
@@ -732,6 +797,9 @@ export default function PlotViewerStandalone({ settings }) {
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
               cameraPreset={cameraPreset}
+              searchTerm={searchTerm}
+              filterStatus={statusFilter}
+              filterFacing={facingFilter}
               animateVehicles={animateVehicles}
               isMeasureMode={isMeasureMode}
               measurePoints={measurePoints}

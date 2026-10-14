@@ -386,26 +386,35 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     };
   }, [plots, selectedPlot, filterStatus, filterFacing, searchTerm]);
 
-  // 5. Pan and Zoom to Selected Plot
+  // 5. Fly to and focus Selected Plot with tooltip
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPlot) return;
     const map = mapInstanceRef.current;
     if (selectedPlot.geoCenter) {
-      map.panTo(selectedPlot.geoCenter, { animate: true, duration: 0.6 });
+      const targetZoom = Math.max(map.getZoom(), 18);
+      map.flyTo(selectedPlot.geoCenter, targetZoom, { animate: true, duration: 0.8 });
       const layer = plotLayersRef.current[selectedPlot.plotNumber];
       if (layer) {
         layer.bringToFront();
+        layer.openTooltip();
       }
     }
   }, [selectedPlot]);
 
-  // 6. Pan to search target when single plot matched
+  // 6. Fly to search target when plot number entered
   useEffect(() => {
     if (!mapInstanceRef.current || !searchTerm) return;
     const clean = searchTerm.trim();
     const found = plots.find(p => String(p.plotNumber) === clean);
     if (found && found.geoCenter) {
-      mapInstanceRef.current.panTo(found.geoCenter, { animate: true, duration: 0.5 });
+      const map = mapInstanceRef.current;
+      const targetZoom = Math.max(map.getZoom(), 18);
+      map.flyTo(found.geoCenter, targetZoom, { animate: true, duration: 0.8 });
+      const layer = plotLayersRef.current[found.plotNumber];
+      if (layer) {
+        layer.bringToFront();
+        layer.openTooltip();
+      }
     }
   }, [searchTerm, plots]);
 
