@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
+import { OrbitControls, Text, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   LAYOUT_BOUNDS,
@@ -266,11 +266,13 @@ function CameraController({
     <OrbitControls
       ref={controlsRef}
       enabled={cameraPreset !== 'roadWalk'}
-      maxPolarAngle={cameraPreset === 'park' || cameraPreset === 'parkGround' ? Math.PI / 2.02 : Math.PI / 2.08}
-      minDistance={cameraPreset === 'park' || cameraPreset === 'parkGround' ? 1.0 : 4}
-      maxDistance={170}
+      enableRotate={false}
+      screenSpacePanning={true}
+      maxPolarAngle={Math.PI / 2.1}
+      minDistance={4}
+      maxDistance={220}
       enableDamping
-      dampingFactor={0.06}
+      dampingFactor={0.08}
     />
   );
 }
@@ -1323,64 +1325,6 @@ function RealWorldMapTerrain() {
 
       {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
-
-      {/* 3D Geographic Regional Map Landmarks (Kadthal & Srisailam Highway Corridor) */}
-      <group>
-        {/* Kadthal Town Center Landmark Badge */}
-        <Billboard position={[-140, 16, -90]}>
-          <mesh>
-            <planeGeometry args={[36, 7.5]} />
-            <meshBasicMaterial color="#0F172A" opacity={0.9} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={2.4} color="#FFFFFF" fontWeight="bold">
-            📍 Kadthal Town (2.5 km)
-          </Text>
-        </Billboard>
-
-        {/* Sri Maisigandi Maisamma Temple Landmark Badge */}
-        <Billboard position={[-30, 16, -80]}>
-          <mesh>
-            <planeGeometry args={[40, 7.5]} />
-            <meshBasicMaterial color="#1E293B" opacity={0.9} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={2.3} color="#FBBF24" fontWeight="bold">
-            🛕 Maisigandi Temple (1 min)
-          </Text>
-        </Billboard>
-
-        {/* Srisailam National Highway NH-765 Badge */}
-        <Billboard position={[86, 16, 10]}>
-          <mesh>
-            <planeGeometry args={[44, 7.5]} />
-            <meshBasicMaterial color="#1E3A8A" opacity={0.9} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={2.3} color="#FFFFFF" fontWeight="bold">
-            🛣️ Srisailam Highway NH-765
-          </Text>
-        </Billboard>
-
-        {/* 60ft Arterial Road to Temple Badge */}
-        <Billboard position={[10, 14, -50]}>
-          <mesh>
-            <planeGeometry args={[36, 6.5]} />
-            <meshBasicMaterial color="#334155" opacity={0.9} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={2.0} color="#FFFFFF" fontWeight="bold">
-            🛣️ Proposed 60' Arterial Road
-          </Text>
-        </Billboard>
-
-        {/* Regional Ring Road (RRR) Junction Badge */}
-        <Billboard position={[0, 16, 110]}>
-          <mesh>
-            <planeGeometry args={[44, 7.5]} />
-            <meshBasicMaterial color="#047857" opacity={0.9} transparent />
-          </mesh>
-          <Text position={[0, 0, 0.05]} fontSize={2.2} color="#FFFFFF" fontWeight="bold">
-            🚗 Regional Ring Road (10 mins)
-          </Text>
-        </Billboard>
-      </group>
     </group>
   );
 }

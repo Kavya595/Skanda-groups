@@ -4,7 +4,6 @@ import {
   Box,
   Layers,
   Search,
-  RotateCcw,
   Maximize2,
   Minimize2,
   Ruler,
@@ -664,16 +663,6 @@ export default function PlotViewerStandalone({ settings }) {
                 </div>
               )}
             </form>
-
-            {/* Admin Portal Quick Access Button */}
-            <a
-              href="/admin/login"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs shrink-0"
-              title="Admin Portal (Manage Inventory & Bookings)"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Admin Portal</span>
-            </a>
           </div>
         </header>
 
@@ -729,21 +718,6 @@ export default function PlotViewerStandalone({ settings }) {
 
         {/* Floating Right Circular Toolbar (matching Screenshot 2, 3) */}
         <aside className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto">
-          {/* Fit Overview */}
-          <button
-            onClick={() => {
-              if (viewMode === '2d') {
-                layout2DRef.current?.reset();
-              } else {
-                setCameraPreset('overview');
-              }
-            }}
-            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-brand-orange hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
-            title="Fit Master Plan to Viewport"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
           {/* 3D Geographic Map View (Kadthal & Srisailam Highway Corridor) */}
           <button
             onClick={() => {
@@ -840,15 +814,6 @@ export default function PlotViewerStandalone({ settings }) {
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
-
-          {/* Admin Portal Direct Access */}
-          <a
-            href="/admin/login"
-            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-emerald-700 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
-            title="Admin Portal (Manage Inventory & Customer Bookings)"
-          >
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          </a>
         </aside>
 
         {/* Map Canvas (3D or 2D) */}
@@ -1009,7 +974,7 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
             <div className="flex items-center justify-between text-xs text-slate-600">
               <span>Flowering lawn &bull; Cycad palm shrubs &bull; Perimeter palms</span>
-              <span className="text-emerald-700 font-bold">Drag to look 360&deg;</span>
+              <span className="text-emerald-700 font-bold">Drag to explore</span>
             </div>
           </div>
         )}
