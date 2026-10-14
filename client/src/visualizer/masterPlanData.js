@@ -14,12 +14,12 @@
 export const LAYOUT_BOUNDS = {
   minX: -92,
   maxX: 90,
-  minZ: -60,
-  maxZ: 72,
-  centerX: -1,
-  centerZ: 6,
+  minZ: -56,
+  maxZ: 68,
+  centerX: 0,
+  centerZ: 5,
   width: 182,
-  depth: 132
+  depth: 124
 };
 
 /**
@@ -101,17 +101,17 @@ export const layoutRoads = [
   {
     id: 'ROAD-60-TOP',
     name: "Proposed 60'-0\" Wide Road (to Maisigandi Temple)",
-    shortName: "60' ARTERIAL ROAD",
+    shortName: "60' ROAD",
     width: '60ft',
     type: 'arterial',
     polygon: [
-      [-92, -58],
-      [88, -58],
+      [-92, -52],
+      [88, -52],
       [88, -42],
       [-92, -42]
     ],
-    center: [0, -50],
-    widthMeters: 16,
+    center: [0, -47],
+    widthMeters: 10,
     hasDivider: true
   },
   {
@@ -121,12 +121,12 @@ export const layoutRoads = [
     width: '100ft+',
     type: 'highway',
     polygon: [
-      [72, -58],
-      [88, -58],
-      [88, 70],
-      [72, 70]
+      [72, -56],
+      [88, -56],
+      [88, 66],
+      [72, 66]
     ],
-    center: [80, 6],
+    center: [80, 5],
     widthMeters: 16,
     hasDivider: true
   },
@@ -137,28 +137,28 @@ export const layoutRoads = [
     width: '33ft',
     type: 'service',
     polygon: [
-      [63, -58],
-      [72, -58],
-      [72, 70],
-      [63, 70]
+      [63, -52],
+      [70, -52],
+      [70, 64],
+      [63, 64]
     ],
-    center: [67.5, 6],
-    widthMeters: 9
+    center: [66.5, 6],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-MID',
     name: "Proposed 33'-0\" Wide Road (Internal Main Boulevard)",
-    shortName: "33' MAIN BOULEVARD",
+    shortName: "33' MAIN ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [-88, -3],
       [63, -3],
-      [63, 7],
-      [-88, 7]
+      [63, 4],
+      [-88, 4]
     ],
-    center: [-12.5, 2],
-    widthMeters: 10
+    center: [-12.5, 0.5],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-V0',
@@ -167,13 +167,13 @@ export const layoutRoads = [
     width: '33ft',
     type: 'internal',
     polygon: [
-      [-65, 7],
-      [-55, 7],
-      [-55, 60],
+      [-65, 4],
+      [-58, 4],
+      [-58, 60],
       [-65, 60]
     ],
-    center: [-60, 33.5],
-    widthMeters: 10
+    center: [-61.5, 32],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-V1',
@@ -183,12 +183,12 @@ export const layoutRoads = [
     type: 'internal',
     polygon: [
       [-36, -42],
-      [-26, -42],
-      [-26, 60],
+      [-29, -42],
+      [-29, 60],
       [-36, 60]
     ],
-    center: [-31, 9],
-    widthMeters: 10
+    center: [-32.5, 9],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-V2',
@@ -198,12 +198,12 @@ export const layoutRoads = [
     type: 'internal',
     polygon: [
       [-7, -42],
-      [3, -42],
-      [3, 60],
+      [0, -42],
+      [0, 60],
       [-7, 60]
     ],
-    center: [-2, 9],
-    widthMeters: 10
+    center: [-3.5, 9],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-V3',
@@ -213,12 +213,12 @@ export const layoutRoads = [
     type: 'internal',
     polygon: [
       [22, -42],
-      [32, -42],
-      [32, 60],
+      [29, -42],
+      [29, 60],
       [22, 60]
     ],
-    center: [27, 9],
-    widthMeters: 10
+    center: [25.5, 9],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-V4',
@@ -228,12 +228,12 @@ export const layoutRoads = [
     type: 'internal',
     polygon: [
       [50, -42],
-      [60, -42],
-      [60, 60],
+      [57, -42],
+      [57, 60],
       [50, 60]
     ],
-    center: [55, 9],
-    widthMeters: 10
+    center: [53.5, 9],
+    widthMeters: 7
   },
   {
     id: 'ROAD-33-WEST',
@@ -242,12 +242,12 @@ export const layoutRoads = [
     width: '33ft',
     type: 'internal',
     polygon: [
-      [-88, 7],
-      [-78, 7],
+      [-88, 4],
+      [-78, 4],
       [-78, 60],
       [-88, 60]
     ],
-    center: [-83, 33.5],
+    center: [-83, 32],
     widthMeters: 10
   },
   {
@@ -258,12 +258,12 @@ export const layoutRoads = [
     type: 'internal',
     polygon: [
       [-88, 60],
-      [72, 60],
-      [72, 70],
-      [-88, 70]
+      [70, 60],
+      [70, 66],
+      [-88, 66]
     ],
-    center: [-8, 65],
-    widthMeters: 10
+    center: [-9, 63],
+    widthMeters: 6
   }
 ];
 

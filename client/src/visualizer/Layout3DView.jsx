@@ -346,7 +346,7 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   return (
     <group position={position} scale={scale}>
       {/* Soft circular contact shadow on stone curb */}
-      <mesh position={[0, 0.085, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.95, 16]} />
         <meshBasicMaterial color="#000000" opacity={0.25} transparent />
       </mesh>
@@ -433,22 +433,22 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
-    // Palm trees along 60ft Road curb (both sides)
-    for (let x = -86; x <= 76; x += 11) {
-      list.push({ pos: [x, 0, -53.5], scale: 1.1 });
-      list.push({ pos: [x, 0, -40.5], scale: 1.1 });
+    // Palm trees along 60ft Road curb (both sides, layout interior only, removed from highway route x > 56)
+    for (let x = -86; x <= 56; x += 11) {
+      list.push({ pos: [x, 0.18, -52.9], scale: 1.1 });
+      list.push({ pos: [x, 0.18, -41.1], scale: 1.1 });
     }
-    // Palm trees along Mid 33ft Road curbs (both sides)
-    for (let x = -58; x <= 65; x += 12) {
-      list.push({ pos: [x, 0, -4.2], scale: 0.96 });
-      list.push({ pos: [x, 0, 5.2], scale: 0.96 });
+    // Palm trees along Mid 33ft Road curbs (both sides, layout interior only, removed from highway route x > 56)
+    for (let x = -58; x <= 56; x += 11) {
+      list.push({ pos: [x, 0.18, -3.9], scale: 0.96 });
+      list.push({ pos: [x, 0.18, 4.9], scale: 0.96 });
     }
     // Palm trees along Vertical Roads V1 & V3 (both sides)
     for (let z = 9; z <= 54; z += 10) {
-      list.push({ pos: [-37.2, 0, z], scale: 0.92 });
-      list.push({ pos: [-27.8, 0, z], scale: 0.92 });
-      list.push({ pos: [21.0, 0, z], scale: 0.92 });
-      list.push({ pos: [30.0, 0, z], scale: 0.92 });
+      list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
+      list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
+      list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
+      list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
     }
     return list;
   }, []);
@@ -682,18 +682,18 @@ function ConnectedRoadNetwork({ onRoadClick }) {
             {/* Raised Cobblestone Stone Curbs along Road Flanks (Matching Image 4 & 5) */}
             {isHorizontal ? (
               <>
-                {/* North Stone Curb Strip */}
-                <mesh position={[0, 0.015, -d / 2 - 0.6]}>
-                  <boxGeometry args={[w + 1.2, 0.05, 1.2]} />
+                {/* North Stone Curb Strip (1.8m width, 0.18m height) */}
+                <mesh position={[0, 0.09, -d / 2 - 0.9]}>
+                  <boxGeometry args={[w + 1.8, 0.18, 1.8]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* South Stone Curb Strip */}
-                <mesh position={[0, 0.015, d / 2 + 0.6]}>
-                  <boxGeometry args={[w + 1.2, 0.05, 1.2]} />
+                {/* South Stone Curb Strip (1.8m width, 0.18m height) */}
+                <mesh position={[0, 0.09, d / 2 + 0.9]}>
+                  <boxGeometry args={[w + 1.8, 0.18, 1.8]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
@@ -701,29 +701,29 @@ function ConnectedRoadNetwork({ onRoadClick }) {
                   />
                 </mesh>
                 {/* Outer White Chamfer Curb Edge Lines */}
-                <lineSegments position={[0, 0.042, -d / 2 - 1.2]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.2, 0.01, 0.02)]} />
+                <lineSegments position={[0, 0.181, -d / 2 - 1.8]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.8, 0.01, 0.02)]} />
                   <lineBasicMaterial color="#FFFFFF" linewidth={2} />
                 </lineSegments>
-                <lineSegments position={[0, 0.042, d / 2 + 1.2]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.2, 0.01, 0.02)]} />
+                <lineSegments position={[0, 0.181, d / 2 + 1.8]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.8, 0.01, 0.02)]} />
                   <lineBasicMaterial color="#FFFFFF" linewidth={2} />
                 </lineSegments>
               </>
             ) : (
               <>
-                {/* West Stone Curb Strip */}
-                <mesh position={[-w / 2 - 0.6, 0.015, 0]}>
-                  <boxGeometry args={[1.2, 0.05, d + 1.2]} />
+                {/* West Stone Curb Strip (1.8m width, 0.18m height) */}
+                <mesh position={[-w / 2 - 0.9, 0.09, 0]}>
+                  <boxGeometry args={[1.8, 0.18, d + 1.8]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* East Stone Curb Strip */}
-                <mesh position={[w / 2 + 0.6, 0.015, 0]}>
-                  <boxGeometry args={[1.2, 0.05, d + 1.2]} />
+                {/* East Stone Curb Strip (1.8m width, 0.18m height) */}
+                <mesh position={[w / 2 + 0.9, 0.09, 0]}>
+                  <boxGeometry args={[1.8, 0.18, d + 1.8]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
@@ -731,12 +731,12 @@ function ConnectedRoadNetwork({ onRoadClick }) {
                   />
                 </mesh>
                 {/* Outer White Chamfer Curb Edge Lines */}
-                <lineSegments position={[-w / 2 - 1.2, 0.042, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.2)]} />
+                <lineSegments position={[-w / 2 - 1.8, 0.181, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.8)]} />
                   <lineBasicMaterial color="#FFFFFF" linewidth={2} />
                 </lineSegments>
-                <lineSegments position={[w / 2 + 1.2, 0.042, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.2)]} />
+                <lineSegments position={[w / 2 + 1.8, 0.181, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.8)]} />
                   <lineBasicMaterial color="#FFFFFF" linewidth={2} />
                 </lineSegments>
               </>
