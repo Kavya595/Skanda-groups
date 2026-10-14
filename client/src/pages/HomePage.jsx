@@ -28,6 +28,10 @@ import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent }
 import EnquiryModal from '../components/EnquiryModal';
 import Lightbox from '../components/Lightbox';
 import SpecialLandmarkView from '../components/SpecialLandmarkView';
+import SectionNavPill from '../components/SectionNavPill';
+import ScrollReveal from '../components/ScrollReveal';
+import TiltCard from '../components/TiltCard';
+import CountUp from '../components/CountUp';
 
 export default function HomePage() {
   const [settings, setSettings] = useState(null);
@@ -258,11 +262,18 @@ export default function HomePage() {
     : faqs.filter(f => f.category === activeFaqCategory);
 
   return (
-    <div className="space-y-24 pb-20 overflow-hidden bg-white">
+    <div className="space-y-24 pb-20 overflow-hidden bg-white relative">
+      {/* Modern In-Page Sticky Section Navigation Pill */}
+      <SectionNavPill />
+
       {/* ========================================================== */}
       {/* 1. CINEMATIC SUPREME HERO SECTION                          */}
       {/* ========================================================== */}
       <section className="relative min-h-[92vh] flex items-center justify-center bg-slate-950 overflow-hidden">
+        {/* Ambient Animated Depth Orbs */}
+        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-orange-500/20 blur-3xl pointer-events-none animate-soft-float z-10" />
+        <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none animate-soft-float-reverse z-10" />
+
         {/* Background Visual with Warm Amber Overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -279,14 +290,14 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-white">
           <div className="max-w-3xl space-y-6">
             {/* Regulatory Approval Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wide text-orange-200">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wide text-orange-200 shadow-sm hover:border-orange-400/50 transition-colors">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>DTCP Approved TLP NO. 87/2024/H &bull; TS RERA PO2400009081</span>
             </div>
 
             {/* Supreme Headline */}
             <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] text-white drop-shadow-md">
-              Locate Yourself At The Most <span className="text-orange-400">Desirable Place</span>.
+              Locate Yourself At The Most <span className="text-gradient-luxury">Desirable Place</span>.
             </h1>
 
             {/* Sub-headline / Concise Positioning */}
@@ -298,43 +309,60 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <button
                 onClick={() => setIsEnquiryOpen(true)}
-                className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-xl hover:shadow-orange-500/25 transition-all duration-300 transform hover:-translate-y-0.5"
+                className="btn-shimmer inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Calendar className="w-5 h-5" />
+                <Calendar className="w-5 h-5 text-orange-200" />
                 <span>Schedule Private Site Visit</span>
               </button>
 
               <Link
-                to="/project"
-                className="inline-flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white px-7 py-4 rounded-2xl text-base font-semibold shadow-md transition-all duration-300"
+                to="/plots"
+                className="inline-flex items-center justify-center gap-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white px-7 py-4 rounded-2xl text-base font-semibold shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:border-orange-400/50"
               >
-                <span>Project Specifications</span>
-                <ArrowRight className="w-4 h-4" />
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span>Explore 3D Master Plan</span>
+                <ArrowRight className="w-4 h-4 text-orange-300" />
               </Link>
             </div>
 
-            {/* Highlights Grid */}
-            <div className="pt-8 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-slate-300">
-              <div>
-                <div className="text-white font-bold text-lg">96 Plots</div>
-                <div className="text-slate-400">Numbered &amp; Surveyed</div>
+            {/* Highlights Grid with Animated Rolling Numbers */}
+            <div className="pt-8 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs text-slate-300">
+              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.03]">
+                <div className="text-white font-serif font-extrabold text-2xl text-orange-400">
+                  <CountUp end={96} duration={1500} />
+                </div>
+                <div className="text-white font-semibold text-xs mt-0.5">Surveyed Plots</div>
+                <div className="text-slate-400 text-[10px]">DTCP Approved</div>
               </div>
-              <div>
-                <div className="text-white font-bold text-lg">Ac. 0.758 Cts</div>
-                <div className="text-slate-400">Central Landscaped Park</div>
+
+              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-emerald-500/40 transition-all duration-300 hover:scale-[1.03]">
+                <div className="text-white font-serif font-extrabold text-2xl text-emerald-400">
+                  <CountUp end={10.5} decimals={1} suffix=" Ac" duration={1700} />
+                </div>
+                <div className="text-white font-semibold text-xs mt-0.5">Gated Layout</div>
+                <div className="text-slate-400 text-[10px]">Ac. 0.758 Park</div>
               </div>
-              <div>
-                <div className="text-white font-bold text-lg">60', 40' &amp; 33'</div>
-                <div className="text-slate-400">Wide Blacktop Roads</div>
+
+              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-amber-500/40 transition-all duration-300 hover:scale-[1.03]">
+                <div className="text-white font-serif font-extrabold text-2xl text-amber-400">
+                  <CountUp end={40} suffix="' & 33'" duration={1600} />
+                </div>
+                <div className="text-white font-semibold text-xs mt-0.5">Wide BT Roads</div>
+                <div className="text-slate-400 text-[10px]">Smooth Asphalt</div>
               </div>
-              <div>
-                <div className="text-white font-bold text-lg">100% Vasthu</div>
-                <div className="text-slate-400">Spot Registration Ready</div>
+
+              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.03]">
+                <div className="text-white font-serif font-extrabold text-2xl text-orange-400">
+                  <CountUp end={100} suffix="%" duration={1400} />
+                </div>
+                <div className="text-white font-semibold text-xs mt-0.5">Vasthu Compliant</div>
+                <div className="text-slate-400 text-[10px]">Spot Registration</div>
               </div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* ========================================================== */}
       {/* 2. INFINITE SUPREME LUXURY MARQUEE RIBBON                  */}
@@ -353,298 +381,323 @@ export default function HomePage() {
       {/* ========================================================== */}
       {/* 3. EDITORIAL QUOTATION & BRAND PHILOSOPHY                  */}
       {/* ========================================================== */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/40 rounded-3xl p-8 sm:p-14 border border-orange-200/60 shadow-sm text-center">
-          <Quote className="w-12 h-12 text-brand-orange/20 mx-auto mb-4" />
-          <blockquote className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-slate-900 leading-snug tracking-tight">
-            &ldquo;A harmonious plotted sanctuary where authentic Vasthu precision meets the future economic powerhouse of South Hyderabad.&rdquo;
-          </blockquote>
-          <div className="mt-6 flex flex-col items-center justify-center">
-            <div className="font-bold text-sm tracking-wider uppercase text-brand-orange">
-              Skandha Group Development Pledge
+      <section id="overview" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <ScrollReveal direction="up">
+          <TiltCard
+            maxTilt={4}
+            className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/40 rounded-3xl p-8 sm:p-14 border border-orange-200/60 shadow-sm text-center group"
+          >
+            <Quote className="w-12 h-12 text-brand-orange/20 mx-auto mb-4 group-hover:scale-110 group-hover:text-brand-orange/30 transition-all duration-300" />
+            <blockquote className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-slate-900 leading-snug tracking-tight">
+              &ldquo;A harmonious plotted sanctuary where authentic Vasthu precision meets the future economic powerhouse of South Hyderabad.&rdquo;
+            </blockquote>
+            <div className="mt-6 flex flex-col items-center justify-center">
+              <div className="font-bold text-sm tracking-wider uppercase text-brand-orange">
+                Skandha Group Development Pledge
+              </div>
+              <div className="text-xs text-slate-500 mt-0.5">
+                Kadthal Mandal &bull; 100% Clear Title &bull; Immediate Spot Registration
+              </div>
             </div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              Kadthal Mandal &bull; 100% Clear Title &bull; Immediate Spot Registration
-            </div>
-          </div>
-        </div>
+          </TiltCard>
+        </ScrollReveal>
       </section>
 
       {/* ========================================================== */}
       {/* 4. BESPOKE VILLA CONCEPTS & ARCHITECTURAL SPLENDOR (NEW)    */}
       {/* ========================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-200">
-          <div className="space-y-2 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
-              <Home className="w-3.5 h-3.5" />
-              <span>Architectural Vision &bull; Bespoke Villas</span>
-            </div>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
-              Craft Your Signature Villa Sanctuary
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
-              Alekhya's Brundavan offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
-            {Object.keys(villaConfigs).map(key => (
-              <button
-                key={key}
-                onClick={() => setActiveVillaConfig(key)}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  activeVillaConfig === key
-                    ? 'bg-white text-brand-orange shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {villaConfigs[key].sqYards}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Villa Showcase Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-50/70 rounded-3xl border border-slate-200/90 p-6 sm:p-10">
-          {/* Left: High-End Villa Daylight Photography */}
-          <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
-            <img
-              src="/assets/luxury_villa_day.jpg"
-              alt="Bespoke Contemporary Luxury Villa at Alekhya's Brundavan"
-              className="w-full h-[360px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
-              <span>Daylight Villa Concept</span>
-            </div>
-            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold px-3.5 py-1.5 rounded-xl shadow border border-slate-200">
-              <span>{villaConfigs[activeVillaConfig].builtUp}</span>
-            </div>
-          </div>
-
-          {/* Right: Villa Specifications & Architectural Breakdown */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="space-y-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3 py-1 rounded-md">
-                {villaConfigs[activeVillaConfig].dimension} Dimension
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
-                {villaConfigs[activeVillaConfig].type}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                {villaConfigs[activeVillaConfig].desc}
+      <section id="villas" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
+        <ScrollReveal direction="up">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+            <div className="space-y-2 max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
+                <Home className="w-3.5 h-3.5" />
+                <span>Architectural Vision &bull; Bespoke Villas</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+                Craft Your Signature Villa Sanctuary
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+                Alekhya's Brundavan offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
               </p>
             </div>
 
-            <div className="space-y-3 pt-2">
-              <div className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                Architectural Highlights:
-              </div>
-              <ul className="space-y-2.5">
-                {villaConfigs[activeVillaConfig].highlights.map((h, i) => (
-                  <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span className="leading-snug">{h}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-colors"
-              >
-                Request Villa Floorplans
-              </button>
-              <Link
-                to="/project"
-                className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold px-4 py-3 rounded-xl transition-colors"
-              >
-                View Plot Grid Matrix
-              </Link>
+            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+              {Object.keys(villaConfigs).map(key => (
+                <button
+                  key={key}
+                  onClick={() => setActiveVillaConfig(key)}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeVillaConfig === key
+                      ? 'bg-white text-brand-orange shadow-xs scale-105'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {villaConfigs[key].sqYards}
+                </button>
+              ))}
             </div>
           </div>
-        </div>
+        </ScrollReveal>
+
+        {/* Villa Showcase Card */}
+        <ScrollReveal direction="up" delay={150}>
+          <TiltCard
+            maxTilt={5}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-50/70 rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-sm hover:shadow-xl transition-all duration-300"
+          >
+            {/* Left: High-End Villa Daylight Photography */}
+            <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+              <img
+                src="/assets/luxury_villa_day.jpg"
+                alt="Bespoke Contemporary Luxury Villa at Alekhya's Brundavan"
+                className="w-full h-[360px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span>Daylight Villa Concept</span>
+              </div>
+              <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold px-3.5 py-1.5 rounded-xl shadow border border-slate-200">
+                <span>{villaConfigs[activeVillaConfig].builtUp}</span>
+              </div>
+            </div>
+
+            {/* Right: Villa Specifications & Architectural Breakdown */}
+            <div className="lg:col-span-5 space-y-6">
+              <div className="space-y-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3 py-1 rounded-md">
+                  {villaConfigs[activeVillaConfig].dimension} Dimension
+                </span>
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+                  {villaConfigs[activeVillaConfig].type}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {villaConfigs[activeVillaConfig].desc}
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Architectural Highlights:
+                </div>
+                <ul className="space-y-2.5">
+                  {villaConfigs[activeVillaConfig].highlights.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <span className="leading-snug">{h}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="btn-shimmer bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-md hover:shadow-orange-500/30 transition-all hover:-translate-y-0.5"
+                >
+                  Request Villa Floorplans
+                </button>
+                <Link
+                  to="/project"
+                  className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold px-5 py-3.5 rounded-xl transition-all hover:-translate-y-0.5"
+                >
+                  View Plot Grid Matrix
+                </Link>
+              </div>
+            </div>
+          </TiltCard>
+        </ScrollReveal>
       </section>
+
 
       {/* ========================================================== */}
       {/* 5. TWILIGHT AMBIANCE & CURATED LIGHTING SHOWCASE (NEW)      */}
       {/* ========================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
-          <div className="space-y-2 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold uppercase tracking-wider text-amber-700">
-              <Moon className="w-3.5 h-3.5" />
-              <span>Evening Illumination &bull; Curated Lighting</span>
+      <section id="lighting" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
+        <ScrollReveal direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+            <div className="space-y-2 max-w-3xl">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold uppercase tracking-wider text-amber-700">
+                <Moon className="w-3.5 h-3.5" />
+                <span>Evening Illumination &bull; Curated Lighting</span>
+              </div>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+                Atmospheric Evening Ambiance
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+                Experience the tranquility of dusk at Alekhya's Brundavan. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
+              </p>
             </div>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
-              Atmospheric Evening Ambiance
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
-              Experience the tranquility of dusk at Alekhya's Brundavan. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
-            </p>
-          </div>
 
-          {/* Interactive Scene Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 shrink-0">
-            {lightingScenes.map((scene, idx) => (
-              <button
-                key={idx}
-                onClick={() => setActiveLightingIndex(idx)}
-                className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeLightingIndex === idx
-                    ? 'bg-white text-brand-orange shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Scene {idx + 1}
-              </button>
-            ))}
+            {/* Interactive Scene Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+              {lightingScenes.map((scene, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveLightingIndex(idx)}
+                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeLightingIndex === idx
+                      ? 'bg-white text-brand-orange shadow-xs scale-105'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Scene {idx + 1}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Big Spotlight Card */}
-        <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-lg bg-slate-900 group">
-          <div className="relative h-[380px] sm:h-[520px] overflow-hidden">
-            <img
-              src={lightingScenes[activeLightingIndex].image}
-              alt={lightingScenes[activeLightingIndex].title}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-103"
-            />
-            {/* Subtle Twilight Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+        <ScrollReveal direction="up" delay={120}>
+          <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900 group">
+            <div className="relative h-[380px] sm:h-[520px] overflow-hidden">
+              <img
+                src={lightingScenes[activeLightingIndex].image}
+                alt={lightingScenes[activeLightingIndex].title}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+              {/* Subtle Twilight Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
 
-            <div className="absolute top-6 left-6 flex flex-wrap items-center gap-2">
-              <span className="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl shadow-xs">
-                {lightingScenes[activeLightingIndex].badge}
-              </span>
-              <span className="bg-slate-900/80 backdrop-blur-md text-slate-200 text-xs font-medium px-3 py-1 rounded-xl border border-white/20">
-                {lightingScenes[activeLightingIndex].tag}
-              </span>
-            </div>
-
-            <div className="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4 text-white">
-              <div className="max-w-2xl space-y-1.5">
-                <div className="text-xs font-bold uppercase tracking-widest text-orange-400">
-                  {lightingScenes[activeLightingIndex].category}
-                </div>
-                <h3 className="font-serif text-2xl sm:text-4xl font-bold">
-                  {lightingScenes[activeLightingIndex].title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                  {lightingScenes[activeLightingIndex].desc}
-                </p>
+              <div className="absolute top-6 left-6 flex flex-wrap items-center gap-2">
+                <span className="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl shadow-xs">
+                  {lightingScenes[activeLightingIndex].badge}
+                </span>
+                <span className="bg-slate-900/80 backdrop-blur-md text-slate-200 text-xs font-medium px-3 py-1 rounded-xl border border-white/20">
+                  {lightingScenes[activeLightingIndex].tag}
+                </span>
               </div>
 
-              <button
-                onClick={() => setSelectedPhotoModal(lightingScenes[activeLightingIndex])}
-                className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0 flex items-center gap-1.5"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-                <span>Enlarge View</span>
-              </button>
+              <div className="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4 text-white">
+                <div className="max-w-2xl space-y-1.5">
+                  <div className="text-xs font-bold uppercase tracking-widest text-orange-400">
+                    {lightingScenes[activeLightingIndex].category}
+                  </div>
+                  <h3 className="font-serif text-2xl sm:text-4xl font-bold">
+                    {lightingScenes[activeLightingIndex].title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                    {lightingScenes[activeLightingIndex].desc}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedPhotoModal(lightingScenes[activeLightingIndex])}
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all hover:scale-105 shrink-0 flex items-center gap-1.5"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>Enlarge View</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* 3 Quick Cards Grid for Direct Navigation */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {lightingScenes.map((scene, idx) => {
-            const isActive = activeLightingIndex === idx;
-            return (
-              <div
-                key={idx}
-                onClick={() => setActiveLightingIndex(idx)}
-                className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center gap-4 ${
-                  isActive
-                    ? 'bg-orange-50/70 border-brand-orange shadow-xs ring-1 ring-orange-500/20'
-                    : 'bg-white border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                <img
-                  src={scene.image}
-                  alt={scene.title}
-                  className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200"
-                />
-                <div className="space-y-0.5">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
-                    {scene.badge}
+        <ScrollReveal direction="up" delay={200}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {lightingScenes.map((scene, idx) => {
+              const isActive = activeLightingIndex === idx;
+              return (
+                <TiltCard
+                  key={idx}
+                  maxTilt={5}
+                  onClick={() => setActiveLightingIndex(idx)}
+                  className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center gap-4 ${
+                    isActive
+                      ? 'bg-orange-50/80 border-brand-orange shadow-md ring-1 ring-orange-500/30 scale-[1.02]'
+                      : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
+                  }`}
+                >
+                  <img
+                    src={scene.image}
+                    alt={scene.title}
+                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 shadow-xs"
+                  />
+                  <div className="space-y-0.5">
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
+                      {scene.badge}
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 leading-tight">
+                      {scene.title}
+                    </div>
                   </div>
-                  <div className="text-xs font-bold text-slate-900 leading-tight">
-                    {scene.title}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                </TiltCard>
+              );
+            })}
+          </div>
+        </ScrollReveal>
       </section>
+
 
       {/* ========================================================== */}
       {/* 6. ON-SITE INFRASTRUCTURE & REAL PHOTO GALLERY SHOWCASE    */}
       {/* ========================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
-          <div className="space-y-2 max-w-3xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200">
-              On-Site Reality &bull; Verified Construction
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
-              Project Amenities &amp; Infrastructure
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl font-light leading-relaxed">
-              Authentic on-site development photography highlighting genuine completed avenues, landscaped park reserves, water utilities, and gated security portals.
-            </p>
-          </div>
+      <section id="developments" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
+        <ScrollReveal direction="up">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+            <div className="space-y-2 max-w-3xl">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200">
+                On-Site Reality &bull; Verified Construction
+              </span>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+                Project Amenities &amp; Infrastructure
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 max-w-2xl font-light leading-relaxed">
+                Authentic on-site development photography highlighting genuine completed avenues, landscaped park reserves, water utilities, and gated security portals.
+              </p>
+            </div>
 
-          <button
-            onClick={() => setIsEnquiryOpen(true)}
-            className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-colors shrink-0"
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Book Escorted Site Tour</span>
-          </button>
-        </div>
+            <button
+              onClick={() => setIsEnquiryOpen(true)}
+              className="btn-shimmer inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-all hover:-translate-y-0.5 shrink-0"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Book Escorted Site Tour</span>
+            </button>
+          </div>
+        </ScrollReveal>
 
         {/* 8 Photo Grid Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {onSiteDevelopments.map((item, idx) => (
-            <div
-              key={idx}
-              onClick={() => setSelectedPhotoModal(item)}
-              className="group bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col cursor-pointer"
-            >
-              <div className="relative h-56 overflow-hidden bg-slate-100">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
-                />
-                <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
-                  {item.category}
+            <ScrollReveal key={idx} delay={idx * 60} direction="up">
+              <TiltCard
+                maxTilt={6}
+                onClick={() => setSelectedPhotoModal(item)}
+                className="group bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col cursor-pointer h-full"
+              >
+                <div className="relative h-56 overflow-hidden bg-slate-100">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+                  />
+                  <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
+                    {item.category}
+                  </div>
+                  <div className="absolute bottom-3 right-3 bg-white/95 text-brand-orange text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                    {item.tag}
+                  </div>
                 </div>
-                <div className="absolute bottom-3 right-3 bg-white/95 text-brand-orange text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
-                  {item.tag}
-                </div>
-              </div>
 
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
-                <div>
-                  <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
-                    {item.desc}
-                  </p>
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
+                  <div>
+                    <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                      {item.desc}
+                    </p>
+                  </div>
+                  <div className="pt-2 text-xs font-semibold text-brand-orange flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    <span>Inspect Development</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
                 </div>
-                <div className="pt-2 text-xs font-semibold text-brand-orange flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  <span>Inspect Development</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
+              </TiltCard>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -652,38 +705,42 @@ export default function HomePage() {
       {/* ========================================================== */}
       {/* 7. COMPLETE 12 AMENITIES GRID                              */}
       {/* ========================================================== */}
-      <section className="bg-slate-50/80 border-y border-slate-200/70 py-20">
+      <section id="amenities" className="bg-slate-50/80 border-y border-slate-200/70 py-20 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3.5 py-1 rounded-full">
-              Sanctioned Standards
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
-              Master Plan Features &amp; Infrastructure
-            </h2>
-            <p className="text-sm text-slate-600">
-              Built to high DTCP regulatory benchmarks ensuring long-term liveability and generational asset protection.
-            </p>
-          </div>
+          <ScrollReveal direction="up">
+            <div className="text-center max-w-2xl mx-auto space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3.5 py-1 rounded-full">
+                Sanctioned Standards
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+                Master Plan Features &amp; Infrastructure
+              </h2>
+              <p className="text-sm text-slate-600">
+                Built to high DTCP regulatory benchmarks ensuring long-term liveability and generational asset protection.
+              </p>
+            </div>
+          </ScrollReveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {amenities.map((item, idx) => {
               const IconComp = item.icon;
               return (
-                <div
-                  key={idx}
-                  className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-orange-200 transition-all duration-200 space-y-3 group"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-orange-50 group-hover:bg-brand-orange text-brand-orange group-hover:text-white flex items-center justify-center transition-colors">
-                    <IconComp className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
+                <ScrollReveal key={idx} delay={(idx % 4) * 70} direction="up">
+                  <TiltCard
+                    maxTilt={5}
+                    className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-lg hover:border-orange-200 transition-all duration-200 space-y-3 group h-full"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-orange-50 group-hover:bg-brand-orange text-brand-orange group-hover:text-white flex items-center justify-center transition-colors">
+                      <IconComp className="w-6 h-6" />
+                    </div>
+                    <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </TiltCard>
+                </ScrollReveal>
               );
             })}
           </div>
@@ -693,27 +750,31 @@ export default function HomePage() {
       {/* ========================================================== */}
       {/* 8. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER         */}
       {/* ========================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <SpecialLandmarkView />
+      <section id="landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <ScrollReveal direction="up">
+          <SpecialLandmarkView />
+        </ScrollReveal>
       </section>
 
       {/* ========================================================== */}
       {/* 9. COMPREHENSIVE INTERACTIVE FAQ ACCORDION                 */}
       {/* ========================================================== */}
-      <section className="bg-slate-50/80 py-16 border-y border-slate-200/80">
+      <section id="faqs" className="bg-slate-50/80 py-16 border-y border-slate-200/80 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 inline-flex items-center gap-1.5">
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>Frequently Asked Questions</span>
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
-              Everything You Need to Know
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages for Alekhya's Brundavan.
-            </p>
-          </div>
+          <ScrollReveal direction="up">
+            <div className="text-center space-y-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 inline-flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Frequently Asked Questions</span>
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+                Everything You Need to Know
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+                Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages for Alekhya's Brundavan.
+              </p>
+            </div>
+          </ScrollReveal>
 
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center justify-center gap-2">
@@ -736,66 +797,70 @@ export default function HomePage() {
           </div>
 
           {/* Accordion List */}
-          <div className="space-y-3.5">
-            {filteredFaqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={faq.q}
-                  className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
-                    isOpen
-                      ? 'border-brand-orange/40 shadow-sm ring-1 ring-orange-500/10'
-                      : 'border-slate-200 hover:border-slate-300'
-                  }`}
-                >
-                  <button
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full px-5 sm:px-6 py-4.5 text-left flex items-center justify-between gap-4 transition-colors"
+          <ScrollReveal direction="up" delay={80}>
+            <div className="space-y-3.5">
+              {filteredFaqs.map((faq, idx) => {
+                const isOpen = openFaqIndex === idx;
+                return (
+                  <div
+                    key={faq.q}
+                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+                      isOpen
+                        ? 'border-brand-orange/40 shadow-sm ring-1 ring-orange-500/10'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
-                      <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
-                        {faq.q}
-                      </span>
-                    </div>
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                        isOpen
-                          ? 'bg-orange-50 text-brand-orange rotate-180'
-                          : 'bg-slate-100 text-slate-500'
-                      }`}
+                    <button
+                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                      className="w-full px-5 sm:px-6 py-4.5 text-left flex items-center justify-between gap-4 transition-colors"
                     >
-                      <ChevronDown className="w-4 h-4" />
-                    </div>
-                  </button>
+                      <div className="flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
+                        <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                          {faq.q}
+                        </span>
+                      </div>
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                          isOpen
+                            ? 'bg-orange-50 text-brand-orange rotate-180'
+                            : 'bg-slate-100 text-slate-500'
+                        }`}
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                      </div>
+                    </button>
 
-                  {isOpen && (
-                    <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50">
-                      <p>{faq.a}</p>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                    {isOpen && (
+                      <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50">
+                        <p>{faq.a}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollReveal>
 
           {/* Still Have Questions Card */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h4 className="font-bold text-slate-900 text-sm sm:text-base">
-                Have a specific query about an individual plot number?
-              </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Our sales desk provides instant clarity on plot boundaries, current availability, and bank eligibility.
-              </p>
+          <ScrollReveal direction="up" delay={120}>
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <h4 className="font-bold text-slate-900 text-sm sm:text-base">
+                  Have a specific query about an individual plot number?
+                </h4>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Our sales desk provides instant clarity on plot boundaries, current availability, and bank eligibility.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEnquiryOpen(true)}
+                className="btn-shimmer bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors shrink-0"
+              >
+                Ask Skandha Advisory
+              </button>
             </div>
-            <button
-              onClick={() => setIsEnquiryOpen(true)}
-              className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors shrink-0"
-            >
-              Ask Skandha Advisory
-            </button>
-          </div>
+          </ScrollReveal>
         </div>
       </section>
 
@@ -803,35 +868,38 @@ export default function HomePage() {
       {/* 10. VIP PRIVATE SITE VISIT INVITATION                      */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 rounded-3xl p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden">
-          <div className="max-w-2xl space-y-4 relative z-10">
-            <span className="text-xs font-extrabold uppercase tracking-widest text-orange-200 bg-white/20 px-3 py-1 rounded-full">
-              Complimentary Daily Site Tours
-            </span>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold leading-tight">
-              Experience Alekhya's Brundavan In Person
-            </h2>
-            <p className="text-sm sm:text-base text-orange-100 leading-relaxed font-light">
-              Walk the wide blacktop avenues, inspect the landscaped Ac. 0.758 park, and experience the serenity of Kadthal just 1 minute from Maisigandi Temple.
-            </p>
-            <div className="flex flex-wrap gap-4 pt-4">
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-sm shadow-md transition-all flex items-center gap-2"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Schedule Private Escorted Visit</span>
-              </button>
-              <Link
-                to="/contact"
-                className="bg-orange-950/40 hover:bg-orange-950/60 border border-white/30 text-white font-bold px-7 py-4 rounded-xl text-sm transition-all flex items-center gap-2"
-              >
-                <Navigation className="w-4 h-4" />
-                <span>Get Route &amp; Driving Map</span>
-              </Link>
+        <ScrollReveal direction="up">
+          <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 rounded-3xl p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden group">
+            <div className="pointer-events-none absolute -right-20 -bottom-20 w-96 h-96 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-700" />
+            <div className="max-w-2xl space-y-4 relative z-10">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-orange-200 bg-white/20 px-3 py-1 rounded-full">
+                Complimentary Daily Site Tours
+              </span>
+              <h2 className="font-serif text-3xl sm:text-5xl font-bold leading-tight">
+                Experience Alekhya's Brundavan In Person
+              </h2>
+              <p className="text-sm sm:text-base text-orange-100 leading-relaxed font-light">
+                Walk the wide blacktop avenues, inspect the landscaped Ac. 0.758 park, and experience the serenity of Kadthal just 1 minute from Maisigandi Temple.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="btn-shimmer bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-sm shadow-md transition-all flex items-center gap-2 hover:scale-[1.02]"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>Schedule Private Escorted Visit</span>
+                </button>
+                <Link
+                  to="/contact"
+                  className="bg-orange-950/40 hover:bg-orange-950/60 border border-white/30 text-white font-bold px-7 py-4 rounded-xl text-sm transition-all flex items-center gap-2 hover:scale-[1.02]"
+                >
+                  <Navigation className="w-4 h-4" />
+                  <span>Get Route &amp; Driving Map</span>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* On-Site Development / Lighting Photo Detail Modal */}

@@ -6,6 +6,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollProgress from './components/ScrollProgress';
+import BackToTop from './components/BackToTop';
+import FloatingPlotPill from './components/FloatingPlotPill';
 
 // Public Marketing Pages
 import HomePage from './pages/HomePage';
@@ -57,7 +60,8 @@ function PublicLayout({ settings }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white relative selection:bg-orange-100 selection:text-orange-900">
+      <ScrollProgress />
       <Navbar settings={settings} />
       <main className="flex-1">
         <Routes>
@@ -70,6 +74,8 @@ function PublicLayout({ settings }) {
         </Routes>
       </main>
       <Footer settings={settings} />
+      <BackToTop />
+      <FloatingPlotPill />
     </div>
   );
 }
