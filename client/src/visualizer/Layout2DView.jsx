@@ -35,7 +35,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   filterStatus = 'all',
   filterFacing = 'all',
   searchTerm = '',
-  animateVehicles = false
+  animateVehicles = false,
+  activeTileType: propTileType = 'satellite'
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -44,8 +45,14 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   const carsGroupRef = useRef(null);
   const animationFrameRef = useRef(null);
 
-  const [activeTileType, setActiveTileType] = useState('osm');
+  const [activeTileType, setActiveTileType] = useState(propTileType);
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
+
+  useEffect(() => {
+    if (propTileType && TILE_LAYERS[propTileType]) {
+      setActiveTileType(propTileType);
+    }
+  }, [propTileType]);
 
   // Expose imperative methods for external toolbar
   React.useImperativeHandle(ref, () => ({

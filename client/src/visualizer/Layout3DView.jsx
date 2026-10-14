@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Text, Line } from '@react-three/drei';
+import { OrbitControls, Text, Line, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   LAYOUT_BOUNDS,
@@ -966,63 +966,241 @@ function ParkArea3D({ onParkClick }) {
   );
 }
 
-// Real-World Kadthal / Srisailam Highway Cartographic Terrain Backdrop
-function CartographicMapTerrain() {
+// Grand Entrance Arch connecting Layout to Srisailam Highway Service Road
+function GrandEntranceArch({ position = [63, 0, 0.5] }) {
+  return (
+    <group position={position} rotation={[0, Math.PI / 2, 0]}>
+      {/* Left Stone Pillar */}
+      <mesh position={[-4.0, 2.6, 0]}>
+        <boxGeometry args={[0.9, 5.2, 0.9]} />
+        <meshStandardMaterial color="#334155" roughness={0.7} />
+      </mesh>
+      {/* Left Pillar Base */}
+      <mesh position={[-4.0, 0.3, 0]}>
+        <boxGeometry args={[1.3, 0.6, 1.3]} />
+        <meshStandardMaterial color="#1E293B" roughness={0.8} />
+      </mesh>
+      {/* Left Pillar Cap & Gold Lamp */}
+      <mesh position={[-4.0, 5.35, 0]}>
+        <boxGeometry args={[1.1, 0.3, 1.1]} />
+        <meshStandardMaterial color="#D97706" metalness={0.6} roughness={0.3} />
+      </mesh>
+
+      {/* Right Stone Pillar */}
+      <mesh position={[4.0, 2.6, 0]}>
+        <boxGeometry args={[0.9, 5.2, 0.9]} />
+        <meshStandardMaterial color="#334155" roughness={0.7} />
+      </mesh>
+      {/* Right Pillar Base */}
+      <mesh position={[4.0, 0.3, 0]}>
+        <boxGeometry args={[1.3, 0.6, 1.3]} />
+        <meshStandardMaterial color="#1E293B" roughness={0.8} />
+      </mesh>
+      {/* Right Pillar Cap & Gold Lamp */}
+      <mesh position={[4.0, 5.35, 0]}>
+        <boxGeometry args={[1.1, 0.3, 1.1]} />
+        <meshStandardMaterial color="#D97706" metalness={0.6} roughness={0.3} />
+      </mesh>
+
+      {/* Architectural Overhead Crossbeam */}
+      <mesh position={[0, 4.9, 0]}>
+        <boxGeometry args={[9.2, 0.85, 0.7]} />
+        <meshStandardMaterial color="#0F172A" roughness={0.6} />
+      </mesh>
+
+      {/* Gold Decorative Header Trim */}
+      <mesh position={[0, 5.4, 0]}>
+        <boxGeometry args={[8.8, 0.15, 0.75]} />
+        <meshStandardMaterial color="#D97706" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* "ALEKHYA'S BRUNDAVAN" Text Facing Highway (East side) */}
+      <Text
+        position={[0, 4.9, 0.38]}
+        fontSize={0.44}
+        color="#FEF08A"
+        fontWeight="bold"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ALEKHYA'S BRUNDAVAN
+      </Text>
+
+      {/* "WELCOME TO BRUNDAVAN" Text Facing Inside Layout (West side) */}
+      <Text
+        position={[0, 4.9, -0.38]}
+        rotation={[0, Math.PI, 0]}
+        fontSize={0.42}
+        color="#FEF08A"
+        fontWeight="bold"
+        anchorX="center"
+        anchorY="middle"
+      >
+        WELCOME TO BRUNDAVAN
+      </Text>
+    </group>
+  );
+}
+
+// Module-level cache for terrain textures
+const terrainTextureCache = { satellite: null, osm: null };
+
+// Real-World Kadthal / Srisailam Highway Geographic Map & Satellite Terrain Backdrop
+function GeographicMapTerrain({ mapTileType = 'satellite' }) {
+  const [terrainTexture, setTerrainTexture] = useState(() => terrainTextureCache[mapTileType] || null);
+  const isSat = mapTileType === 'satellite';
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    if (terrainTextureCache[mapTileType]) {
+      setTerrainTexture(terrainTextureCache[mapTileType]);
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 768;
+    canvas.height = 768;
+    const ctx = canvas.getContext('2d');
+
+    // Base background tone while tiles load
+    ctx.fillStyle = isSat ? '#3B4A3A' : '#E5ECE3';
+    ctx.fillRect(0, 0, 768, 768);
+
+    // Subtle coordinate grid on base
+    ctx.strokeStyle = isSat ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 768; i += 64) {
+      ctx.beginPath();
+      ctx.moveTo(i, 0); ctx.lineTo(i, 768);
+      ctx.moveTo(0, i); ctx.lineTo(768, i);
+      ctx.stroke();
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    terrainTextureCache[mapTileType] = tex;
+    setTerrainTexture(tex);
+
+    // Zoom 17 tile coordinates for Kadthal [17.0985, 78.5085]
+    const zoom = 17;
+    const startX = 94119;
+    const startY = 59215;
+
+    for (let dy = 0; dy < 3; dy++) {
+      for (let dx = 0; dx < 3; dx++) {
+        const x = startX + dx;
+        const y = startY + dy;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        const tileUrl = isSat
+          ? `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`
+          : `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+
+        img.onload = () => {
+          ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
+          tex.needsUpdate = true;
+        };
+        img.src = tileUrl;
+      }
+    }
+  }, [mapTileType, isSat]);
+
   return (
     <group>
-      {/* Light pastel green map terrain plane (matching OpenStreetMap / Google Maps base) */}
-      <mesh position={[0, -0.015, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[450, 320]} />
-        <meshBasicMaterial color="#CFE2CC" />
+      {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad) */}
+      <mesh position={[125, -0.02, 119]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[877, 917]} />
+        {terrainTexture ? (
+          <meshBasicMaterial map={terrainTexture} />
+        ) : (
+          <meshBasicMaterial color={isSat ? '#3B4A3A' : '#E5ECE3'} />
+        )}
       </mesh>
 
-      {/* Layout Compound Boundary Base */}
+      {/* Layout Compound Boundary Base Ground Tile */}
       <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[186, 126]} />
-        <meshBasicMaterial color="#D5E8CE" />
+        <meshBasicMaterial
+          color={isSat ? '#2E4733' : '#D5E8CE'}
+          opacity={isSat ? 0.35 : 0.85}
+          transparent
+        />
       </mesh>
 
-      {/* Boundary Compound Fencing Line */}
-      <lineSegments position={[0, 0.01, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* DTCP Sanctioned Layout Boundary Perimeter Fencing */}
+      <lineSegments position={[0, 0.012, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(186, 126)]} />
-        <lineBasicMaterial color="#68D391" linewidth={2} />
+        <lineBasicMaterial color={isSat ? '#4ADE80' : '#15803D'} linewidth={3} />
       </lineSegments>
 
-      {/* Srisailam Highway Extended North-South Corridor Vein */}
-      <mesh position={[80, 0.006, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[16, 320]} />
-        <meshBasicMaterial color="#1E232A" />
-      </mesh>
-      {/* Highway Median Line Extension */}
-      <mesh position={[80, 0.008, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.35, 320]} />
-        <meshBasicMaterial color="#FBBF24" />
-      </mesh>
+      {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
+      <GrandEntranceArch position={[63, 0, 0.5]} />
 
-      {/* 60ft Arterial Road East-West Extension towards Maisigandi Temple */}
-      <mesh position={[-60, 0.006, -47]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[260, 10]} />
-        <meshBasicMaterial color="#2B303A" />
-      </mesh>
+      {/* Floating 3D Location Marker Pin right over the layout center */}
+      <Billboard position={[0, 10, 5]} follow={true}>
+        <group>
+          {/* Elevated Capsule Badge */}
+          <mesh position={[0, 0, 0]}>
+            <planeGeometry args={[24, 4.2]} />
+            <meshBasicMaterial color="#0F172A" opacity={0.92} transparent />
+          </mesh>
+          <lineSegments position={[0, 0, 0.01]}>
+            <edgesGeometry args={[new THREE.PlaneGeometry(24, 4.2)]} />
+            <lineBasicMaterial color="#EA580C" linewidth={2} />
+          </lineSegments>
+          {/* Vertical Stem */}
+          <mesh position={[0, -2.8, 0]}>
+            <cylinderGeometry args={[0.08, 0.08, 5.6, 8]} />
+            <meshBasicMaterial color="#EA580C" />
+          </mesh>
+          <Text position={[0, 0.8, 0.05]} fontSize={1.4} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
+            📍 ALEKHYA'S BRUNDAVAN
+          </Text>
+          <Text position={[0, -0.7, 0.05]} fontSize={0.88} color="#FDBA74" fontWeight="semibold" anchorX="center" anchorY="middle">
+            Kadthal, Srisailam Hwy NH-765 &bull; DTCP Approved
+          </Text>
+        </group>
+      </Billboard>
 
       {/* Real-World GIS Milestone Markers on 3D Map */}
-      <group position={[80, 0.05, -120]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
-        <Text fontSize={3.2} color="#1E3A8A" fontWeight="bold">
-          ▲ to Hyderabad / RGIA Airport / ORR Exit 14 (34 km)
-        </Text>
-      </group>
+      <Billboard position={[80, 5, -110]} follow={true}>
+        <group>
+          <mesh position={[0, 0, 0]}>
+            <planeGeometry args={[28, 3.4]} />
+            <meshBasicMaterial color="#1E3A8A" opacity={0.92} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
+            ▲ to Hyderabad / RGIA Airport / ORR Exit 14 (34 km)
+          </Text>
+        </group>
+      </Billboard>
 
-      <group position={[80, 0.05, 130]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
-        <Text fontSize={3.2} color="#1E3A8A" fontWeight="bold">
-          ▼ to Kadthal Town / Dindi / Srisailam (NH-765)
-        </Text>
-      </group>
+      <Billboard position={[80, 5, 120]} follow={true}>
+        <group>
+          <mesh position={[0, 0, 0]}>
+            <planeGeometry args={[28, 3.4]} />
+            <meshBasicMaterial color="#1E3A8A" opacity={0.92} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
+            ▼ to Kadthal Town / Dindi / Srisailam (NH-765)
+          </Text>
+        </group>
+      </Billboard>
 
-      <group position={[-140, 0.05, -47]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Text fontSize={3.0} color="#92400E" fontWeight="bold">
-          ◄ to Maisigandi Maisamma Temple (0.8 km)
-        </Text>
-      </group>
+      <Billboard position={[-125, 5, -47]} follow={true}>
+        <group>
+          <mesh position={[0, 0, 0]}>
+            <planeGeometry args={[26, 3.4]} />
+            <meshBasicMaterial color="#92400E" opacity={0.92} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={1.1} color="#FFFFFF" fontWeight="bold" anchorX="center" anchorY="middle">
+            ◄ to Maisigandi Maisamma Temple (0.8 km)
+          </Text>
+        </group>
+      </Billboard>
     </group>
   );
 }
@@ -1101,18 +1279,21 @@ export default function Layout3DView({
   measurePoints = [],
   onMeasurePoint,
   onRoadClick,
-  onParkClick
+  onParkClick,
+  mapTileType = 'satellite'
 }) {
   const cleanSearch = (searchTerm || '').trim();
+  const isSat = mapTileType === 'satellite';
+  const bgColor = isSat ? '#2E3A2D' : '#CFE2CC';
 
   return (
-    <div className="w-full h-full relative bg-[#CFE2CC] select-none">
+    <div className={`w-full h-full relative ${isSat ? 'bg-[#2E3A2D]' : 'bg-[#CFE2CC]'} select-none transition-colors duration-500`}>
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 550 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
-        <color attach="background" args={['#CFE2CC']} />
+        <color attach="background" args={[bgColor]} />
 
         {/* Clean, Bright, Shadowless Illumination */}
         <ambientLight intensity={1.2} />
@@ -1126,8 +1307,8 @@ export default function Layout3DView({
           walkProgress={walkProgress}
         />
 
-        {/* Google Maps / Cartographic Terrain Backdrop */}
-        <CartographicMapTerrain />
+        {/* Real-World Geographic Kadthal Map & Satellite Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
+        <GeographicMapTerrain mapTileType={mapTileType} />
 
         {/* Connected Asphalt Road Network with Sidewalks */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />
