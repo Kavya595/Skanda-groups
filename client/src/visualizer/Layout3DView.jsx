@@ -12,59 +12,76 @@ import {
 // Road definitions for the interactive Street Walk / Road Travel mode
 export const WALK_ROADS = [
   {
-    id: 'road-mid-33',
+    id: 'ROAD-33-MID',
     name: "33' Internal Main Boulevard",
-    shortName: "33' Road",
-    startX: -58,
-    endX: 58,
+    shortName: "33' Boulevard",
+    startX: -82,
+    endX: 60,
     z: 0.5,
-    dir: 'east',
+    axis: 'x',
     cameraHeight: 2.1,
-    lookAhead: 15
+    forwardYaw: Math.PI / 2, // Facing +X (East down the avenue)
+    lookAhead: 16
   },
   {
-    id: 'road-v1-33',
+    id: 'ROAD-33-V1',
     name: "33' Vertical Avenue 1 (West)",
     shortName: "Avenue 1",
     x: -32.5,
-    startZ: 50,
-    endZ: -38,
-    dir: 'north',
+    startZ: 56,
+    endZ: -40,
+    axis: 'z',
     cameraHeight: 2.1,
-    lookAhead: 15
+    forwardYaw: 0, // Facing -Z (North toward Maisigandi road)
+    lookAhead: 16
   },
   {
-    id: 'road-v3-33',
+    id: 'ROAD-33-V2',
+    name: "33' Vertical Avenue 2 (Central)",
+    shortName: "Avenue 2",
+    x: -3.5,
+    startZ: 56,
+    endZ: -40,
+    axis: 'z',
+    cameraHeight: 2.1,
+    forwardYaw: 0, // Facing -Z (North)
+    lookAhead: 16
+  },
+  {
+    id: 'ROAD-33-V3',
     name: "33' Vertical Avenue 3 (East)",
     shortName: "Avenue 3",
     x: 25.5,
-    startZ: 50,
-    endZ: -38,
-    dir: 'north',
+    startZ: 56,
+    endZ: -40,
+    axis: 'z',
     cameraHeight: 2.1,
-    lookAhead: 15
+    forwardYaw: 0, // Facing -Z (North)
+    lookAhead: 16
   },
   {
-    id: 'road-top-60',
+    id: 'ROAD-60-TOP',
     name: "60' Arterial Road (to Maisigandi Temple)",
-    shortName: "60' Road",
-    startX: -78,
-    endX: 72,
+    shortName: "60' Arterial",
+    startX: -86,
+    endX: 70,
     z: -47,
-    dir: 'east',
+    axis: 'x',
     cameraHeight: 2.3,
+    forwardYaw: Math.PI / 2, // Facing +X (East)
     lookAhead: 18
   },
   {
-    id: 'road-hwy-100',
-    name: "Srisailam Highway (NH 765)",
-    shortName: "NH-765",
-    x: 77,
-    startZ: -48,
-    endZ: 58,
-    dir: 'south',
+    id: 'ROAD-HWY-EAST',
+    name: "Srisailam Highway (NH-765)",
+    shortName: "NH-765 Highway",
+    x: 80,
+    startZ: -50,
+    endZ: 60,
+    axis: 'z',
     cameraHeight: 2.6,
-    lookAhead: 20
+    forwardYaw: Math.PI, // Facing +Z (Southbound along highway)
+    lookAhead: 22
   }
 ];
 
@@ -74,14 +91,96 @@ function CameraController({
   cameraPreset,
   walkRoadIndex = 0,
   walkProgress = 0,
+  onWalkProgressChange,
   onResetComplete
 }) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
   const targetPos = useRef(new THREE.Vector3(0, 68, 76));
   const targetLook = useRef(new THREE.Vector3(0, 0, 4));
 
+  // Road Walk Gesture State
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+  const progRef = useRef(walkProgress);
+  const yawRef = useRef(Math.PI / 2);
+  const pitchRef = useRef(-0.02);
+
+  // Sync internal progress when walkProgress prop changes from external buttons or slider
+  useEffect(() => {
+    progRef.current = walkProgress;
+  }, [walkProgress]);
+
+  // When switching roads, orient camera along the road forward direction
+  useEffect(() => {
+    if (cameraPreset === 'roadWalk') {
+      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
+      yawRef.current = road.forwardYaw;
+      pitchRef.current = -0.02;
+    }
+  }, [walkRoadIndex, cameraPreset]);
+
+  // Hand Gesture Drag Navigation on the Canvas for Road View (USER REQUIREMENT)
+  useEffect(() => {
+    if (cameraPreset !== 'roadWalk') return;
+
+    const dom = gl.domElement;
+
+    const handlePointerDown = (e) => {
+      isDragging.current = true;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handlePointerMove = (e) => {
+      if (!isDragging.current) return;
+      const dx = e.clientX - lastPos.current.x;
+      const dy = e.clientY - lastPos.current.y;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+
+      // Drag up/down to walk forward and backward (USER REQUIREMENT: "drag like normally and go forward and see")
+      const moveDelta = -dy * 0.0028;
+      const nextProg = Math.max(0, Math.min(1, progRef.current + moveDelta));
+      progRef.current = nextProg;
+      if (onWalkProgressChange) {
+        onWalkProgressChange(nextProg);
+      }
+
+      // Drag left/right to look around and inspect plots on both sides
+      yawRef.current -= dx * 0.005;
+
+      // Slight natural vertical pitch
+      pitchRef.current = Math.max(-0.35, Math.min(0.35, pitchRef.current - dy * 0.0008));
+    };
+
+    const handlePointerUp = () => {
+      isDragging.current = false;
+    };
+
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const moveStep = -Math.sign(e.deltaY) * 0.035;
+      const nextProg = Math.max(0, Math.min(1, progRef.current + moveStep));
+      progRef.current = nextProg;
+      if (onWalkProgressChange) {
+        onWalkProgressChange(nextProg);
+      }
+    };
+
+    dom.addEventListener('pointerdown', handlePointerDown);
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    dom.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      dom.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      dom.removeEventListener('wheel', handleWheel);
+    };
+  }, [gl, cameraPreset, onWalkProgressChange]);
+
+  // Preset Camera Transitions for Overview, Park, TopDown, and Selected Plots
   useEffect(() => {
     if (selectedPlot && selectedPlot.center) {
       const [cx, cz] = selectedPlot.center;
@@ -89,33 +188,11 @@ function CameraController({
       targetLook.current.set(cx, 0.1, cz);
       animatingRef.current = true;
     } else if (cameraPreset === 'roadWalk') {
-      // Human eye-level Street Walk mode along the roads
-      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
-      const prog = Math.max(0, Math.min(1, walkProgress));
-
-      if (road.dir === 'east') {
-        const curX = road.startX + (road.endX - road.startX) * prog;
-        targetPos.current.set(curX, road.cameraHeight, road.z);
-        targetLook.current.set(curX + road.lookAhead, road.cameraHeight * 0.9, road.z);
-      } else if (road.dir === 'north') {
-        const curZ = road.startZ + (road.endZ - road.startZ) * prog;
-        targetPos.current.set(road.x, road.cameraHeight, curZ);
-        targetLook.current.set(road.x, road.cameraHeight * 0.9, curZ - road.lookAhead);
-      } else if (road.dir === 'south') {
-        const curZ = road.startZ + (road.endZ - road.startZ) * prog;
-        targetPos.current.set(road.x, road.cameraHeight, curZ);
-        targetLook.current.set(road.x, road.cameraHeight * 0.9, curZ + road.lookAhead);
-      }
-      animatingRef.current = true;
-    } else if (cameraPreset === 'parkGround') {
-      // Ground-level walk view inside Ac. 0.758 park (matching Screenshot 5)
-      targetPos.current.set(-74, 1.4, -18);
-      targetLook.current.set(-71, 0.9, -32);
-      animatingRef.current = true;
-    } else if (cameraPreset === 'park') {
-      // Elevated isometric view of the park (matching Screenshot 2 & 4)
-      targetPos.current.set(-73, 32, -4);
-      targetLook.current.set(-73, 0.1, -26);
+      animatingRef.current = false;
+    } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
+      // Low eye-level ground perspective inside Ac. 0.758 park (exact match to Screenshots 3 & 4)
+      targetPos.current.set(-73, 2.0, -14);
+      targetLook.current.set(-71, 1.2, -34);
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
       targetPos.current.set(0, 105, 0.1);
@@ -131,10 +208,43 @@ function CameraController({
       targetLook.current.set(0, 0, 4);
       animatingRef.current = true;
     }
-  }, [selectedPlot?.plotNumber, selectedPlot?.center?.[0], selectedPlot?.center?.[1], cameraPreset, walkRoadIndex, walkProgress]);
+  }, [
+    selectedPlot?.plotNumber,
+    selectedPlot?.center?.[0],
+    selectedPlot?.center?.[1],
+    cameraPreset
+  ]);
 
   useFrame((_, delta) => {
-    if (animatingRef.current && controlsRef.current) {
+    if (cameraPreset === 'roadWalk') {
+      // Direct Responsive Road Walk Camera Control
+      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
+      let tx, ty = road.cameraHeight, tz;
+      if (road.axis === 'x') {
+        tx = road.startX + (road.endX - road.startX) * progRef.current;
+        tz = road.z;
+      } else {
+        tx = road.x;
+        tz = road.startZ + (road.endZ - road.startZ) * progRef.current;
+      }
+
+      // Smooth camera interpolation
+      const smoothRate = isDragging.current ? 0.35 : 0.18;
+      camera.position.x += (tx - camera.position.x) * smoothRate;
+      camera.position.y += (ty - camera.position.y) * smoothRate;
+      camera.position.z += (tz - camera.position.z) * smoothRate;
+
+      // Compute look direction from yaw and pitch
+      const lookDist = 18;
+      const lx = camera.position.x + Math.sin(yawRef.current) * Math.cos(pitchRef.current) * lookDist;
+      const ly = camera.position.y + Math.sin(pitchRef.current) * lookDist;
+      const lz = camera.position.z - Math.cos(yawRef.current) * Math.cos(pitchRef.current) * lookDist;
+      camera.lookAt(lx, ly, lz);
+
+      if (controlsRef.current) {
+        controlsRef.current.target.set(lx, ly, lz);
+      }
+    } else if (animatingRef.current && controlsRef.current) {
       const step = Math.min(delta * 4.2, 1);
       camera.position.lerp(targetPos.current, step);
       controlsRef.current.target.lerp(targetLook.current, step);
@@ -150,8 +260,9 @@ function CameraController({
   return (
     <OrbitControls
       ref={controlsRef}
-      maxPolarAngle={cameraPreset === 'roadWalk' || cameraPreset === 'parkGround' ? Math.PI / 2.02 : Math.PI / 2.08}
-      minDistance={cameraPreset === 'roadWalk' || cameraPreset === 'parkGround' ? 1.5 : 4}
+      enabled={cameraPreset !== 'roadWalk'}
+      maxPolarAngle={cameraPreset === 'park' || cameraPreset === 'parkGround' ? Math.PI / 2.02 : Math.PI / 2.08}
+      minDistance={cameraPreset === 'park' || cameraPreset === 'parkGround' ? 1.0 : 4}
       maxDistance={170}
       enableDamping
       dampingFactor={0.06}
@@ -375,24 +486,24 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
-// Low Cycad Palm Shrub for the Park Lawn (matching Screenshot 4 & 5)
+// Low Cycad Palm Shrub for the Park Lawn (matching Screenshot 3 & 4)
 function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
-  const angles = [0, 45, 90, 135, 180, 225, 270, 315];
+  const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
   return (
     <group position={position} scale={scale}>
-      {/* Small Brown Trunk Base */}
-      <mesh position={[0, 0.2, 0]}>
-        <cylinderGeometry args={[0.1, 0.16, 0.38, 6]} />
-        <meshBasicMaterial color="#6E563B" />
+      {/* Small Dark Brown Trunk Base */}
+      <mesh position={[0, 0.16, 0]}>
+        <cylinderGeometry args={[0.12, 0.16, 0.32, 8]} />
+        <meshBasicMaterial color="#5C4033" />
       </mesh>
 
-      {/* Radiating Arching Leaves */}
+      {/* 12 Radiating Arching Cycad Palm Leaflets */}
       {angles.map((ang, idx) => (
-        <group key={idx} position={[0, 0.35, 0]} rotation={[0.4, (ang * Math.PI) / 180, -0.3]}>
-          <mesh position={[0.65, -0.1, 0]} rotation={[0, 0, -0.2]} scale={[1.2, 0.04, 0.42]}>
+        <group key={idx} position={[0, 0.28, 0]} rotation={[0.42, (ang * Math.PI) / 180, -0.32]}>
+          <mesh position={[0.55, -0.06, 0]} rotation={[0, 0, -0.2]} scale={[1.15, 0.035, 0.32]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial color="#558B1F" />
+            <meshBasicMaterial color="#2B5329" />
           </mesh>
         </group>
       ))}
@@ -400,18 +511,18 @@ function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
-// Little Flower Patch for Park Lawn (matching Screenshot 1 & 5: white and orange flowers)
+// Little Flower Patch for Park Lawn (matching Screenshot 3 & 4: white and orange flowers)
 function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   return (
     <group position={position}>
-      {/* 4 Petals Disk */}
+      {/* Flower Petals */}
       <mesh position={[0, 0.04, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.22, 5]} />
-        <meshBasicMaterial color={isOrange ? '#FB923C' : '#FFFFFF'} />
+        <circleGeometry args={[0.2, 5]} />
+        <meshBasicMaterial color={isOrange ? '#F97316' : '#FFFFFF'} />
       </mesh>
-      {/* Flower Core */}
+      {/* Blossom Core */}
       <mesh position={[0, 0.045, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.08, 6]} />
+        <circleGeometry args={[0.07, 6]} />
         <meshBasicMaterial color="#FBBF24" />
       </mesh>
     </group>
@@ -920,13 +1031,13 @@ function ConnectedRoadNetwork({ onRoadClick }) {
   );
 }
 
-// Ac. 0.758 Park Area (matching Screenshot 1, 2, 4, 5: flowers, perimeter palms, cycad shrubs, 3D Park text)
+// Ac. 0.758 Park Area (matching Screenshot 3 & 4: clean flowering lawn, perimeter palms, cycad shrubs)
 function ParkArea3D({ onParkClick }) {
   const [cx, cz] = parkData.center;
   const w = parkData.width;
   const d = parkData.depth;
 
-  // Perimeter small palm trees (matching Screenshot 2 & 4 perimeter!)
+  // Perimeter small palm trees (matching Screenshot 3 & 4 perimeter)
   const perimeterPalms = useMemo(() => {
     const list = [];
     const minX = cx - w / 2;
@@ -947,24 +1058,31 @@ function ParkArea3D({ onParkClick }) {
     return list;
   }, [cx, cz, w, d]);
 
-  // Scattered cycad shrubs inside the park lawn (matching Screenshot 4 & 5!)
+  // Scattered cycad shrubs inside the park lawn (matching Screenshot 3 & 4)
   const cycads = useMemo(() => {
     const list = [];
-    for (let i = 0; i < 32; i++) {
-      const rx = cx - w * 0.42 + Math.random() * (w * 0.84);
-      const rz = cz - d * 0.42 + Math.random() * (d * 0.84);
-      list.push({ pos: [rx, 0.04, rz], scale: 0.8 + Math.random() * 0.35 });
+    const rows = 6;
+    const cols = 6;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const jx = (((r * 13 + c * 23) % 17) - 8) * 0.35;
+        const jz = (((r * 19 + c * 29) % 17) - 8) * 0.45;
+        const rx = cx - w * 0.38 + (c / (cols - 1)) * (w * 0.76) + jx;
+        const rz = cz - d * 0.38 + (r / (rows - 1)) * (d * 0.76) + jz;
+        const sc = 0.82 + (((r * 7 + c * 11) % 5) * 0.08);
+        list.push({ pos: [rx, 0.035, rz], scale: sc });
+      }
     }
     return list;
   }, [cx, cz, w, d]);
 
-  // Sprinkled white & orange flower clusters (matching Screenshot 1 & 5!)
+  // Sprinkled white daisy & orange poppy blossoms (matching Screenshot 3 & 4)
   const flowers = useMemo(() => {
     const list = [];
-    for (let i = 0; i < 48; i++) {
-      const fx = cx - w * 0.44 + Math.random() * (w * 0.88);
-      const fz = cz - d * 0.44 + Math.random() * (d * 0.88);
-      list.push({ pos: [fx, 0.04, fz], isOrange: i % 2 === 0 });
+    for (let i = 0; i < 72; i++) {
+      const jx = (((i * 37) % 100) / 100 - 0.5) * (w * 0.88);
+      const jz = (((i * 59) % 100) / 100 - 0.5) * (d * 0.88);
+      list.push({ pos: [cx + jx, 0.04, cz + jz], isOrange: i % 2 === 0 });
     }
     return list;
   }, [cx, cz, w, d]);
@@ -988,46 +1106,17 @@ function ParkArea3D({ onParkClick }) {
         <lineBasicMaterial color="#4A7C12" linewidth={2} />
       </lineSegments>
 
-      {/* Jogging Track Loop */}
-      <mesh position={[cx, 0.038, cz]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[w * 0.32, w * 0.38, 32]} />
-        <meshBasicMaterial color="#D97706" opacity={0.65} transparent />
-      </mesh>
-
-      {/* 3D "Park" Label in Center (matching Screenshot 1, 2, 4) */}
-      <group position={[cx, 0.06, cz]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Text
-          fontSize={2.2}
-          color="#14532D"
-          anchorX="center"
-          anchorY="middle"
-          fontWeight="bold"
-        >
-          Park
-        </Text>
-        <Text
-          position={[0, -2.4, 0]}
-          fontSize={1.2}
-          color="#166534"
-          anchorX="center"
-          anchorY="middle"
-          fontWeight="semibold"
-        >
-          Ac. 0.758 Cents
-        </Text>
-      </group>
-
-      {/* Perimeter Palm Trees (matching Screenshot 2 & 4) */}
+      {/* Perimeter Palm Trees (matching Screenshot 3 & 4) */}
       {perimeterPalms.map(([px, pz], idx) => (
         <PalmTree key={`perm-${idx}`} position={[px, 0.03, pz]} scale={0.72} />
       ))}
 
-      {/* Scattered Cycad Palm Shrubs (matching Screenshot 4 & 5) */}
+      {/* Scattered Cycad Palm Shrubs (matching Screenshot 3 & 4) */}
       {cycads.map((c, idx) => (
         <ParkCycadShrub key={`cycad-${idx}`} position={c.pos} scale={c.scale} />
       ))}
 
-      {/* Scattered Daisy & Orange Flower Blossoms (matching Screenshot 1 & 5) */}
+      {/* Scattered Daisy & Orange Flower Blossoms (matching Screenshot 3 & 4) */}
       {flowers.map((fl, idx) => (
         <FlowerPatch key={`fl-${idx}`} position={fl.pos} isOrange={fl.isOrange} />
       ))}
@@ -1158,18 +1247,16 @@ function RealWorldMapTerrain() {
     mapTerrainTextureCache = tex;
     setTerrainTexture(tex);
 
-    // Load 4x4 grid of Carto Voyager Map Tiles (Zoom 17) for Kadthal [17.0985, 78.5085]
-    // Kadthal center tile is x=94120, y=59216. Carto CDN supports Access-Control-Allow-Origin: *
+    // Load 4x4 grid of Clean, Watermark-Free OpenStreetMap Tiles (Zoom 17) for Kadthal [17.0985, 78.5085]
+    // Kadthal center tile is x=94120, y=59216. Zero API key required, zero watermarks!
     const zoom = 17;
     const startX = 94118;
     const startY = 59214;
-    const subdomains = ['a', 'b', 'c', 'd'];
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = subdomains[(dx + dy) % subdomains.length];
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
@@ -1177,7 +1264,17 @@ function RealWorldMapTerrain() {
           ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
           tex.needsUpdate = true;
         };
-        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
+        img.onerror = () => {
+          // Fallback to our backend tile proxy if direct OSM fails
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
+            tex.needsUpdate = true;
+          };
+          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png`;
+        };
+        img.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
       }
     }
   }, []);
@@ -1310,6 +1407,7 @@ export default function Layout3DView({
           cameraPreset={cameraPreset}
           walkRoadIndex={walkRoadIndex}
           walkProgress={walkProgress}
+          onWalkProgressChange={onWalkProgressChange}
         />
 
         {/* Real-World Geographic Kadthal Map View Terrain (Clean OpenStreetMap) */}

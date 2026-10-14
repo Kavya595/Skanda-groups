@@ -28,6 +28,31 @@ router.get('/plots', plotCtrl.getPlots);
 router.get('/plots/stats', plotCtrl.getPlotStats);
 router.get('/plots/:plotNumber', plotCtrl.getPlotDetail);
 
+// Clean Watermark-Free OpenStreetMap Tile Proxy (Zero API Key, CORS-enabled matching 2D View)
+router.get('/tiles/:z/:x/:y.png', async (req, res) => {
+  const { z, x, y } = req.params;
+  try {
+    const osmUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+    const response = await fetch(osmUrl, {
+      headers: {
+        'User-Agent': 'SkandhaGroup-AlekhyasBrundavan/1.0 (info@skandhagroup.com)'
+      }
+    });
+    if (!response.ok) {
+      return res.status(response.status).send('Tile error');
+    }
+    const buffer = await response.arrayBuffer();
+    res.set({
+      'Content-Type': 'image/png',
+      'Cache-Control': 'public, max-age=604800, immutable',
+      'Access-Control-Allow-Origin': '*'
+    });
+    res.send(Buffer.from(buffer));
+  } catch (err) {
+    res.status(500).send('Tile fetch error');
+  }
+});
+
 // Leads & Enquiry Capture
 router.post('/leads', leadSubmissionLimiter, validateLeadSubmission, leadCtrl.submitLead);
 

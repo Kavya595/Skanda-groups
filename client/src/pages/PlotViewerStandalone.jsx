@@ -45,11 +45,13 @@ import {
   Calendar,
   User,
   CheckCircle,
-  FileText
+  FileText,
+  Play,
+  Pause
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent, submitLead } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
-import Layout3DView from '../visualizer/Layout3DView';
+import Layout3DView, { WALK_ROADS } from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
 import EnquiryModal from '../components/EnquiryModal';
 
@@ -299,6 +301,9 @@ export default function PlotViewerStandalone({ settings }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
   const [measurePoints, setMeasurePoints] = useState([]);
+  const [walkRoadIndex, setWalkRoadIndex] = useState(0);
+  const [walkProgress, setWalkProgress] = useState(0.1);
+  const [isAutoWalking, setIsAutoWalking] = useState(false);
 
   // Dynamic facing distribution calculation for Property Insights (Photo 3)
   const facingCounts = React.useMemo(() => {
@@ -448,22 +453,52 @@ export default function PlotViewerStandalone({ settings }) {
     setStatusFilter(prev => prev === status ? 'all' : status);
   };
 
+  // Auto-walk smooth loop
+  useEffect(() => {
+    if (!isAutoWalking || cameraPreset !== 'roadWalk' || viewMode !== '3d') return;
+    const interval = setInterval(() => {
+      setWalkProgress((prev) => {
+        const next = prev + 0.004;
+        return next >= 1 ? 0 : next;
+      });
+    }, 45);
+    return () => clearInterval(interval);
+  }, [isAutoWalking, cameraPreset, viewMode]);
+
+  const handleToggleRoadView = () => {
+    if (viewMode !== '3d') setViewMode('3d');
+    if (cameraPreset === 'roadWalk') {
+      setCameraPreset('overview');
+      setIsAutoWalking(false);
+    } else {
+      setCameraPreset('roadWalk');
+      setWalkProgress(0.1);
+    }
+  };
+
+  const handleRoadClick = (road) => {
+    if (viewMode !== '3d') setViewMode('3d');
+    const roadIdx = (WALK_ROADS || []).findIndex(
+      r => r.id === road.id || r.name?.toLowerCase().includes(road.name?.toLowerCase())
+    );
+    setWalkRoadIndex(roadIdx >= 0 ? roadIdx : 0);
+    setWalkProgress(0.12);
+    setCameraPreset('roadWalk');
+  };
+
+  const handleWalkStep = (step) => {
+    setWalkProgress(prev => Math.max(0, Math.min(1, prev + step)));
+  };
+
   // Click on park drops camera into park ground walk
   const handleParkClick = () => {
-    if (viewMode === '3d') {
-      setCameraPreset(prev => prev === 'parkGround' ? 'park' : 'parkGround');
-    }
+    if (viewMode !== '3d') setViewMode('3d');
+    setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
   };
 
   const handleToggleParkView = () => {
     if (viewMode !== '3d') setViewMode('3d');
-    if (cameraPreset === 'parkGround') {
-      setCameraPreset('park');
-    } else if (cameraPreset === 'park') {
-      setCameraPreset('overview');
-    } else {
-      setCameraPreset('parkGround');
-    }
+    setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
   };
 
   // Insights Tab Switcher (matching Plots99 Features & Additional Info)
@@ -715,15 +750,28 @@ export default function PlotViewerStandalone({ settings }) {
           </button>
 
 
-          {/* Park View (2D / 3D Analysis) (USER REQUIREMENT) */}
+          {/* Road View (Eye-Level Walk along 33' & 60' Avenues with Hand Gesture Drag) */}
+          <button
+            onClick={handleToggleRoadView}
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'roadWalk'
+                ? 'bg-orange-600 text-white border-orange-700 ring-2 ring-orange-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-orange-600 border-slate-200/90 hover:bg-white'
+            }`}
+            title="Road View (Eye-level walk down the layout avenues with hand gesture drag)"
+          >
+            <Navigation className="w-4 h-4" />
+          </button>
+
+          {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
             className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              cameraPreset === 'parkGround' || cameraPreset === 'park'
+              cameraPreset === 'park' || cameraPreset === 'parkGround'
                 ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
                 : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:bg-white'
             }`}
-            title="Park View (Analyze Ac. 0.758 Central Park from Ground & Above)"
+            title="Park View (Ac. 0.758 Central Park Flowering Lawn & Cycad Shrubs)"
           >
             <Trees className="w-4 h-4" />
           </button>
@@ -798,10 +846,14 @@ export default function PlotViewerStandalone({ settings }) {
               searchTerm={searchTerm}
               filterStatus={statusFilter}
               filterFacing={facingFilter}
+              walkRoadIndex={walkRoadIndex}
+              walkProgress={walkProgress}
+              onWalkProgressChange={setWalkProgress}
               animateVehicles={animateVehicles}
               isMeasureMode={isMeasureMode}
               measurePoints={measurePoints}
               onMeasurePoint={handleMeasurePoint}
+              onRoadClick={handleRoadClick}
               onParkClick={handleParkClick}
             />
           ) : (
@@ -899,31 +951,124 @@ export default function PlotViewerStandalone({ settings }) {
         )}
 
 
-        {/* Floating Park Ground Walk Controller (USER REQUIREMENT matching Screenshot 5) */}
-        {cameraPreset === 'parkGround' && viewMode === '3d' && (
+        {/* Floating Road View Walk Controller (USER REQUIREMENT: hand gesture drag navigation) */}
+        {cameraPreset === 'roadWalk' && viewMode === '3d' && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3 sm:p-4 space-y-2.5 pointer-events-auto animate-fadeIn">
+            {/* Header: Current Road Name & Exit */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 truncate">
+                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shrink-0" />
+                <span className="text-xs font-bold text-slate-900 truncate">
+                  Road View &bull; {WALK_ROADS[walkRoadIndex]?.name || "33' Internal Main Boulevard"}
+                </span>
+              </div>
+              <button
+                onClick={() => setCameraPreset('overview')}
+                className="text-[11px] text-slate-600 hover:text-slate-900 font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+              >
+                Exit Road View
+              </button>
+            </div>
+
+            {/* Avenue Switcher Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+              {WALK_ROADS.map((r, idx) => (
+                <button
+                  key={r.id}
+                  onClick={() => {
+                    setWalkRoadIndex(idx);
+                    setWalkProgress(0.1);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition-all ${
+                    walkRoadIndex === idx
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {r.shortName}
+                </button>
+              ))}
+            </div>
+
+            {/* Hand Gesture Walk Hint */}
+            <div className="flex items-center justify-between text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span>👆</span> Drag screen up/down to walk forward &amp; back &bull; Drag left/right to look around
+              </span>
+              <span className="font-bold text-slate-800 shrink-0">
+                {Math.round(walkProgress * 100)}%
+              </span>
+            </div>
+
+            {/* Interactive Navigation Scrubbing & Step Buttons */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleWalkStep(-0.06)}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
+                title="Walk Backward"
+              >
+                &darr; Back
+              </button>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={walkProgress}
+                onChange={(e) => setWalkProgress(parseFloat(e.target.value))}
+                className="flex-1 accent-orange-500 h-2 bg-slate-200 rounded-lg cursor-pointer"
+                title="Scrub position along avenue"
+              />
+              <button
+                onClick={() => handleWalkStep(0.06)}
+                className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-xs"
+                title="Walk Forward"
+              >
+                &uarr; Forward
+              </button>
+              <button
+                onClick={() => setIsAutoWalking(!isAutoWalking)}
+                className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-colors ${
+                  isAutoWalking
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`}
+                title={isAutoWalking ? 'Pause Auto-Walk' : 'Start Auto-Walk along Road'}
+              >
+                {isAutoWalking ? (
+                  <>
+                    <Pause className="w-3.5 h-3.5" /> Pause
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5" /> Auto-Walk
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Floating Park View Controller (USER REQUIREMENT matching Screenshot 3 & 4) */}
+        {(cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-md bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 space-y-2 pointer-events-auto animate-fadeIn">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-900">
-                  Ac. 0.758 Central Park &bull; Ground-Level Walk
+                  Ac. 0.758 Central Park &bull; Ground-Level Lawn Walk
                 </span>
               </div>
               <button
                 onClick={() => setCameraPreset('overview')}
-                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2 py-0.5 rounded-lg bg-slate-100"
+                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
               >
-                Exit
+                Exit Park View
               </button>
             </div>
             <div className="flex items-center justify-between text-xs text-slate-600">
               <span>Flowering lawn &bull; Cycad palm shrubs &bull; Perimeter palms</span>
-              <button
-                onClick={() => setCameraPreset('park')}
-                className="text-brand-orange font-bold hover:underline"
-              >
-                Birds-Eye View &rarr;
-              </button>
+              <span className="text-emerald-700 font-bold">Drag to look 360&deg;</span>
             </div>
           </div>
         )}
