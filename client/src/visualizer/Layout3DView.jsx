@@ -339,44 +339,46 @@ function Plot3D({
   );
 }
 
-// Realistic Broad Palm Tree along avenues and park perimeter
+// Realistic Broad Tropical Palm Tree along avenue stone curbs (Matching Image 4 & 5)
 function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
-  const leafAngles = [0, 60, 120, 180, 240, 300];
+  const leafAngles = [0, 45, 90, 135, 180, 225, 270, 315];
 
   return (
     <group position={position} scale={scale}>
-      {/* Ground Soft Decal Shadow on Sidewalk */}
-      <mesh position={[0, 0.035, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Soft circular contact shadow on stone curb */}
+      <mesh position={[0, 0.085, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.3, 16]} />
-        <meshBasicMaterial color="#000000" opacity={0.2} transparent />
+        <meshBasicMaterial color="#000000" opacity={0.28} transparent />
       </mesh>
 
-      {/* Slender Tapered Trunk */}
-      <mesh position={[0, 1.45, 0]}>
-        <cylinderGeometry args={[0.13, 0.22, 2.9, 8]} />
-        <meshBasicMaterial color="#8F785C" />
+      {/* Slender Tapered Textured Trunk */}
+      <mesh position={[0, 1.5, 0]}>
+        <cylinderGeometry args={[0.13, 0.22, 3.0, 8]} />
+        <meshStandardMaterial color="#785B3A" roughness={0.9} />
       </mesh>
 
       {/* Crown Joint */}
-      <mesh position={[0, 2.9, 0]}>
-        <sphereGeometry args={[0.22, 8, 8]} />
-        <meshBasicMaterial color="#6B5944" />
+      <mesh position={[0, 3.0, 0]}>
+        <sphereGeometry args={[0.24, 8, 8]} />
+        <meshStandardMaterial color="#5C4528" roughness={0.8} />
       </mesh>
 
-      {/* 6 Broad Tropical Fronds radiating and drooping down */}
+      {/* 8 Broad Tropical Fronds radiating and drooping gracefully down (matching Image 4) */}
       {leafAngles.map((angle, idx) => (
         <group
           key={idx}
-          position={[0, 2.85, 0]}
-          rotation={[0.32, (angle * Math.PI) / 180, -0.42]}
+          position={[0, 2.95, 0]}
+          rotation={[0.35, (angle * Math.PI) / 180, -0.45]}
         >
-          <mesh position={[1.3, -0.22, 0]} rotation={[0, 0, -0.28]} scale={[2.5, 0.06, 1.1]}>
+          {/* Inner Frond Arch */}
+          <mesh position={[1.4, -0.22, 0]} rotation={[0, 0, -0.25]} scale={[2.6, 0.08, 1.15]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial color="#9EB226" />
+            <meshStandardMaterial color="#65A30D" roughness={0.65} />
           </mesh>
-          <mesh position={[2.6, -0.75, 0]} rotation={[0, 0, -0.62]} scale={[1.4, 0.05, 0.85]}>
+          {/* Outer Drooping Tip */}
+          <mesh position={[2.8, -0.75, 0]} rotation={[0, 0, -0.58]} scale={[1.6, 0.06, 0.95]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshBasicMaterial color="#ADC32F" />
+            <meshStandardMaterial color="#84CC16" roughness={0.65} />
           </mesh>
         </group>
       ))}
@@ -570,55 +572,80 @@ function MovingVehicles({ animate }) {
   );
 }
 
-// Connected Road Network with Realistic Asphalt, Cobblestone Sidewalks, and Printed Road Names
+// Connected Road Network with Realistic Deep Asphalt, Raised Cobblestone Curbs, and Printed Road Names (Matching Image 4 & 5)
 function ConnectedRoadNetwork({ onRoadClick }) {
+  // High-Resolution Deep Bitumen Asphalt Texture with aggregate specks
   const asphaltTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 512;
+    canvas.height = 512;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#1D2126';
-    ctx.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 4000; i++) {
-      const x = Math.random() * 256;
-      const y = Math.random() * 256;
-      const size = Math.random() * 1.5 + 0.5;
+
+    // Rich deep asphalt tarmac base (matching Image 4 & 5)
+    ctx.fillStyle = '#16191E';
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Fine mineral grit and bitumen aggregates
+    for (let i = 0; i < 18000; i++) {
+      const x = Math.random() * 512;
+      const y = Math.random() * 512;
+      const size = Math.random() * 1.8 + 0.4;
       const rnd = Math.random();
-      ctx.fillStyle = rnd > 0.6 ? '#2A3037' : rnd > 0.3 ? '#131518' : '#383F47';
+      if (rnd > 0.72) {
+        ctx.fillStyle = '#2A303A'; // medium stone aggregate
+      } else if (rnd > 0.35) {
+        ctx.fillStyle = '#0F1115'; // deep black bitumen
+      } else {
+        ctx.fillStyle = '#383F4C'; // light quartz glint
+      }
       ctx.fillRect(x, y, size, size);
     }
+
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(8, 8);
+    texture.repeat.set(10, 10);
     return texture;
   }, []);
 
+  // Interlocking Stone Cobblestone Paver Texture for Raised Road Curbs (Matching Image 4 & 5)
   const cobblestoneTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
+    canvas.width = 512;
+    canvas.height = 512;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#475569';
-    ctx.fillRect(0, 0, 256, 256);
+
+    // Dark mortar joint background
+    ctx.fillStyle = '#1E252F';
+    ctx.fillRect(0, 0, 512, 512);
+
     const rows = 16;
     const cols = 8;
-    const rh = 256 / rows;
-    const cw = 256 / cols;
+    const rh = 512 / rows;
+    const cw = 512 / cols;
+
     for (let r = 0; r < rows; r++) {
       const offset = (r % 2) * (cw / 2);
       for (let c = -1; c <= cols; c++) {
-        const x = c * cw + offset + 1.5;
-        const y = r * rh + 1.5;
-        const w = cw - 3;
-        const h = rh - 3;
-        const val = 135 + Math.floor(Math.random() * 28);
-        ctx.fillStyle = `rgb(${val}, ${val + 4}, ${val + 8})`;
+        const x = c * cw + offset + 2;
+        const y = r * rh + 2;
+        const w = cw - 4;
+        const h = rh - 4;
+
+        // Natural slate & granite paver tone variation (matching Image 4)
+        const tone = 125 + Math.floor(Math.random() * 45);
+        ctx.fillStyle = `rgb(${tone}, ${tone + 4}, ${tone + 9})`;
         ctx.fillRect(x, y, w, h);
+
+        // Stone edge highlight / chamfer
+        ctx.strokeStyle = `rgba(255, 255, 255, 0.28)`;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
       }
     }
+
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
@@ -641,6 +668,7 @@ function ConnectedRoadNetwork({ onRoadClick }) {
 
         const isHighway = road.type === 'highway';
         const isArterial = road.type === 'arterial';
+        const isHorizontal = w >= d;
 
         return (
           <group
@@ -651,50 +679,106 @@ function ConnectedRoadNetwork({ onRoadClick }) {
               if (onRoadClick) onRoadClick(road);
             }}
           >
-            {/* Wide Stone Cobblestone Sidewalk Pavement (matching Screenshot 1, 2, 3) */}
-            <mesh position={[0, -0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[w + 2.2, d + 2.2]} />
-              <meshBasicMaterial
-                map={cobblestoneTexture || undefined}
-                color={cobblestoneTexture ? '#FFFFFF' : '#CBD5E1'}
-              />
-            </mesh>
-
-            {/* Crisp Concrete Curb Demarcation Edge */}
-            <lineSegments position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <edgesGeometry args={[new THREE.PlaneGeometry(w + 2.2, d + 2.2)]} />
-              <lineBasicMaterial color="#E2E8F0" linewidth={2} />
-            </lineSegments>
-
-            {/* Realistic Dark Asphalt Road Bed */}
-            <mesh rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[w, d]} />
-              <meshBasicMaterial
-                map={asphaltTexture || undefined}
-                color={asphaltTexture ? (isHighway ? '#E2E8F0' : '#CBD5E1') : (isHighway ? '#1A1E24' : '#22262C')}
-              />
-            </mesh>
-
-            {/* Center Yellow Divider for Highway */}
-            {isHighway && (
-              <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <planeGeometry args={[0.35, d]} />
-                <meshBasicMaterial color="#FBBF24" />
-              </mesh>
+            {/* Raised Cobblestone Stone Curbs along Road Flanks (Matching Image 4 & 5) */}
+            {isHorizontal ? (
+              <>
+                {/* North Stone Curb Strip */}
+                <mesh position={[0, 0.015, -d / 2 - 0.6]}>
+                  <boxGeometry args={[w + 1.2, 0.05, 1.2]} />
+                  <meshStandardMaterial
+                    map={cobblestoneTexture || undefined}
+                    color="#FFFFFF"
+                    roughness={0.85}
+                  />
+                </mesh>
+                {/* South Stone Curb Strip */}
+                <mesh position={[0, 0.015, d / 2 + 0.6]}>
+                  <boxGeometry args={[w + 1.2, 0.05, 1.2]} />
+                  <meshStandardMaterial
+                    map={cobblestoneTexture || undefined}
+                    color="#FFFFFF"
+                    roughness={0.85}
+                  />
+                </mesh>
+                {/* Outer White Chamfer Curb Edge Lines */}
+                <lineSegments position={[0, 0.042, -d / 2 - 1.2]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.2, 0.01, 0.02)]} />
+                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                </lineSegments>
+                <lineSegments position={[0, 0.042, d / 2 + 1.2]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.2, 0.01, 0.02)]} />
+                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                </lineSegments>
+              </>
+            ) : (
+              <>
+                {/* West Stone Curb Strip */}
+                <mesh position={[-w / 2 - 0.6, 0.015, 0]}>
+                  <boxGeometry args={[1.2, 0.05, d + 1.2]} />
+                  <meshStandardMaterial
+                    map={cobblestoneTexture || undefined}
+                    color="#FFFFFF"
+                    roughness={0.85}
+                  />
+                </mesh>
+                {/* East Stone Curb Strip */}
+                <mesh position={[w / 2 + 0.6, 0.015, 0]}>
+                  <boxGeometry args={[1.2, 0.05, d + 1.2]} />
+                  <meshStandardMaterial
+                    map={cobblestoneTexture || undefined}
+                    color="#FFFFFF"
+                    roughness={0.85}
+                  />
+                </mesh>
+                {/* Outer White Chamfer Curb Edge Lines */}
+                <lineSegments position={[-w / 2 - 1.2, 0.042, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.2)]} />
+                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                </lineSegments>
+                <lineSegments position={[w / 2 + 1.2, 0.042, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.2)]} />
+                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                </lineSegments>
+              </>
             )}
 
-            {/* Center White Dashed Line for 60ft Road */}
+            {/* Deep Rich Blacktop Asphalt Road Bed (Exact match to Image 4 & 5) */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[w, d]} />
+              <meshStandardMaterial
+                map={asphaltTexture || undefined}
+                color="#FFFFFF"
+                roughness={0.92}
+                metalness={0.08}
+              />
+            </mesh>
+
+            {/* Highway Centerline: Yellow Double Median Divider (NH-765) */}
+            {isHighway && (
+              <group position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <mesh position={[-0.18, 0, 0]}>
+                  <planeGeometry args={[0.18, d]} />
+                  <meshBasicMaterial color="#FBBF24" />
+                </mesh>
+                <mesh position={[0.18, 0, 0]}>
+                  <planeGeometry args={[0.18, d]} />
+                  <meshBasicMaterial color="#FBBF24" />
+                </mesh>
+              </group>
+            )}
+
+            {/* Arterial 60ft Road: White Dashed Centerline */}
             {isArterial && (
               <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[w, 0.28]} />
-                <meshBasicMaterial color="#FFFFFF" opacity={0.9} transparent />
+                <meshBasicMaterial color="#FFFFFF" opacity={0.92} transparent />
               </mesh>
             )}
           </group>
         );
       })}
 
-      {/* Street Name Typography printed along roads (matching Screenshot 3: 40' Road text!) */}
+      {/* Street Name Typography printed directly on asphalt (Matching Image 5) */}
       <Text
         position={[0, 0.035, -47]}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -728,7 +812,7 @@ function ConnectedRoadNetwork({ onRoadClick }) {
         anchorY="middle"
         fontWeight="bold"
       >
-        33' Road
+        33' Main Boulevard
       </Text>
 
       <Text

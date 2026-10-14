@@ -152,12 +152,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       const geoPoly = road.polygon.map(([x, z]) => localToLatLng(x, z));
       const isHighway = road.type === 'highway';
 
-      // Road asphalt surface
+      // Road asphalt surface with stone curb border (matching Image 2)
       L.polygon(geoPoly, {
-        color: '#1A202C',
-        weight: 1,
-        fillColor: isHighway ? '#171923' : '#2D3748',
-        fillOpacity: 0.96,
+        color: '#4B5563',
+        weight: 1.5,
+        fillColor: isHighway ? '#15181E' : '#23272F',
+        fillOpacity: 0.98,
         interactive: false
       }).addTo(staticGroup);
 
@@ -458,6 +458,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
+      <style>{`
+        .leaflet-control-attribution {
+          display: none !important;
+        }
+      `}</style>
       {/* Leaflet Map DOM Target */}
       <div
         ref={mapContainerRef}

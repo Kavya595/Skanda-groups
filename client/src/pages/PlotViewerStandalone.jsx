@@ -572,7 +572,7 @@ export default function PlotViewerStandalone({ settings }) {
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search plot #..."
+                  placeholder="Search..."
                   value={searchTerm}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -961,10 +961,10 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
-        {/* Map Attribution (Matching Plots99 Screenshots 1 & 5) */}
-        <div className="absolute bottom-4 right-28 z-30 pointer-events-auto hidden sm:block">
-          <div className="bg-white/85 backdrop-blur-xs text-[10px] text-slate-600 px-2.5 py-1 rounded-xl border border-slate-200/70 shadow-xs font-sans">
-            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-900 font-semibold">OpenStreetMap contributors</a>
+        {/* Bottom Right Map Attribution (Single Clean Text matching Plots99 Image 2) */}
+        <div className="absolute bottom-4 right-24 z-30 pointer-events-auto hidden sm:block select-none">
+          <div className="text-[10px] text-slate-500 font-sans tracking-wide">
+            &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">OpenStreetMap contributors</a>
           </div>
         </div>
 
