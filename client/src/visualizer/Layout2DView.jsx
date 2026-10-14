@@ -18,6 +18,10 @@ export const GOOGLE_MAP_LAYER = {
   maxZoom: 21
 };
 
+export const MAP_LAYERS = {
+  google: GOOGLE_MAP_LAYER
+};
+
 const Layout2DView = React.forwardRef(function Layout2DView({
   plots = [],
   selectedPlot = null,
@@ -39,10 +43,10 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
     reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
-    setMapType: (type) => setActiveTileType(type)
+    setMapType: () => {}
   }));
 
-  // 1. Initialize Leaflet Map
+  // 1. Initialize Leaflet Map with Pure Google Maps Roadmap
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -61,12 +65,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     mapInstanceRef.current = map;
 
-    // Add base tile layer (Google Maps watermark-free map)
-    const layerCfg = MAP_LAYERS[activeTileType] || MAP_LAYERS.google;
-    const tileLayer = L.tileLayer(layerCfg.url, {
-      attribution: layerCfg.attribution,
-      subdomains: layerCfg.subdomains,
-      maxZoom: layerCfg.maxZoom
+    // Add base tile layer (Google Maps roadmap)
+    const tileLayer = L.tileLayer(GOOGLE_MAP_LAYER.url, {
+      attribution: GOOGLE_MAP_LAYER.attribution,
+      subdomains: GOOGLE_MAP_LAYER.subdomains,
+      maxZoom: GOOGLE_MAP_LAYER.maxZoom
     }).addTo(map);
     tileLayerRef.current = tileLayer;
 
@@ -89,21 +92,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         mapInstanceRef.current = null;
       }
     };
-  }, []);
-
-  // 1B. Pure Google Maps Roadmap Base Tile Layer
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    const map = mapInstanceRef.current;
-    if (tileLayerRef.current) {
-      map.removeLayer(tileLayerRef.current);
-    }
-    const tileLayer = L.tileLayer(GOOGLE_MAP_LAYER.url, {
-      attribution: GOOGLE_MAP_LAYER.attribution,
-      subdomains: GOOGLE_MAP_LAYER.subdomains,
-      maxZoom: GOOGLE_MAP_LAYER.maxZoom
-    }).addTo(map);
-    tileLayerRef.current = tileLayer;
   }, []);
 
   // 2. Render Site Layers: Boundary, Roads, Park (Clean Plots99 Look)

@@ -4,45 +4,68 @@ import AuditLog from '../models/AuditLog.js';
 import { Parser } from 'json2csv';
 import { calculateExtraCharges, initialPlots } from '../data/plotsData.js';
 
+function filterFallbackPlots({ status, facing, minArea, maxArea, search, page, limit, all }) {
+  let filtered = [...initialPlots];
+  if (status) filtered = filtered.filter(p => p.status === status);
+  if (facing) filtered = filtered.filter(p => p.facing.toLowerCase().includes(facing.toLowerCase()));
+  if (minArea) filtered = filtered.filter(p => p.areaSqYds >= Number(minArea));
+  if (maxArea) filtered = filtered.filter(p => p.areaSqYds <= Number(maxArea));
+  if (search) {
+    const searchNum = Number(search);
+    if (!isNaN(searchNum)) {
+      filtered = filtered.filter(p => p.plotNumber === searchNum);
+    } else {
+      const s = search.toLowerCase();
+      filtered = filtered.filter(p => p.block.toLowerCase().includes(s) || p.facing.toLowerCase().includes(s));
+    }
+  }
+
+  if (all === 'true') {
+    return {
+      success: true,
+      count: filtered.length,
+      plots: filtered
+    };
+  }
+
+  const pageNum = parseInt(page) || 1;
+  const limitNum = parseInt(limit) || 20;
+  const skip = (pageNum - 1) * limitNum;
+
+  return {
+    success: true,
+    total: filtered.length,
+    page: pageNum,
+    totalPages: Math.ceil(filtered.length / limitNum),
+    plots: filtered.slice(skip, skip + limitNum)
+  };
+}
+
+function getFallbackStats() {
+  const total = initialPlots.length;
+  const available = initialPlots.filter(p => p.status === 'available').length;
+  const reserved = initialPlots.filter(p => p.status === 'reserved').length;
+  const sold = initialPlots.filter(p => p.status === 'sold').length;
+  const blocked = initialPlots.filter(p => p.status === 'blocked').length;
+
+  return {
+    success: true,
+    stats: {
+      total,
+      available,
+      reserved,
+      sold,
+      blocked
+    }
+  };
+}
+
 export async function getPlots(req, res) {
   try {
     const { status, facing, minArea, maxArea, search, page, limit, all } = req.query;
 
     if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-      let filtered = [...initialPlots];
-      if (status) filtered = filtered.filter(p => p.status === status);
-      if (facing) filtered = filtered.filter(p => p.facing.toLowerCase().includes(facing.toLowerCase()));
-      if (minArea) filtered = filtered.filter(p => p.areaSqYds >= Number(minArea));
-      if (maxArea) filtered = filtered.filter(p => p.areaSqYds <= Number(maxArea));
-      if (search) {
-        const searchNum = Number(search);
-        if (!isNaN(searchNum)) {
-          filtered = filtered.filter(p => p.plotNumber === searchNum);
-        } else {
-          const s = search.toLowerCase();
-          filtered = filtered.filter(p => p.block.toLowerCase().includes(s) || p.facing.toLowerCase().includes(s));
-        }
-      }
-
-      if (all === 'true') {
-        return res.json({
-          success: true,
-          count: filtered.length,
-          plots: filtered
-        });
-      }
-
-      const pageNum = parseInt(page) || 1;
-      const limitNum = parseInt(limit) || 20;
-      const skip = (pageNum - 1) * limitNum;
-
-      return res.json({
-        success: true,
-        total: filtered.length,
-        page: pageNum,
-        totalPages: Math.ceil(filtered.length / limitNum),
-        plots: filtered.slice(skip, skip + limitNum)
-      });
+      return res.json(filterFallbackPlots(req.query));
     }
 
     const query = {};
@@ -93,7 +116,8 @@ export async function getPlots(req, res) {
       plots
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    console.warn('MongoDB query failed in getPlots, using fallback master plan:', err.message);
+    return res.json(filterFallbackPlots(req.query));
   }
 }
 
@@ -115,6 +139,10 @@ export async function getPlotDetail(req, res) {
     const plot = await Plot.findOne({ plotNumber: Number(plotNumber) });
 
     if (!plot) {
+      const fallbackPlot = initialPlots.find(p => p.plotNumber === Number(plotNumber));
+      if (fallbackPlot) {
+        return res.json({ success: true, plot: fallbackPlot });
+      }
       return res.status(404).json({
         success: false,
         error: `Plot #${plotNumber} not found.`
@@ -126,36 +154,28 @@ export async function getPlotDetail(req, res) {
       plot
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    console.warn(`MongoDB query failed in getPlotDetail for #${req.params.plotNumber}:`, err.message);
+    const plot = initialPlots.find(p => p.plotNumber === Number(req.params.plotNumber));
+    if (plot) {
+      return res.json({ success: true, plot });
+    }
+    return res.status(404).json({ success: false, error: `Plot #${req.params.plotNumber} not found.` });
   }
 }
 
 export async function getPlotStats(req, res) {
   try {
     if (!mongoose.connection || mongoose.connection.readyState !== 1) {
-      const total = initialPlots.length;
-      const available = initialPlots.filter(p => p.status === 'available').length;
-      const reserved = initialPlots.filter(p => p.status === 'reserved').length;
-      const sold = initialPlots.filter(p => p.status === 'sold').length;
-      const blocked = initialPlots.filter(p => p.status === 'blocked').length;
-
-      return res.json({
-        success: true,
-        stats: {
-          total,
-          available,
-          reserved,
-          sold,
-          blocked
-        }
-      });
+      return res.json(getFallbackStats());
     }
 
-    const total = await Plot.countDocuments();
-    const available = await Plot.countDocuments({ status: 'available' });
-    const reserved = await Plot.countDocuments({ status: 'reserved' });
-    const sold = await Plot.countDocuments({ status: 'sold' });
-    const blocked = await Plot.countDocuments({ status: 'blocked' });
+    const [total, available, reserved, sold, blocked] = await Promise.all([
+      Plot.countDocuments(),
+      Plot.countDocuments({ status: 'available' }),
+      Plot.countDocuments({ status: 'reserved' }),
+      Plot.countDocuments({ status: 'sold' }),
+      Plot.countDocuments({ status: 'blocked' })
+    ]);
 
     return res.json({
       success: true,
@@ -168,7 +188,8 @@ export async function getPlotStats(req, res) {
       }
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    console.warn('MongoDB query failed in getPlotStats, using baseline stats:', err.message);
+    return res.json(getFallbackStats());
   }
 }
 
