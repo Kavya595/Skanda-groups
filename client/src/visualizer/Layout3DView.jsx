@@ -436,84 +436,395 @@ function Plot3D({
   );
 }
 
-// Perfectly Straight, Upright Royal Avenue Tree (Zero Tilt, Zero Bending, Sits on Block Border)
-function StraightAvenueTree({ position = [0, 0, 0], scale = 1.0 }) {
-  // Symmetrical frond angles around vertical trunk: 10 radially balanced angles
-  const angles = [0, 36, 72, 108, 144, 180, 216, 252, 288, 324];
+// Authoritative Plots99 Avenue Palm Tree (Exact match to User's Uploaded Images 1 & 2)
+function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
+  // 8 symmetrical radial leaf angles matching Image 1 & 2
+  const frondAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+  // 10 fibrous collar stubs
+  const stubAngles = [0, 36, 72, 108, 144, 180, 216, 252, 288, 324];
 
   return (
     <group position={position} scale={scale}>
-      {/* 1. Raised Stone Tree-Pit Base Box on Border */}
-      <mesh position={[0, 0.07, 0]}>
-        <boxGeometry args={[0.72, 0.14, 0.72]} />
-        <meshStandardMaterial color="#CBD5E1" roughness={0.7} />
+      {/* 1. Circular Stone Planter Base in Sidewalk */}
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.18, 0.36, 16]} />
+        <meshStandardMaterial color="#94A3B8" roughness={0.8} />
       </mesh>
-      {/* Dark Nutrient Soil Fill */}
-      <mesh position={[0, 0.135, 0]}>
-        <boxGeometry args={[0.6, 0.02, 0.6]} />
-        <meshBasicMaterial color="#2E2016" />
-      </mesh>
-
-      {/* 2. Perfectly Straight, Upright Vertical Trunk (Zero curvature, zero lean) */}
-      <mesh position={[0, 1.6, 0]}>
-        <cylinderGeometry args={[0.11, 0.15, 3.2, 14]} />
-        <meshStandardMaterial color="#5C4533" roughness={0.85} />
+      <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.18, 12]} />
+        <meshBasicMaterial color="#33251A" />
       </mesh>
 
-      {/* 3. Ornamental Support Rings / Decorative Timber Ties */}
-      <mesh position={[0, 0.8, 0]}>
-        <cylinderGeometry args={[0.16, 0.16, 0.06, 12]} />
-        <meshStandardMaterial color="#854D0E" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 1.8, 0]}>
-        <cylinderGeometry args={[0.14, 0.14, 0.06, 12]} />
-        <meshStandardMaterial color="#854D0E" roughness={0.6} />
+      {/* 2. Slender, Straight Ash-Grey Palm Trunk (Matching Image 2 #948B7E) */}
+      <mesh position={[0, 1.65, 0]}>
+        <cylinderGeometry args={[0.09, 0.12, 3.3, 12]} />
+        <meshStandardMaterial color="#948B7E" roughness={0.82} />
       </mesh>
 
-      {/* 4. Upright Green Crownshaft */}
+      {/* 3. Fibrous Trimmed Frond Stubs Collar (Exact match to Image 2 yellow/tan fibers at top of trunk) */}
       <mesh position={[0, 3.25, 0]}>
-        <cylinderGeometry args={[0.13, 0.11, 0.65, 12]} />
-        <meshStandardMaterial color="#2D5A27" roughness={0.6} />
+        <cylinderGeometry args={[0.14, 0.10, 0.35, 10]} />
+        <meshStandardMaterial color="#C8AF58" roughness={0.7} />
       </mesh>
-      <mesh position={[0, 3.55, 0]}>
-        <sphereGeometry args={[0.15, 10, 10]} />
-        <meshStandardMaterial color="#3B7D2F" roughness={0.6} />
-      </mesh>
-
-      {/* 5. Perfectly Straight Upright Fronds (Symmetrical, Elegant, Upward-pointing, NO Bending) */}
-      {angles.map((ang, idx) => (
-        <group
-          key={idx}
-          position={[0, 3.5, 0]}
-          rotation={[0.38, (ang * Math.PI) / 180, 0]} // Upward elevation angle, zero roll/twist
+      {stubAngles.map((ang, idx) => (
+        <mesh
+          key={`stub-${idx}`}
+          position={[
+            Math.sin((ang * Math.PI) / 180) * 0.11,
+            3.28 + (idx % 2) * 0.05,
+            Math.cos((ang * Math.PI) / 180) * 0.11
+          ]}
+          rotation={[0.25, (ang * Math.PI) / 180, 0]}
         >
-          {/* Main Leaf Stem */}
-          <mesh position={[0, 0.8, 0]} scale={[0.04, 1.6, 0.04]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#276749" roughness={0.5} />
-          </mesh>
-          {/* Lower Leaf Foliage */}
-          <mesh position={[0, 0.65, 0]} scale={[0.32, 0.9, 0.02]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#2F855A" roughness={0.5} />
-          </mesh>
-          {/* Upper Leaf Foliage */}
-          <mesh position={[0, 1.3, 0]} scale={[0.22, 0.8, 0.02]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#48BB78" roughness={0.5} />
-          </mesh>
-        </group>
+          <cylinderGeometry args={[0.025, 0.035, 0.22, 6]} />
+          <meshStandardMaterial color="#D4BA6A" roughness={0.65} />
+        </mesh>
       ))}
 
-      {/* 6. Central Upright Vertical Spear Fronds */}
-      <mesh position={[0, 4.1, 0]}>
-        <cylinderGeometry args={[0.02, 0.05, 1.1, 8]} />
-        <meshStandardMaterial color="#38A169" roughness={0.5} />
+      {/* 4. Crown Node */}
+      <mesh position={[0, 3.42, 0]}>
+        <sphereGeometry args={[0.13, 8, 8]} />
+        <meshStandardMaterial color="#557D24" roughness={0.6} />
       </mesh>
-      <mesh position={[0.03, 4.25, 0.02]}>
-        <cylinderGeometry args={[0.015, 0.04, 0.9, 8]} />
-        <meshStandardMaterial color="#48BB78" roughness={0.5} />
+
+      {/* 5. 8 Broad Arched Tropical Banana / Palm Fronds (Exact match to Images 1 & 2) */}
+      {frondAngles.map((ang, idx) => {
+        const rad = (ang * Math.PI) / 180;
+        return (
+          <group key={`frond-${idx}`} position={[0, 3.42, 0]} rotation={[0, rad, 0]}>
+            {/* Segment 1: Inner Arch (Rising out from collar) */}
+            <mesh position={[0.7, 0.22, 0]} rotation={[0, 0, -0.28]} scale={[1.4, 0.025, 0.58]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#4E9A1A" roughness={0.55} />
+            </mesh>
+            {/* Segment 2: Mid Arch (Peak of curve) */}
+            <mesh position={[1.75, 0.35, 0]} rotation={[0, 0, -0.06]} scale={[1.2, 0.022, 0.65]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#58A524" roughness={0.55} />
+            </mesh>
+            {/* Segment 3: Drooping Tip (Soft downward curve matching Image 1 & 2) */}
+            <mesh position={[2.65, 0.08, 0]} rotation={[0, 0, 0.38]} scale={[1.1, 0.02, 0.48]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#68B62B" roughness={0.55} />
+            </mesh>
+            {/* Central Frond Rib */}
+            <mesh position={[1.65, 0.25, 0]} rotation={[0, 0, -0.08]} scale={[3.1, 0.035, 0.035]}>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="#356612" roughness={0.5} />
+            </mesh>
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+const StraightAvenueTree = Plots99AvenuePalm;
+
+// Natural Perimeter Canopy Shade Tree for Surrounding Greenery
+function PerimeterCanopyTree({ position = [0, 0, 0], scale = 1.0 }) {
+  return (
+    <group position={position} scale={scale}>
+      {/* Natural Bark Trunk */}
+      <mesh position={[0, 1.8, 0]}>
+        <cylinderGeometry args={[0.18, 0.26, 3.6, 8]} />
+        <meshStandardMaterial color="#4A3B32" roughness={0.9} />
       </mesh>
+      {/* Lower Dense Canopy Tier */}
+      <mesh position={[0, 3.8, 0]}>
+        <sphereGeometry args={[1.8, 8, 8]} />
+        <meshStandardMaterial color="#2D5A27" roughness={0.7} />
+      </mesh>
+      {/* Upper Lush Canopy Tier */}
+      <mesh position={[0, 4.6, 0]}>
+        <sphereGeometry args={[1.35, 8, 8]} />
+        <meshStandardMaterial color="#4E9A1A" roughness={0.65} />
+      </mesh>
+    </group>
+  );
+}
+
+// Lush Surrounding Greenery Around Layout (Buffer Belts, Meadows & Tree Clusters)
+function LayoutSurroundingGreenery() {
+  const outerTrees = useMemo(() => [
+    // West Boundary buffer tree line
+    [-100, -48], [-100, -32], [-100, -16], [-100, 0], [-100, 16], [-100, 32], [-100, 48], [-100, 62],
+    // North Boundary buffer tree line (behind 60ft road)
+    [-80, -66], [-60, -66], [-40, -66], [-20, -66], [0, -66], [20, -66], [40, -66], [60, -66], [78, -66],
+    // South Boundary buffer tree line (outside south boundary road)
+    [-80, 78], [-60, 78], [-40, 78], [-20, 78], [0, 78], [20, 78], [40, 78], [60, 78], [78, 78],
+    // East Highway outer green buffer
+    [98, -48], [98, -28], [98, -8], [98, 12], [98, 32], [98, 52]
+  ], []);
+
+  return (
+    <group>
+      {/* 1. Surrounding Perimeter Landscape Buffer Lawns / Green Belts */}
+      {/* West Buffer Lawn */}
+      <mesh position={[-104, 0.02, 6]}>
+        <boxGeometry args={[30, 0.04, 130]} />
+        <meshStandardMaterial color="#5E9942" roughness={0.85} />
+      </mesh>
+      {/* North Buffer Lawn */}
+      <mesh position={[0, 0.02, -66]}>
+        <boxGeometry args={[190, 0.04, 28]} />
+        <meshStandardMaterial color="#568F3B" roughness={0.85} />
+      </mesh>
+      {/* South Buffer Lawn */}
+      <mesh position={[0, 0.02, 78]}>
+        <boxGeometry args={[190, 0.04, 30]} />
+        <meshStandardMaterial color="#5E9942" roughness={0.85} />
+      </mesh>
+      {/* East Highway Buffer Lawn */}
+      <mesh position={[100, 0.02, 6]}>
+        <boxGeometry args={[26, 0.04, 140]} />
+        <meshStandardMaterial color="#4E8434" roughness={0.85} />
+      </mesh>
+
+      {/* 2. Surrounding Canopy Trees Array */}
+      {outerTrees.map(([ox, oz], idx) => (
+        <PerimeterCanopyTree key={`outer-${idx}`} position={[ox, 0.04, oz]} scale={0.95} />
+      ))}
+    </group>
+  );
+}
+
+// High-Quality Realistic 3D Low-Poly Vehicles driving on Venture Roads
+function Vehicle3D({ color }) {
+  return (
+    <group>
+      {/* Aerodynamic Car Body with glossy finish */}
+      <mesh position={[0, 0.32, 0]}>
+        <boxGeometry args={[1.45, 0.38, 2.7]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.2} />
+      </mesh>
+      {/* Cabin Roof / Tinted Glass Canopy */}
+      <mesh position={[0, 0.62, -0.1]}>
+        <boxGeometry args={[1.18, 0.32, 1.55]} />
+        <meshStandardMaterial color="#0F172A" roughness={0.2} metalness={0.5} />
+      </mesh>
+      {/* Front Windshield Tint */}
+      <mesh position={[0, 0.58, 0.7]} rotation={[0.45, 0, 0]}>
+        <planeGeometry args={[1.1, 0.35]} />
+        <meshStandardMaterial color="#1E293B" roughness={0.1} />
+      </mesh>
+      {/* Rear Windshield Tint */}
+      <mesh position={[0, 0.58, -0.9]} rotation={[-0.45, Math.PI, 0]}>
+        <planeGeometry args={[1.1, 0.35]} />
+        <meshStandardMaterial color="#1E293B" roughness={0.1} />
+      </mesh>
+      {/* Dual Glowing LED Headlights */}
+      <mesh position={[-0.45, 0.32, 1.36]}>
+        <boxGeometry args={[0.22, 0.12, 0.04]} />
+        <meshBasicMaterial color="#FEF08A" />
+      </mesh>
+      <mesh position={[0.45, 0.32, 1.36]}>
+        <boxGeometry args={[0.22, 0.12, 0.04]} />
+        <meshBasicMaterial color="#FEF08A" />
+      </mesh>
+      {/* Dual Red LED Taillights */}
+      <mesh position={[-0.45, 0.32, -1.36]}>
+        <boxGeometry args={[0.22, 0.12, 0.04]} />
+        <meshBasicMaterial color="#EF4444" />
+      </mesh>
+      <mesh position={[0.45, 0.32, -1.36]}>
+        <boxGeometry args={[0.22, 0.12, 0.04]} />
+        <meshBasicMaterial color="#EF4444" />
+      </mesh>
+      {/* 4 Rubber Wheels with Silver Hubs */}
+      {[-0.74, 0.74].map((wx, i) =>
+        [-0.82, 0.82].map((wz, j) => (
+          <group key={`${i}-${j}`} position={[wx, 0.16, wz]}>
+            <mesh rotation={[0, 0, Math.PI / 2]}>
+              <cylinderGeometry args={[0.18, 0.18, 0.14, 12]} />
+              <meshStandardMaterial color="#111827" roughness={0.8} />
+            </mesh>
+            <mesh position={[wx > 0 ? 0.075 : -0.075, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
+              <circleGeometry args={[0.09, 8]} />
+              <meshStandardMaterial color="#E2E8F0" metalness={0.8} roughness={0.2} />
+            </mesh>
+          </group>
+        ))
+      )}
+    </group>
+  );
+}
+
+// Moving Vehicles across Highway AND Venture Roads
+function MovingVehicles3D({ animate = true }) {
+  const hwySouthRef = useRef();
+  const hwyNorthRef = useRef();
+  const road60EastRef = useRef();
+  const road60WestRef = useRef();
+  const roadMidEastRef = useRef();
+  const roadMidWestRef = useRef();
+  const roadV2Ref = useRef();
+
+  useFrame((_, delta) => {
+    if (!animate) return;
+    // 1. Srisailam Highway Southbound (White SUV)
+    if (hwySouthRef.current) {
+      hwySouthRef.current.position.z += delta * 16;
+      if (hwySouthRef.current.position.z > 66) hwySouthRef.current.position.z = -56;
+    }
+    // 2. Srisailam Highway Northbound (Emerald Green Sedan)
+    if (hwyNorthRef.current) {
+      hwyNorthRef.current.position.z -= delta * 15;
+      if (hwyNorthRef.current.position.z < -56) hwyNorthRef.current.position.z = 66;
+    }
+    // 3. 60ft Road Eastbound (Silver Sedan)
+    if (road60EastRef.current) {
+      road60EastRef.current.position.x += delta * 13;
+      if (road60EastRef.current.position.x > 74) road60EastRef.current.position.x = -88;
+    }
+    // 4. 60ft Road Westbound (Royal Blue Sedan)
+    if (road60WestRef.current) {
+      road60WestRef.current.position.x -= delta * 12;
+      if (road60WestRef.current.position.x < -88) road60WestRef.current.position.x = 74;
+    }
+    // 5. 33ft Central Boulevard Eastbound (Ruby Red Sedan matching Plots99 photo!)
+    if (roadMidEastRef.current) {
+      roadMidEastRef.current.position.x += delta * 9.5;
+      if (roadMidEastRef.current.position.x > 62) roadMidEastRef.current.position.x = -72;
+    }
+    // 6. 33ft Central Boulevard Westbound (Warm Amber Compact)
+    if (roadMidWestRef.current) {
+      roadMidWestRef.current.position.x -= delta * 8.5;
+      if (roadMidWestRef.current.position.x < -72) roadMidWestRef.current.position.x = 62;
+    }
+    // 7. Internal Cross Street Road V2 Southbound (Violet Crossover)
+    if (roadV2Ref.current) {
+      roadV2Ref.current.position.z += delta * 8;
+      if (roadV2Ref.current.position.z > 58) roadV2Ref.current.position.z = -38;
+    }
+  });
+
+  return (
+    <group>
+      {/* 1. Srisailam Highway: White SUV (Southbound) */}
+      <group ref={hwySouthRef} position={[77, 0, -25]}>
+        <Vehicle3D color="#F8FAFC" />
+      </group>
+      {/* 2. Srisailam Highway: Emerald Green Sedan (Northbound) */}
+      <group ref={hwyNorthRef} position={[83, 0, 35]} rotation={[0, Math.PI, 0]}>
+        <Vehicle3D color="#059669" />
+      </group>
+      {/* 3. 60ft Arterial Road: Silver Sedan (Eastbound towards Highway) */}
+      <group ref={road60EastRef} position={[-40, 0, -44.5]} rotation={[0, Math.PI / 2, 0]}>
+        <Vehicle3D color="#E2E8F0" />
+      </group>
+      {/* 4. 60ft Arterial Road: Royal Blue Sedan (Westbound) */}
+      <group ref={road60WestRef} position={[30, 0, -49.5]} rotation={[0, -Math.PI / 2, 0]}>
+        <Vehicle3D color="#2563EB" />
+      </group>
+      {/* 5. 33ft Central Boulevard: Ruby Red Sedan (Eastbound, matching Plots99 photo!) */}
+      <group ref={roadMidEastRef} position={[-20, 0, 1.8]} rotation={[0, Math.PI / 2, 0]}>
+        <Vehicle3D color="#DC2626" />
+      </group>
+      {/* 6. 33ft Central Boulevard: Warm Amber Compact (Westbound) */}
+      <group ref={roadMidWestRef} position={[40, 0, -1.0]} rotation={[0, -Math.PI / 2, 0]}>
+        <Vehicle3D color="#D97706" />
+      </group>
+      {/* 7. Internal Cross Street Road V2: Violet Crossover (Southbound) */}
+      <group ref={roadV2Ref} position={[-3.5, 0, 15]}>
+        <Vehicle3D color="#7C3AED" />
+      </group>
+    </group>
+  );
+}
+
+// Authoritative Venture Location Point Beacon (Only Our Venture Location Marker)
+function VentureLocationPointBeacon() {
+  const pinRef = useRef();
+  const ringRef = useRef();
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    if (pinRef.current) {
+      pinRef.current.position.y = 6.6 + Math.sin(t * 2.2) * 0.35;
+    }
+    if (ringRef.current) {
+      const s = 1 + (Math.sin(t * 2.5) + 1) * 0.28;
+      ringRef.current.scale.set(s, s, 1);
+    }
+  });
+
+  return (
+    <group position={[66.5, 0, 0.5]}>
+      {/* 1. Ground Pulsing Radar Target Rings */}
+      <group ref={ringRef} position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh>
+          <ringGeometry args={[1.3, 1.8, 32]} />
+          <meshBasicMaterial color="#10B981" transparent opacity={0.65} />
+        </mesh>
+        <mesh>
+          <ringGeometry args={[0.7, 1.1, 32]} />
+          <meshBasicMaterial color="#F59E0B" transparent opacity={0.8} />
+        </mesh>
+      </group>
+
+      {/* 2. Vertical Emerald Light Beacon Ray */}
+      <mesh position={[0, 3.8, 0]}>
+        <cylinderGeometry args={[0.08, 0.32, 7.6, 16]} />
+        <meshBasicMaterial color="#10B981" transparent opacity={0.28} />
+      </mesh>
+
+      {/* 3. Floating Location Pin Marker */}
+      <group ref={pinRef} position={[0, 6.6, 0]}>
+        {/* Emerald Sphere Pin Head */}
+        <mesh position={[0, 0, 0]}>
+          <sphereGeometry args={[0.72, 16, 16]} />
+          <meshStandardMaterial color="#059669" roughness={0.3} metalness={0.2} />
+        </mesh>
+        {/* Gold Core Disc */}
+        <mesh position={[0, 0, 0]}>
+          <sphereGeometry args={[0.34, 12, 12]} />
+          <meshBasicMaterial color="#FBBF24" />
+        </mesh>
+        {/* Inverted Pin Tip Pointing Directly to Entrance */}
+        <mesh position={[0, -0.65, 0]} rotation={[Math.PI, 0, 0]}>
+          <coneGeometry args={[0.55, 0.95, 16]} />
+          <meshStandardMaterial color="#047857" roughness={0.3} />
+        </mesh>
+
+        {/* 4. Floating Branded Typography Badge */}
+        <Text
+          position={[0, 1.45, 0]}
+          fontSize={0.64}
+          color="#FEF08A"
+          fontWeight="bold"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.06}
+          outlineColor="#064E3B"
+        >
+          ALEKHYA'S BRUNDAVAN
+        </Text>
+        <Text
+          position={[0, 0.92, 0]}
+          fontSize={0.36}
+          color="#FFFFFF"
+          fontWeight="600"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.04}
+          outlineColor="#0F172A"
+        >
+          📍 Kadthal, Srisailam Highway (NH-765)
+        </Text>
+        <Text
+          position={[0, 0.50, 0]}
+          fontSize={0.26}
+          color="#6EE7B7"
+          fontWeight="500"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.03}
+          outlineColor="#064E3B"
+        >
+          DTCP &amp; TS RERA APPROVED VENTURE
+        </Text>
+      </group>
     </group>
   );
 }
@@ -1484,6 +1795,9 @@ export default function Layout3DView({
         {/* Real-World Geographic Kadthal Map View Terrain (Clean OpenStreetMap) */}
         <RealWorldMapTerrain />
 
+        {/* Surrounding Perimeter Greenery Around Layout (Buffer Belts & Canopy Trees) */}
+        <LayoutSurroundingGreenery />
+
         {/* Connected Asphalt Road Network with Sidewalks */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />
 
@@ -1492,6 +1806,12 @@ export default function Layout3DView({
 
         {/* Block Borders with Landscaped Turf and Straight Upright Trees (No Bending, Kept for Every Set of Blocks) */}
         <BlockBordersAndAvenueTrees />
+
+        {/* Moving Vehicles across Highway AND Venture Roads */}
+        <MovingVehicles3D animate={animateVehicles} />
+
+        {/* Authoritative Venture Location Point Beacon (Only Our Venture Location Marker) */}
+        <VentureLocationPointBeacon />
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>
