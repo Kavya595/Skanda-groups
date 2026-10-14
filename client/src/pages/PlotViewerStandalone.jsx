@@ -560,36 +560,49 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
           </div>
 
-          <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center gap-2.5">
+          <div className="bg-white/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleExecuteSearch();
               }}
-              className="relative flex items-center gap-1.5"
+              className="relative flex items-center"
             >
-              <div className="relative w-36 sm:w-52">
+              <div className="relative w-44 sm:w-60">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search Plot # (e.g. 24)"
+                  placeholder="Search plot #..."
                   value={searchTerm}
                   onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    if (!e.target.value.trim()) {
+                    const val = e.target.value;
+                    setSearchTerm(val);
+                    const clean = val.trim();
+                    if (!clean) {
                       setSearchNotFound(false);
+                      return;
+                    }
+                    const digits = clean.replace(/\D/g, '');
+                    const found = plots.find(p => String(p.plotNumber) === clean || (digits && String(p.plotNumber) === digits));
+                    if (found) {
+                      setSearchNotFound(false);
+                      handleSelectPlot(found);
+                      if (viewMode === '3d' && (cameraPreset === 'parkGround' || cameraPreset === 'park')) {
+                        setCameraPreset('overview');
+                      }
                     }
                   }}
-                  className="w-full pl-8 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all font-semibold text-slate-900"
+                  className="w-full pl-9 pr-7 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all font-semibold text-slate-900"
                 />
                 {searchTerm && (
                   <button
                     type="button"
                     onClick={() => {
                       setSearchTerm('');
+                      setSelectedPlot(null);
                       setSearchNotFound(false);
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
                     title="Clear search"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -597,55 +610,12 @@ export default function PlotViewerStandalone({ settings }) {
                 )}
               </div>
 
-              {/* Explicit Clickable Search Button */}
-              <button
-                type="submit"
-                className="btn-shimmer px-3 py-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-xl shadow-xs transition-all hover:scale-105 flex items-center gap-1 shrink-0 cursor-pointer"
-                title="Search and focus plot"
-              >
-                <Search className="w-3 h-3" />
-                <span>Search</span>
-              </button>
-
               {searchNotFound && (
                 <div className="absolute top-10 left-0 bg-red-600 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-xl animate-fadeIn whitespace-nowrap z-50">
                   Plot not found (Plots 1 to 96 available)
                 </div>
               )}
             </form>
-
-            <div className="hidden md:flex items-center gap-1.5 border-l border-slate-200 pl-2.5">
-              <button
-                onClick={() => toggleStatusFilter('available')}
-                className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  statusFilter === 'available'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
-                }`}
-              >
-                Available ({stats?.available || 81})
-              </button>
-
-              <button
-                onClick={() => toggleStatusFilter('reserved')}
-                className={`text-xs px-2.5 py-1 rounded-lg font-semibold transition-all ${
-                  statusFilter === 'reserved'
-                    ? 'bg-amber-500 text-white shadow-xs'
-                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
-                }`}
-              >
-                Reserved ({stats?.reserved || 7})
-              </button>
-
-              {statusFilter !== 'all' && (
-                <button
-                  onClick={() => setStatusFilter('all')}
-                  className="text-[11px] text-slate-500 hover:text-brand-orange underline font-medium px-1"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
           </div>
         </header>
 
@@ -929,32 +899,62 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         )}
 
-        {/* Bottom Left Floating Legend (Plots99 Exact Structure) */}
+        {/* Bottom Left Floating Legend (Plots99 Exact Structure - Vertical) */}
         <div className="absolute bottom-4 left-4 z-30 pointer-events-auto">
-          <div className="bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-200/90 shadow-2xl space-y-1.5">
-            <div className="flex items-center gap-2 text-xs font-bold">
+          <div className="bg-white/95 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/90 shadow-2xl">
+            <div className="flex flex-col gap-1.5 text-xs font-bold">
+              {/* SOLD */}
               <button
                 onClick={() => toggleStatusFilter('sold')}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F89898]/30 border border-[#F89898] text-[#7F1D1D] hover:bg-[#F89898]/50 transition-colors"
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-all text-left ${
+                  statusFilter === 'sold'
+                    ? 'ring-2 ring-red-400 bg-red-50/90 shadow-xs'
+                    : 'hover:bg-slate-50'
+                }`}
+                title="Filter Sold plots (click again to clear)"
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-[#F89898]" />
-                <span>{stats?.sold || 7} SOLD</span>
+                <span className="w-7 h-6 rounded-md bg-[#F89898] text-[#7F1D1D] text-[11px] font-black flex items-center justify-center shadow-2xs">
+                  {stats?.sold || 8}
+                </span>
+                <span className="text-[11px] font-bold tracking-wider text-slate-700">
+                  SOLD
+                </span>
               </button>
 
+              {/* RESERVED */}
               <button
                 onClick={() => toggleStatusFilter('reserved')}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#FBE38E]/40 border border-[#EAB308] text-[#78350F] hover:bg-[#FBE38E]/60 transition-colors"
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-all text-left ${
+                  statusFilter === 'reserved'
+                    ? 'ring-2 ring-amber-400 bg-amber-50/90 shadow-xs'
+                    : 'hover:bg-slate-50'
+                }`}
+                title="Filter Reserved plots (click again to clear)"
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-[#FBE38E]" />
-                <span>{stats?.reserved || 7} RESERVED</span>
+                <span className="w-7 h-6 rounded-md bg-[#FBE38E] text-[#78350F] text-[11px] font-black flex items-center justify-center shadow-2xs">
+                  {stats?.reserved || 7}
+                </span>
+                <span className="text-[11px] font-bold tracking-wider text-slate-700">
+                  RESERVED
+                </span>
               </button>
 
+              {/* AVAILABLE */}
               <button
                 onClick={() => toggleStatusFilter('available')}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#9BD89E]/40 border border-[#6BBF6F] text-[#064E3B] hover:bg-[#9BD89E]/60 transition-colors"
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-all text-left ${
+                  statusFilter === 'available'
+                    ? 'ring-2 ring-emerald-400 bg-emerald-50/90 shadow-xs'
+                    : 'hover:bg-slate-50'
+                }`}
+                title="Filter Available plots (click again to clear)"
               >
-                <span className="w-2.5 h-2.5 rounded-full bg-[#9BD89E]" />
-                <span>{stats?.available || 81} AVAILABLE</span>
+                <span className="w-7 h-6 rounded-md bg-[#9BD89E] text-[#064E3B] text-[11px] font-black flex items-center justify-center shadow-2xs">
+                  {stats?.available || 81}
+                </span>
+                <span className="text-[11px] font-bold tracking-wider text-slate-700">
+                  AVAILABLE
+                </span>
               </button>
             </div>
           </div>

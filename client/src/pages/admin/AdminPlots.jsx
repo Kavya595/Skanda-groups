@@ -472,11 +472,22 @@ export default function AdminPlots() {
                   <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Find Plot # (e.g. 24)..."
+                    placeholder="Search plot #..."
                     value={search}
                     onChange={(e) => {
-                      setSearch(e.target.value);
-                      if (!e.target.value.trim()) setSearchNotFound(false);
+                      const val = e.target.value;
+                      setSearch(val);
+                      const clean = val.trim();
+                      if (!clean) {
+                        setSearchNotFound(false);
+                        return;
+                      }
+                      const digits = clean.replace(/\D/g, '');
+                      const found = plots.find(p => String(p.plotNumber) === clean || (digits && String(p.plotNumber) === digits));
+                      if (found) {
+                        setSearchNotFound(false);
+                        setSelectedPlot(found);
+                      }
                     }}
                     className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-slate-900"
                   />
@@ -485,6 +496,7 @@ export default function AdminPlots() {
                       type="button"
                       onClick={() => {
                         setSearch('');
+                        setSelectedPlot(null);
                         setSearchNotFound(false);
                       }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
@@ -494,15 +506,6 @@ export default function AdminPlots() {
                     </button>
                   )}
                 </div>
-
-                <button
-                  type="submit"
-                  className="px-2.5 py-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-lg shadow-2xs transition-all hover:scale-105 flex items-center gap-1 shrink-0 cursor-pointer"
-                  title="Search Plot"
-                >
-                  <Search className="w-3 h-3" />
-                  <span>Search</span>
-                </button>
 
                 {searchNotFound && (
                   <div className="absolute top-10 left-0 bg-red-600 text-white text-[11px] font-semibold px-2 py-0.5 rounded shadow-lg animate-fadeIn whitespace-nowrap z-50">
