@@ -173,7 +173,11 @@ function Plot3D({
   const meta = statusColors[plot.status] || statusColors.available;
 
   const color = useMemo(() => {
-    if (isSelected) return '#F15A24'; // Skandha Brand Orange
+    if (isSelected) {
+      if (plot.status === 'sold') return '#F87171';
+      if (plot.status === 'reserved') return '#FBBF24';
+      return '#68D391';
+    }
     if (isSearchedMatch) return '#EA580C';
     if (hovered) return '#FB923C';
     return meta.threeColor;
@@ -250,56 +254,18 @@ function Plot3D({
         </group>
       )}
 
-      {/* When Selected: Center Circular White Badge */}
-      {isSelected ? (
-        <group position={[0, topSurfaceY + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <mesh position={[0, 0, -0.002]}>
-            <circleGeometry args={[Math.min(w, d) * 0.36, 32]} />
-            <meshBasicMaterial color="#94A3B8" />
-          </mesh>
-          <mesh position={[0, 0, 0]}>
-            <circleGeometry args={[Math.min(w, d) * 0.34, 32]} />
-            <meshBasicMaterial color="#FFFFFF" />
-          </mesh>
-          <mesh position={[0, 0, 0.005]}>
-            <planeGeometry args={[Math.min(w, d) * 0.52, 0.08]} />
-            <meshBasicMaterial color="#CBD5E1" />
-          </mesh>
-          <Text
-            position={[0, Math.min(w, d) * 0.14, 0.01]}
-            fontSize={Math.min(w, d) * 0.2}
-            color="#0F172A"
-            fontWeight="bold"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {String(plot.plotNumber)}
-          </Text>
-          <Text
-            position={[0, -Math.min(w, d) * 0.14, 0.01]}
-            fontSize={Math.min(w, d) * 0.12}
-            color="#64748B"
-            fontWeight="600"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {`${plot.areaSqYds} yd²`}
-          </Text>
-        </group>
-      ) : (
-        /* When Unselected: Bold Number on Surface */
-        <group position={[0, topSurfaceY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <Text
-            fontSize={Math.min(w, d) * 0.32 > 1.85 ? 1.85 : Math.max(Math.min(w, d) * 0.28, 1.35)}
-            color={plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
-            anchorX="center"
-            anchorY="middle"
-            fontWeight="bold"
-          >
-            {String(plot.plotNumber)}
-          </Text>
-        </group>
-      )}
+      {/* Plot Number in Center (Exact Match to Plots99 Image 1, 2, 4) */}
+      <group position={[0, topSurfaceY + 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <Text
+          fontSize={Math.min(w, d) * 0.32 > 1.9 ? 1.9 : Math.max(Math.min(w, d) * 0.28, 1.35)}
+          color={plot.status === 'sold' ? '#7F1D1D' : '#1E293B'}
+          anchorX="center"
+          anchorY="middle"
+          fontWeight="bold"
+        >
+          {String(plot.plotNumber)}
+        </Text>
+      </group>
 
       {/* Edge Dimensions when Selected or Hovered (matching Screenshot 3: 50', 30') */}
       {(isSelected || hovered) && (
@@ -352,46 +318,56 @@ function Plot3D({
   );
 }
 
-// Realistic Broad Tropical Palm Tree along avenue stone curbs (Matching Image 4 & 5)
+// Realistic Broad Tropical Palm Tree along avenue stone curbs (Matching Plots99 Image 1 & 4)
 function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
   const leafAngles = [0, 45, 90, 135, 180, 225, 270, 315];
 
   return (
     <group position={position} scale={scale}>
-      {/* Soft circular contact shadow on stone curb */}
-      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.95, 16]} />
-        <meshBasicMaterial color="#000000" opacity={0.25} transparent />
+      {/* Small Circular Tree-Pit Stone Border in Cobblestone Sidewalk */}
+      <mesh position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.18, 0.38, 16]} />
+        <meshBasicMaterial color="#A0AEC0" />
+      </mesh>
+      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.18, 12]} />
+        <meshBasicMaterial color="#3E3024" />
       </mesh>
 
-      {/* Slender Tapered Textured Trunk */}
-      <mesh position={[0, 1.4, 0]}>
-        <cylinderGeometry args={[0.11, 0.18, 2.8, 8]} />
-        <meshStandardMaterial color="#785B3A" roughness={0.9} />
+      {/* Slender Textured Bark Trunk with slight natural curvature */}
+      <mesh position={[0, 1.5, 0]}>
+        <cylinderGeometry args={[0.10, 0.16, 3.0, 10]} />
+        <meshStandardMaterial color="#8E8175" roughness={0.88} />
       </mesh>
 
-      {/* Crown Joint */}
-      <mesh position={[0, 2.8, 0]}>
-        <sphereGeometry args={[0.2, 8, 8]} />
-        <meshStandardMaterial color="#5C4528" roughness={0.8} />
+      {/* Decorative Crown Sheath / Trimmed Frond Stubs (Matching Image 1 tan fibers) */}
+      <mesh position={[0, 2.95, 0]}>
+        <cylinderGeometry args={[0.16, 0.12, 0.45, 8]} />
+        <meshStandardMaterial color="#C5A059" roughness={0.7} />
       </mesh>
 
-      {/* 8 Compact Tropical Fronds radiating and drooping down (reduced length for realism) */}
+      {/* Crown Top Joint */}
+      <mesh position={[0, 3.2, 0]}>
+        <sphereGeometry args={[0.18, 8, 8]} />
+        <meshStandardMaterial color="#556B2F" roughness={0.7} />
+      </mesh>
+
+      {/* 8 Broad Tropical Banana / Palm Leaves Radiating and Drooping (Matching Image 1 & 4) */}
       {leafAngles.map((angle, idx) => (
         <group
           key={idx}
-          position={[0, 2.75, 0]}
-          rotation={[0.32, (angle * Math.PI) / 180, -0.42]}
+          position={[0, 3.15, 0]}
+          rotation={[0.34, (angle * Math.PI) / 180, -0.44]}
         >
-          {/* Inner Frond Arch (compact realistic length) */}
-          <mesh position={[0.75, -0.12, 0]} rotation={[0, 0, -0.22]} scale={[1.35, 0.05, 0.72]}>
+          {/* Main Leaf Arch */}
+          <mesh position={[1.1, -0.15, 0]} rotation={[0, 0, -0.22]} scale={[2.0, 0.04, 0.95]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#65A30D" roughness={0.65} />
+            <meshStandardMaterial color="#4E9A1A" roughness={0.55} />
           </mesh>
-          {/* Outer Drooping Tip (compact realistic length) */}
-          <mesh position={[1.5, -0.42, 0]} rotation={[0, 0, -0.52]} scale={[0.85, 0.04, 0.52]}>
+          {/* Drooping Leaf Tip */}
+          <mesh position={[2.1, -0.6, 0]} rotation={[0, 0, -0.55]} scale={[1.2, 0.03, 0.75]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#84CC16" roughness={0.65} />
+            <meshStandardMaterial color="#65B32E" roughness={0.55} />
           </mesh>
         </group>
       ))}
@@ -442,73 +418,75 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   );
 }
 
-// Avenue Landscaping between Block to Block along Internal Road Curbs
+// Avenue Landscaping between Block to Block along Internal Road Curbs (Matching Plots99 Image 2 & 3)
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
 
     // 1. Top 60ft Road Curbs (North boundary of Blocks A, B, C, D, E; inside layout X <= 56)
-    for (let x = -86; x <= 56; x += 12) {
+    for (let x = -86; x <= 56; x += 11) {
       list.push({ pos: [x, 0.18, -52.9], scale: 1.05 });
       list.push({ pos: [x, 0.18, -41.1], scale: 1.05 });
     }
 
     // 2. Central Main Boulevard (between North Blocks and South Blocks; inside layout X <= 56)
-    for (let x = -86; x <= 56; x += 11) {
+    for (let x = -86; x <= 56; x += 10) {
       list.push({ pos: [x, 0.18, -3.9], scale: 0.95 });
       list.push({ pos: [x, 0.18, 4.9], scale: 0.95 });
     }
 
     // 3. Road V0 (between Block F and Central Park / Block G, South section Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 12) {
+    for (let z = 8; z <= 56; z += 11) {
       list.push({ pos: [-65.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [-57.1, 0.18, z], scale: 0.92 });
     }
 
     // 4. Road V1 (between Block A & B in North, Block G & H in South)
     // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 11) {
+    for (let z = -40; z <= -6; z += 10) {
       list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
     }
     // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 12) {
+    for (let z = 8; z <= 56; z += 11) {
       list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
     }
 
     // 5. Road V2 (between Block B & C in North, Block H & I in South)
     // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 11) {
+    for (let z = -40; z <= -6; z += 10) {
       list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
     }
     // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 12) {
+    for (let z = 8; z <= 56; z += 11) {
       list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
       list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
     }
 
     // 6. Road V3 (between Block C & D in North, Block I & J in South)
     // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 11) {
+    for (let z = -40; z <= -6; z += 10) {
       list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
       list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
     }
     // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 12) {
+    for (let z = 8; z <= 56; z += 11) {
       list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
       list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
     }
 
-    // 7. Road V4 (between Block D & E in North, Block J & K in South, west curb at X: 49.1)
+    // 7. Road V4 (between Block D & E in North, Block J & K in South)
     // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 11) {
+    for (let z = -40; z <= -6; z += 10) {
       list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
+      list.push({ pos: [55.5, 0.18, z], scale: 0.92 });
     }
     // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 12) {
+    for (let z = 8; z <= 56; z += 11) {
       list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
+      list.push({ pos: [55.5, 0.18, z], scale: 0.92 });
     }
 
     return list;
@@ -1136,11 +1114,16 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
 // Module-level cache for Map View terrain texture
 let mapTerrainTextureCache = null;
 
-// Real-World Kadthal / Srisailam Highway Map View Terrain Backdrop (Clean OpenStreetMap styling)
+// Real-World Kadthal / Srisailam Highway Map View Terrain Backdrop (Matching Plots99 Real Map)
 function RealWorldMapTerrain() {
-  const terrainTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    if (mapTerrainTextureCache) return mapTerrainTextureCache;
+  const [terrainTexture, setTerrainTexture] = useState(() => mapTerrainTextureCache);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (mapTerrainTextureCache) {
+      setTerrainTexture(mapTerrainTextureCache);
+      return;
+    }
 
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
@@ -1151,7 +1134,7 @@ function RealWorldMapTerrain() {
     ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle agricultural & open field parcels in light earthy greens
+    // Subtle agricultural & open field parcels in light earthy greens as immediate baseline
     const parcels = [
       { x: 30, y: 40, w: 260, h: 220, col: '#E0EAE0' },
       { x: 320, y: 50, w: 340, h: 180, col: '#DCE8DC' },
@@ -1169,28 +1152,41 @@ function RealWorldMapTerrain() {
       ctx.strokeRect(p.x, p.y, p.w, p.h);
     });
 
-    // Subtle geographic cadastral grid
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.035)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 1024; i += 64) {
-      ctx.beginPath();
-      ctx.moveTo(i, 0); ctx.lineTo(i, 1024);
-      ctx.moveTo(0, i); ctx.lineTo(1024, i);
-      ctx.stroke();
-    }
-
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
     mapTerrainTextureCache = tex;
-    return tex;
+    setTerrainTexture(tex);
+
+    // Load 4x4 grid of Carto Voyager Map Tiles (Zoom 17) for Kadthal [17.0985, 78.5085]
+    // Kadthal center tile is x=94120, y=59216. Carto CDN supports Access-Control-Allow-Origin: *
+    const zoom = 17;
+    const startX = 94118;
+    const startY = 59214;
+    const subdomains = ['a', 'b', 'c', 'd'];
+
+    for (let dy = 0; dy < 4; dy++) {
+      for (let dx = 0; dx < 4; dx++) {
+        const x = startX + dx;
+        const y = startY + dy;
+        const sub = subdomains[(dx + dy) % subdomains.length];
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
+          tex.needsUpdate = true;
+        };
+        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
+      }
+    }
   }, []);
 
   return (
     <group>
       {/* Real-World Geographic Terrain Plane Centered at Layout Origin [0, -0.025, 5] */}
       <mesh position={[0, -0.025, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[480, 360]} />
+        <planeGeometry args={[1168, 1168]} />
         {terrainTexture ? (
           <meshBasicMaterial map={terrainTexture} />
         ) : (
@@ -1299,7 +1295,7 @@ export default function Layout3DView({
     <div className="w-full h-full relative bg-[#E5ECE3] select-none">
       <Canvas
         shadows={false} // NO SHADOWS per user directive
-        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 550 }}
+        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 1600 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
