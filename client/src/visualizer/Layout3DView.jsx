@@ -436,59 +436,84 @@ function Plot3D({
   );
 }
 
-// Realistic Broad Tropical Palm Tree along avenue stone curbs (Matching Plots99 Image 1 & 4)
-function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
-  const leafAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+// Perfectly Straight, Upright Royal Avenue Tree (Zero Tilt, Zero Bending, Sits on Block Border)
+function StraightAvenueTree({ position = [0, 0, 0], scale = 1.0 }) {
+  // Symmetrical frond angles around vertical trunk: 10 radially balanced angles
+  const angles = [0, 36, 72, 108, 144, 180, 216, 252, 288, 324];
 
   return (
     <group position={position} scale={scale}>
-      {/* Small Circular Tree-Pit Stone Border in Cobblestone Sidewalk */}
-      <mesh position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.18, 0.38, 16]} />
-        <meshBasicMaterial color="#A0AEC0" />
+      {/* 1. Raised Stone Tree-Pit Base Box on Border */}
+      <mesh position={[0, 0.07, 0]}>
+        <boxGeometry args={[0.72, 0.14, 0.72]} />
+        <meshStandardMaterial color="#CBD5E1" roughness={0.7} />
       </mesh>
-      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.18, 12]} />
-        <meshBasicMaterial color="#3E3024" />
-      </mesh>
-
-      {/* Slender Textured Bark Trunk with slight natural curvature */}
-      <mesh position={[0, 1.5, 0]}>
-        <cylinderGeometry args={[0.10, 0.16, 3.0, 10]} />
-        <meshStandardMaterial color="#8E8175" roughness={0.88} />
+      {/* Dark Nutrient Soil Fill */}
+      <mesh position={[0, 0.135, 0]}>
+        <boxGeometry args={[0.6, 0.02, 0.6]} />
+        <meshBasicMaterial color="#2E2016" />
       </mesh>
 
-      {/* Decorative Crown Sheath / Trimmed Frond Stubs (Matching Image 1 tan fibers) */}
-      <mesh position={[0, 2.95, 0]}>
-        <cylinderGeometry args={[0.16, 0.12, 0.45, 8]} />
-        <meshStandardMaterial color="#C5A059" roughness={0.7} />
+      {/* 2. Perfectly Straight, Upright Vertical Trunk (Zero curvature, zero lean) */}
+      <mesh position={[0, 1.6, 0]}>
+        <cylinderGeometry args={[0.11, 0.15, 3.2, 14]} />
+        <meshStandardMaterial color="#5C4533" roughness={0.85} />
       </mesh>
 
-      {/* Crown Top Joint */}
-      <mesh position={[0, 3.2, 0]}>
-        <sphereGeometry args={[0.18, 8, 8]} />
-        <meshStandardMaterial color="#556B2F" roughness={0.7} />
+      {/* 3. Ornamental Support Rings / Decorative Timber Ties */}
+      <mesh position={[0, 0.8, 0]}>
+        <cylinderGeometry args={[0.16, 0.16, 0.06, 12]} />
+        <meshStandardMaterial color="#854D0E" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 1.8, 0]}>
+        <cylinderGeometry args={[0.14, 0.14, 0.06, 12]} />
+        <meshStandardMaterial color="#854D0E" roughness={0.6} />
       </mesh>
 
-      {/* 8 Broad Tropical Banana / Palm Leaves Radiating and Drooping (Matching Image 1 & 4) */}
-      {leafAngles.map((angle, idx) => (
+      {/* 4. Upright Green Crownshaft */}
+      <mesh position={[0, 3.25, 0]}>
+        <cylinderGeometry args={[0.13, 0.11, 0.65, 12]} />
+        <meshStandardMaterial color="#2D5A27" roughness={0.6} />
+      </mesh>
+      <mesh position={[0, 3.55, 0]}>
+        <sphereGeometry args={[0.15, 10, 10]} />
+        <meshStandardMaterial color="#3B7D2F" roughness={0.6} />
+      </mesh>
+
+      {/* 5. Perfectly Straight Upright Fronds (Symmetrical, Elegant, Upward-pointing, NO Bending) */}
+      {angles.map((ang, idx) => (
         <group
           key={idx}
-          position={[0, 3.15, 0]}
-          rotation={[0.34, (angle * Math.PI) / 180, -0.44]}
+          position={[0, 3.5, 0]}
+          rotation={[0.38, (ang * Math.PI) / 180, 0]} // Upward elevation angle, zero roll/twist
         >
-          {/* Main Leaf Arch */}
-          <mesh position={[1.1, -0.15, 0]} rotation={[0, 0, -0.22]} scale={[2.0, 0.04, 0.95]}>
+          {/* Main Leaf Stem */}
+          <mesh position={[0, 0.8, 0]} scale={[0.04, 1.6, 0.04]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#4E9A1A" roughness={0.55} />
+            <meshStandardMaterial color="#276749" roughness={0.5} />
           </mesh>
-          {/* Drooping Leaf Tip */}
-          <mesh position={[2.1, -0.6, 0]} rotation={[0, 0, -0.55]} scale={[1.2, 0.03, 0.75]}>
+          {/* Lower Leaf Foliage */}
+          <mesh position={[0, 0.65, 0]} scale={[0.32, 0.9, 0.02]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color="#65B32E" roughness={0.55} />
+            <meshStandardMaterial color="#2F855A" roughness={0.5} />
+          </mesh>
+          {/* Upper Leaf Foliage */}
+          <mesh position={[0, 1.3, 0]} scale={[0.22, 0.8, 0.02]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color="#48BB78" roughness={0.5} />
           </mesh>
         </group>
       ))}
+
+      {/* 6. Central Upright Vertical Spear Fronds */}
+      <mesh position={[0, 4.1, 0]}>
+        <cylinderGeometry args={[0.02, 0.05, 1.1, 8]} />
+        <meshStandardMaterial color="#38A169" roughness={0.5} />
+      </mesh>
+      <mesh position={[0.03, 4.25, 0.02]}>
+        <cylinderGeometry args={[0.015, 0.04, 0.9, 8]} />
+        <meshStandardMaterial color="#48BB78" roughness={0.5} />
+      </mesh>
     </group>
   );
 }
@@ -536,168 +561,286 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   );
 }
 
-// Avenue Landscaping between Block to Block along Internal Road Curbs (100% Unblocked Streets)
-function Landscaping() {
-  const trees = useMemo(() => {
-    const list = [];
+// Authoritative Block-by-Block Avenue Borders & Straight Trees (Zero Encroachment on Plots)
+const BLOCK_AVENUE_BORDERS = [
+  // ==========================================
+  // NORTH BLOCKS: A, B, C, D, E (Z: -42 to -3)
+  // ==========================================
 
-    // Strict clearance guard: guarantees NO tree is inside any road or within 8.5m of any intersection
-    const isBlockingStreet = (x, z) => {
-      // 1. Inside 60ft Road corridor (Z: -53.5 to -40.5)
-      if (z >= -53.5 && z <= -40.5) return true;
-      // 2. Inside Central Boulevard corridor (Z: -4.5 to 5.5)
-      if (z >= -4.5 && z <= 5.5) return true;
-      // 3. Inside any vertical road corridor (with safety margins)
-      const vCorridors = [
-        [-89.5, -79.5], // West Boundary Road
-        [-66.5, -56.5], // Road V0
-        [-37.5, -27.5], // Road V1
-        [-8.5, 1.5],    // Road V2
-        [20.5, 30.5],   // Road V3
-        [48.5, 58.5],   // Road V4
-        [61.5, 71.5],   // Service Road
-        [71.5, 90.0]    // Srisailam Highway
-      ];
-      for (const [xmin, xmax] of vCorridors) {
-        if (x >= xmin && x <= xmax) return true;
-      }
-      // 4. Near any intersection (keep turning mouths and street entrances wide open)
-      const junctions = [-84.5, -61.5, -32.5, -3.5, 25.5, 53.5, 66.5];
-      for (const jx of junctions) {
-        if (Math.hypot(x - jx, z - (-47)) < 8.5) return true;
-        if (Math.hypot(x - jx, z - 0.5) < 8.5) return true;
-      }
-      return false;
-    };
+  // BLOCK A (Plots 25-30, X: -58 to -36)
+  // North Border facing 60ft Road (Z = -43.2)
+  {
+    x: -46.5, z: -43.2, w: 18.0, d: 0.8, isHorizontal: true,
+    trees: [[-54, -43.2], [-46.5, -43.2], [-39, -43.2]]
+  },
+  // East Border facing Road V1 (X = -34.8)
+  {
+    x: -34.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-34.8, -35], [-34.8, -23], [-34.8, -11]]
+  },
+  // South Border facing Central Blvd (Z = -1.8)
+  {
+    x: -46.5, z: -1.8, w: 18.0, d: 0.8, isHorizontal: true,
+    trees: [[-54, -1.8], [-46.5, -1.8], [-39, -1.8]]
+  },
 
-    const addSafeTree = (pos, scale = 0.95) => {
-      if (!isBlockingStreet(pos[0], pos[2])) {
-        list.push({ pos, scale });
-      }
-    };
+  // BLOCK B (Plots 17-24, X: -29 to -7)
+  // West Border facing Road V1 (X = -30.2)
+  {
+    x: -30.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-30.2, -35], [-30.2, -23], [-30.2, -11]]
+  },
+  // North Border facing 60ft Road (Z = -43.2)
+  {
+    x: -18.0, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[-25, -43.2], [-18, -43.2], [-11, -43.2]]
+  },
+  // East Border facing Road V2 (X = -5.8)
+  {
+    x: -5.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-5.8, -35], [-5.8, -23], [-5.8, -11]]
+  },
+  // South Border facing Central Blvd (Z = -1.8)
+  {
+    x: -18.0, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[-25, -1.8], [-18, -1.8], [-11, -1.8]]
+  },
 
-    // 1. Avenue Palms along North side of Central Boulevard (fronting Blocks A, B, C, D)
-    [-74, -62, -50, -22, -14, 7, 15, 36, 44].forEach((x) => {
-      addSafeTree([x, 0.14, -5.4], 0.95);
-    });
+  // BLOCK C (Plots 13-16, X: 0 to 22)
+  // West Border facing Road V2 (X = -1.2)
+  {
+    x: -1.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-1.2, -35], [-1.2, -23], [-1.2, -11]]
+  },
+  // North Border facing 60ft Road (Z = -43.2)
+  {
+    x: 11.0, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[4, -43.2], [11, -43.2], [18, -43.2]]
+  },
+  // East Border facing Road V3 (X = 23.2)
+  {
+    x: 23.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[23.2, -35], [23.2, -23], [23.2, -11]]
+  },
+  // South Border facing Central Blvd (Z = -1.8)
+  {
+    x: 11.0, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[4, -1.8], [11, -1.8], [18, -1.8]]
+  },
 
-    // 2. Avenue Palms along South side of Central Boulevard (fronting Blocks F, Park, H, I, J)
-    [-74, -52, -42, -22, -14, 7, 15, 36, 44].forEach((x) => {
-      addSafeTree([x, 0.14, 6.4], 0.95);
-    });
+  // BLOCK D (Plots 7-12, X: 29 to 50)
+  // West Border facing Road V3 (X = 27.8)
+  {
+    x: 27.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[27.8, -35], [27.8, -23], [27.8, -11]]
+  },
+  // North Border facing 60ft Road (Z = -43.2)
+  {
+    x: 39.5, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[33, -43.2], [39.5, -43.2], [46, -43.2]]
+  },
+  // East Border facing Road V4 (X = 51.2)
+  {
+    x: 51.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[51.2, -35], [51.2, -23], [51.2, -11]]
+  },
+  // South Border facing Central Blvd (Z = -1.8)
+  {
+    x: 39.5, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[33, -1.8], [39.5, -1.8], [46, -1.8]]
+  },
 
-    // 3. Avenue Palms along 60ft Road verge (North boundary of Blocks A, B, C, D)
-    [-74, -62, -50, -22, -14, 7, 15, 36, 44].forEach((x) => {
-      addSafeTree([x, 0.14, -39.8], 1.02);
-    });
+  // BLOCK E (Plots 1-6, X: 57 to 63)
+  // West Border facing Road V4 (X = 55.8)
+  {
+    x: 55.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[55.8, -35], [55.8, -23], [55.8, -11]]
+  },
+  // East Border facing Service Road (X = 64.2)
+  {
+    x: 64.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[64.2, -35], [64.2, -23], [64.2, -11]]
+  },
+  // South Border facing Central Blvd (Z = -1.8)
+  {
+    x: 60.0, z: -1.8, w: 4.5, d: 0.8, isHorizontal: true,
+    trees: [[60, -1.8]]
+  },
 
-    // 4. Avenue Palms along Vertical Road V1 (between Block A & B; Block G & H)
-    [-34, -24, -14].forEach((z) => {
-      addSafeTree([-38.2, 0.14, z], 0.9);
-      addSafeTree([-26.8, 0.14, z], 0.9);
-    });
-    [16, 28, 40, 50].forEach((z) => {
-      addSafeTree([-38.2, 0.14, z], 0.9);
-      addSafeTree([-26.8, 0.14, z], 0.9);
-    });
+  // ==========================================
+  // SOUTH BLOCKS: F, G, H, I, J, K (Z: 4 to 60)
+  // ==========================================
 
-    // 5. Avenue Palms along Vertical Road V2 (between Block B & C; Block H & I)
-    [-34, -24, -14].forEach((z) => {
-      addSafeTree([-9.2, 0.14, z], 0.9);
-      addSafeTree([2.2, 0.14, z], 0.9);
-    });
-    [16, 28, 40, 50].forEach((z) => {
-      addSafeTree([-9.2, 0.14, z], 0.9);
-      addSafeTree([2.2, 0.14, z], 0.9);
-    });
+  // BLOCK F (Plots 31-36, X: -78 to -65)
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: -71.5, z: 2.8, w: 10.0, d: 0.8, isHorizontal: true,
+    trees: [[-71.5, 2.8]]
+  },
+  // East Border facing Road V0 (X = -63.8)
+  {
+    x: -63.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-63.8, 14], [-63.8, 26], [-63.8, 38], [-63.8, 50]]
+  },
 
-    // 6. Avenue Palms along Vertical Road V3 (between Block C & D; Block I & J)
-    [-34, -24, -14].forEach((z) => {
-      addSafeTree([19.8, 0.14, z], 0.9);
-      addSafeTree([31.2, 0.14, z], 0.9);
-    });
-    [16, 28, 40, 50].forEach((z) => {
-      addSafeTree([19.8, 0.14, z], 0.9);
-      addSafeTree([31.2, 0.14, z], 0.9);
-    });
+  // BLOCK G (Plots 37-46, X: -58 to -36)
+  // West Border facing Road V0 (X = -59.2)
+  {
+    x: -59.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-59.2, 14], [-59.2, 26], [-59.2, 38], [-59.2, 50]]
+  },
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: -46.5, z: 2.8, w: 18.0, d: 0.8, isHorizontal: true,
+    trees: [[-54, 2.8], [-46.5, 2.8], [-39, 2.8]]
+  },
+  // East Border facing Road V1 (X = -34.8)
+  {
+    x: -34.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-34.8, 14], [-34.8, 26], [-34.8, 38], [-34.8, 50]]
+  },
+  // South Border facing South Road (Z = 61.2)
+  {
+    x: -46.5, z: 61.2, w: 18.0, d: 0.8, isHorizontal: true,
+    trees: [[-54, 61.2], [-46.5, 61.2], [-39, 61.2]]
+  },
 
-    // 7. Avenue Palms along Vertical Road V4 (between Block D & E; Block J & K)
-    [-34, -24, -14].forEach((z) => {
-      addSafeTree([47.8, 0.14, z], 0.9);
-      addSafeTree([59.2, 0.14, z], 0.9);
-    });
-    [16, 28, 40, 50].forEach((z) => {
-      addSafeTree([47.8, 0.14, z], 0.9);
-      addSafeTree([59.2, 0.14, z], 0.9);
-    });
+  // BLOCK H (Plots 47-58, X: -29 to -7)
+  // West Border facing Road V1 (X = -30.2)
+  {
+    x: -30.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-30.2, 14], [-30.2, 26], [-30.2, 38], [-30.2, 50]]
+  },
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: -18.0, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[-25, 2.8], [-18, 2.8], [-11, 2.8]]
+  },
+  // East Border facing Road V2 (X = -5.8)
+  {
+    x: -5.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-5.8, 14], [-5.8, 26], [-5.8, 38], [-5.8, 50]]
+  },
+  // South Border facing South Road (Z = 61.2)
+  {
+    x: -18.0, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[-25, 61.2], [-18, 61.2], [-11, 61.2]]
+  },
 
-    return list;
-  }, []);
+  // BLOCK I (Plots 59-70, X: 0 to 22)
+  // West Border facing Road V2 (X = -1.2)
+  {
+    x: -1.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[-1.2, 14], [-1.2, 26], [-1.2, 38], [-1.2, 50]]
+  },
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: 11.0, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[4, 2.8], [11, 2.8], [18, 2.8]]
+  },
+  // East Border facing Road V3 (X = 23.2)
+  {
+    x: 23.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[23.2, 14], [23.2, 26], [23.2, 38], [23.2, 50]]
+  },
+  // South Border facing South Road (Z = 61.2)
+  {
+    x: 11.0, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[4, 61.2], [11, 61.2], [18, 61.2]]
+  },
 
+  // BLOCK J (Plots 71-82, X: 29 to 50)
+  // West Border facing Road V3 (X = 27.8)
+  {
+    x: 27.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[27.8, 14], [27.8, 26], [27.8, 38], [27.8, 50]]
+  },
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: 39.5, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[33, 2.8], [39.5, 2.8], [46, 2.8]]
+  },
+  // East Border facing Road V4 (X = 51.2)
+  {
+    x: 51.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[51.2, 14], [51.2, 26], [51.2, 38], [51.2, 50]]
+  },
+  // South Border facing South Road (Z = 61.2)
+  {
+    x: 39.5, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
+    trees: [[33, 61.2], [39.5, 61.2], [46, 61.2]]
+  },
+
+  // BLOCK K (Plots 83-96, X: 57 to 70)
+  // West Border facing Road V4 (X = 55.8)
+  {
+    x: 55.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[55.8, 14], [55.8, 26], [55.8, 38], [55.8, 50]]
+  },
+  // North Border facing Central Blvd (Z = 2.8)
+  {
+    x: 63.5, z: 2.8, w: 10.0, d: 0.8, isHorizontal: true,
+    trees: [[63.5, 2.8]]
+  },
+  // East Border facing Service Road (X = 71.2)
+  {
+    x: 71.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
+    trees: [[71.2, 14], [71.2, 26], [71.2, 38], [71.2, 50]]
+  },
+  // South Border facing South Road (Z = 61.2)
+  {
+    x: 63.5, z: 61.2, w: 10.0, d: 0.8, isHorizontal: true,
+    trees: [[63.5, 61.2]]
+  }
+];
+
+// Block Borders with Landscaped Turf and Straight Upright Trees (No Bending, Kept for Every Set of Blocks)
+function BlockBordersAndAvenueTrees() {
   return (
     <group>
-      {trees.map((t, idx) => (
-        <PalmTree key={idx} position={t.pos} scale={t.scale} />
+      {/* 1. Raised Concrete Curbs with Landscaped Turf Top along Every Block Perimeter */}
+      {BLOCK_AVENUE_BORDERS.map((seg, idx) => (
+        <group key={`border-${idx}`}>
+          {/* Raised Kerb Stone Base (0.12m height above road level) */}
+          <mesh position={[seg.x, 0.06, seg.z]}>
+            <boxGeometry args={[seg.w, 0.12, seg.d]} />
+            <meshStandardMaterial color="#CBD5E1" roughness={0.65} metalness={0.08} />
+          </mesh>
+
+          {/* Manicured Emerald Turf Planter Top Surface */}
+          <mesh position={[seg.x, 0.122, seg.z]}>
+            <boxGeometry args={[seg.isHorizontal ? seg.w : seg.w - 0.1, 0.01, seg.isHorizontal ? seg.d - 0.1 : seg.d]} />
+            <meshStandardMaterial color="#4D7C0F" roughness={0.8} />
+          </mesh>
+
+          {/* White Painted Road Margin Line on road-facing curb edge */}
+          <mesh
+            position={[
+              seg.x,
+              0.124,
+              seg.z
+            ]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[seg.isHorizontal ? seg.w : 0.08, seg.isHorizontal ? 0.08 : seg.d]} />
+            <meshBasicMaterial color="#FFFFFF" opacity={0.88} transparent />
+          </mesh>
+        </group>
       ))}
+
+      {/* 2. Perfectly Straight, Upright Avenue Trees on the Block Borders (Kept for every set of blocks) */}
+      {BLOCK_AVENUE_BORDERS.flatMap((seg, bIdx) =>
+        seg.trees.map(([tx, tz], tIdx) => (
+          <StraightAvenueTree
+            key={`tree-${bIdx}-${tIdx}`}
+            position={[tx, 0.12, tz]}
+            scale={0.92}
+          />
+        ))
+      )}
     </group>
   );
 }
-
-// Block frontage curb definition: precast kerbs & painted road borders that DO NOT block any intersection
-const BLOCK_CURB_SEGMENTS = [
-  // HORIZONTAL CURB SEGMENTS
-  // North side of Central Boulevard (facing South Blocks A, B, C, D, E at Z = -3.12)
-  { x: -58.0, z: -3.14, w: 38.0, d: 0.3, isHorizontal: true, isNorth: true },
-  { x: -18.0, z: -3.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: true },
-  { x: 11.0, z: -3.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: true },
-  { x: 39.5, z: -3.14, w: 16.0, d: 0.3, isHorizontal: true, isNorth: true },
-  { x: 60.0, z: -3.14, w: 4.0, d: 0.3, isHorizontal: true, isNorth: true },
-
-  // South side of Central Boulevard (facing North Blocks F, Park, H, I, J, K at Z = 4.14)
-  { x: -72.5, z: 4.14, w: 11.0, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: -47.0, z: 4.14, w: 19.0, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: -18.0, z: 4.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 11.0, z: 4.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 39.5, z: 4.14, w: 16.0, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 60.0, z: 4.14, w: 4.0, d: 0.3, isHorizontal: true, isNorth: false },
-
-  // South side of 60ft Road (facing North Blocks A, B, C, D, E at Z = -41.86)
-  { x: -58.0, z: -41.86, w: 38.0, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: -18.0, z: -41.86, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 11.0, z: -41.86, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 39.5, z: -41.86, w: 16.0, d: 0.3, isHorizontal: true, isNorth: false },
-  { x: 60.0, z: -41.86, w: 4.0, d: 0.3, isHorizontal: true, isNorth: false },
-
-  // North side of 60ft Road outer perimeter
-  { x: -12.5, z: -52.14, w: 151.0, d: 0.3, isHorizontal: true, isNorth: true },
-
-  // VERTICAL CURB SEGMENTS
-  // North section: between 60ft road and Central Blvd (Z: -40.5 to -4.5, center Z = -22.5, length = 35.0m)
-  { x: -80.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
-  { x: -36.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
-  { x: -28.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
-  { x: -7.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
-  { x: 0.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
-  { x: 21.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
-  { x: 29.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
-  { x: 49.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
-  { x: 57.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
-  { x: 62.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
-
-  // South section: between Central Blvd and South Boundary (Z: 5.5 to 57.5, center Z = 31.5, length = 51.0m)
-  { x: -80.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: -64.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
-  { x: -58.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: -36.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
-  { x: -28.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: -7.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
-  { x: 0.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: 21.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
-  { x: 29.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: 49.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
-  { x: 57.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
-  { x: 62.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true }
-];
 
 // Connected Road Network with Realistic Deep Asphalt, Raised Cobblestone Curbs, and Printed Road Names (Matching Image 4 & 5)
 function ConnectedRoadNetwork({ onRoadClick }) {
@@ -872,44 +1015,6 @@ function ConnectedRoadNetwork({ onRoadClick }) {
         );
       })}
 
-      {/* 2. Realistic Block-Frontage Curbs, Sidewalk Verges & Painted Margins (Zero Blockades at Intersections!) */}
-      <group>
-        {BLOCK_CURB_SEGMENTS.map((seg, idx) => (
-          <group key={`curb-${idx}`}>
-            {/* Raised Precast Concrete Kerb Stone (0.12m height above road) */}
-            <mesh position={[seg.x, 0.08, seg.z]}>
-              <boxGeometry args={[seg.w, 0.12, seg.d]} />
-              <meshStandardMaterial color="#CBD5E1" roughness={0.65} metalness={0.1} />
-            </mesh>
-
-            {/* Painted White Road Margin Line along the asphalt edge directly adjoining the curb */}
-            <mesh
-              position={[
-                seg.isHorizontal ? seg.x : (seg.isWest ? seg.x + 0.22 : seg.x - 0.22),
-                0.026,
-                seg.isHorizontal ? (seg.isNorth ? seg.z + 0.22 : seg.z - 0.22) : seg.z
-              ]}
-              rotation={[-Math.PI / 2, 0, 0]}
-            >
-              <planeGeometry args={[seg.isHorizontal ? seg.w : 0.12, seg.isHorizontal ? 0.12 : seg.d]} />
-              <meshBasicMaterial color="#FFFFFF" opacity={0.92} transparent />
-            </mesh>
-
-            {/* Paved Walkway / Sidewalk Paver Verge behind the curb */}
-            <mesh
-              position={[
-                seg.isHorizontal ? seg.x : (seg.isWest ? seg.x - 0.6 : seg.x + 0.6),
-                0.035,
-                seg.isHorizontal ? (seg.isNorth ? seg.z - 0.6 : seg.z + 0.6) : seg.z
-              ]}
-            >
-              <boxGeometry args={[seg.isHorizontal ? seg.w : 0.9, 0.04, seg.isHorizontal ? 0.9 : seg.d]} />
-              <meshStandardMaterial map={cobblestoneTexture || undefined} color="#E2E8F0" roughness={0.8} />
-            </mesh>
-          </group>
-        ))}
-      </group>
-
       {/* Street Name Typography printed directly on asphalt (Matching Image 5) */}
       <Text
         position={[0, 0.035, -47]}
@@ -1058,9 +1163,9 @@ function ParkArea3D({ onParkClick }) {
         <lineBasicMaterial color="#4A7C12" linewidth={2} />
       </lineSegments>
 
-      {/* Perimeter Palm Trees (matching Screenshot 3 & 4) */}
+      {/* Perimeter Straight Avenue Trees */}
       {perimeterPalms.map(([px, pz], idx) => (
-        <PalmTree key={`perm-${idx}`} position={[px, 0.03, pz]} scale={0.72} />
+        <StraightAvenueTree key={`perm-${idx}`} position={[px, 0.03, pz]} scale={0.72} />
       ))}
 
       {/* Scattered Cycad Palm Shrubs (matching Screenshot 3 & 4) */}
@@ -1385,8 +1490,8 @@ export default function Layout3DView({
         {/* Ac. 0.758 Park Area with Flowers, Perimeter Palms & Cycads */}
         <ParkArea3D onParkClick={onParkClick} />
 
-        {/* Avenue Royal Palms Landscaping (with 100% clear streets) */}
-        <Landscaping />
+        {/* Block Borders with Landscaped Turf and Straight Upright Trees (No Bending, Kept for Every Set of Blocks) */}
+        <BlockBordersAndAvenueTrees />
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>

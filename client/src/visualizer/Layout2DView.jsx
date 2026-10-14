@@ -29,7 +29,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   filterStatus = 'all',
   filterFacing = 'all',
   searchTerm = '',
-  animateVehicles = false
+  animateVehicles = true
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -362,6 +362,149 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     }
   }, [searchTerm, plots]);
+
+  // 7. Animated 2D Vehicles Driving along Highway & Venture Streets (Zero API key, High performance)
+  useEffect(() => {
+    if (!mapInstanceRef.current || animateVehicles === false) return;
+    const map = mapInstanceRef.current;
+
+    const vehiclesGroup = L.layerGroup().addTo(map);
+
+    const vehicleConfigs = [
+      // 1. Red Sport Sedan: Srisailam Highway NH-765 (Southbound)
+      {
+        id: 'hwy-s',
+        color: '#DC2626',
+        start: [78, -55],
+        end: [78, 65],
+        heading: 90, // Southbound
+        speed: 0.0028,
+        offset: 0
+      },
+      // 2. Pearl White SUV: Srisailam Highway NH-765 (Northbound)
+      {
+        id: 'hwy-n',
+        color: '#FFFFFF',
+        start: [82, 65],
+        end: [82, -55],
+        heading: 270, // Northbound
+        speed: 0.0032,
+        offset: 0.48
+      },
+      // 3. Royal Blue Sedan: 60ft Road (Eastbound towards Highway)
+      {
+        id: 'r60-e',
+        color: '#2563EB',
+        start: [-88, -44.5],
+        end: [72, -44.5],
+        heading: 0, // Eastbound
+        speed: 0.0022,
+        offset: 0.15
+      },
+      // 4. Midnight Slate Car: 60ft Road (Westbound towards Maisigandi)
+      {
+        id: 'r60-w',
+        color: '#1E293B',
+        start: [72, -49.5],
+        end: [-88, -49.5],
+        heading: 180, // Westbound
+        speed: 0.0024,
+        offset: 0.62
+      },
+      // 5. Golden Amber Sedan: 33ft Central Boulevard (Eastbound)
+      {
+        id: 'r33-e',
+        color: '#D97706',
+        start: [-75, 1.8],
+        end: [60, 1.8],
+        heading: 0, // Eastbound
+        speed: 0.0018,
+        offset: 0.35
+      },
+      // 6. Emerald Green Hatchback: 33ft Central Boulevard (Westbound)
+      {
+        id: 'r33-w',
+        color: '#059669',
+        start: [60, -1.0],
+        end: [-75, -1.0],
+        heading: 180, // Westbound
+        speed: 0.002,
+        offset: 0.82
+      },
+      // 7. Violet Crossover: Vertical Road V2 (Southbound)
+      {
+        id: 'rv2-s',
+        color: '#7C3AED',
+        start: [-3.5, -38],
+        end: [-3.5, 56],
+        heading: 90, // Southbound
+        speed: 0.0017,
+        offset: 0.52
+      }
+    ];
+
+    const markers = vehicleConfigs.map(cfg => {
+      const startLatLng = localToLatLng(cfg.start[0], cfg.start[1]);
+      const icon = L.divIcon({
+        className: `leaflet-car-${cfg.id}`,
+        html: `
+          <div style="
+            width: 17px;
+            height: 9px;
+            background: ${cfg.color};
+            border-radius: 2.5px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.45);
+            border: 1px solid rgba(0,0,0,0.3);
+            position: relative;
+            transform: rotate(${cfg.heading}deg);
+            transform-origin: center center;
+          ">
+            <!-- Front windshield -->
+            <div style="position: absolute; right: 3px; top: 1px; width: 3.5px; height: 5px; background: rgba(30,41,59,0.85); border-radius: 1px;"></div>
+            <!-- Rear glass -->
+            <div style="position: absolute; left: 2.5px; top: 1px; width: 2.5px; height: 5px; background: rgba(30,41,59,0.85); border-radius: 1px;"></div>
+            <!-- Roof -->
+            <div style="position: absolute; left: 5px; top: 1px; width: 5px; height: 5px; background: ${cfg.color}; filter: brightness(1.15);"></div>
+            <!-- Headlights -->
+            <div style="position: absolute; right: -1px; top: 1px; width: 2px; height: 2px; background: #FEF08A; border-radius: 1px;"></div>
+            <div style="position: absolute; right: -1px; bottom: 1px; width: 2px; height: 2px; background: #FEF08A; border-radius: 1px;"></div>
+            <!-- Taillights -->
+            <div style="position: absolute; left: -1px; top: 1px; width: 1.5px; height: 2px; background: #EF4444; border-radius: 1px;"></div>
+            <div style="position: absolute; left: -1px; bottom: 1px; width: 1.5px; height: 2px; background: #EF4444; border-radius: 1px;"></div>
+          </div>
+        `,
+        iconSize: [17, 9],
+        iconAnchor: [8.5, 4.5]
+      });
+
+      const marker = L.marker(startLatLng, { icon, interactive: false }).addTo(vehiclesGroup);
+      return { marker, cfg };
+    });
+
+    let progress = 0;
+    let animId = null;
+
+    const tick = () => {
+      progress += 0.0015;
+      markers.forEach(({ marker, cfg }) => {
+        const t = (progress * (cfg.speed / 0.002) + cfg.offset) % 1;
+        const curX = cfg.start[0] + (cfg.end[0] - cfg.start[0]) * t;
+        const curZ = cfg.start[1] + (cfg.end[1] - cfg.start[1]) * t;
+        const latLng = localToLatLng(curX, curZ);
+        marker.setLatLng(latLng);
+      });
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+      if (mapInstanceRef.current && vehiclesGroup) {
+        map.removeLayer(vehiclesGroup);
+      }
+    };
+  }, [animateVehicles]);
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
