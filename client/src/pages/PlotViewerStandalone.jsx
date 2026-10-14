@@ -785,6 +785,7 @@ export default function PlotViewerStandalone({ settings }) {
               filterStatus={statusFilter}
               filterFacing={facingFilter}
               searchTerm={searchTerm}
+              animateVehicles={animateVehicles}
             />
           )}
         </div>
