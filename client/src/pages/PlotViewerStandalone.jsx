@@ -731,6 +731,25 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
+          {/* 3D Map View (Regional Kadthal & Highway Location from Brochure / PDF) */}
+          <button
+            onClick={() => {
+              if (viewMode === '2d') {
+                layout2DRef.current?.reset();
+              } else {
+                setCameraPreset(prev => prev === 'mapView' ? 'overview' : 'mapView');
+              }
+            }}
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'mapView'
+                ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:bg-white'
+            }`}
+            title="3D Geographic Map View (Kadthal & Srisailam Highway Regional Location from Brochure)"
+          >
+            <MapPin className="w-4 h-4" />
+          </button>
+
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -766,6 +785,22 @@ export default function PlotViewerStandalone({ settings }) {
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         </aside>
+
+        {/* Floating 3D Map View Indicator Banner (when MapPin is active) */}
+        {cameraPreset === 'mapView' && viewMode === '3d' && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 bg-slate-900/90 backdrop-blur-md text-white rounded-full border border-slate-700/80 shadow-2xl px-4 py-2 flex items-center gap-3 animate-fadeIn pointer-events-auto">
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>🗺️ Regional Map View: Alekhya's Brundavan, Kadthal (NH-765)</span>
+            </div>
+            <button
+              onClick={() => setCameraPreset('overview')}
+              className="px-2.5 py-0.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-[11px] font-semibold text-white transition-all shadow-sm"
+            >
+              Reset to 3D Layout
+            </button>
+          </div>
+        )}
 
         {/* Map Canvas (3D or 2D) */}
         <div className="w-full h-full">
