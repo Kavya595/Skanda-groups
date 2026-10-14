@@ -102,6 +102,15 @@ export default function Footer({ settings }) {
                   <ExternalLink className="w-3 h-3 opacity-70" />
                 </a>
               </li>
+              <li>
+                <Link
+                  to="/admin/login"
+                  className="hover:text-emerald-400 font-semibold text-slate-400 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Admin Staff Portal</span>
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -32,7 +32,8 @@ export default function Navbar({ settings }) {
     { label: 'Project Specs', path: '/project' },
     { label: 'Site Gallery', path: '/gallery' },
     { label: 'About Skandha', path: '/about' },
-    { label: 'Contact & Map', path: '/contact' }
+    { label: 'Contact & Map', path: '/contact' },
+    { label: 'Admin Portal', path: '/admin/login' }
   ];
 
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -57,6 +58,15 @@ export default function Navbar({ settings }) {
             </div>
 
             <div className="flex items-center gap-4 text-slate-300">
+              <Link
+                to="/admin/login"
+                className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1 text-[11px] font-semibold text-slate-300"
+                title="Admin Staff Portal"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Admin Login</span>
+              </Link>
+              <span className="text-slate-600 hidden sm:inline">|</span>
               <a
                 href={`mailto:${email}`}
                 className="hover:text-brand-orange transition-colors hidden sm:inline-flex items-center gap-1 text-[11px]"

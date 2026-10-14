@@ -19,7 +19,8 @@ import {
   MapPin,
   CheckCircle2,
   Sliders,
-  Maximize2
+  Maximize2,
+  User
 } from 'lucide-react';
 import {
   adminGetPlots,
@@ -67,6 +68,12 @@ export default function AdminPlots() {
     isCorner: false,
     status: 'available',
     basePricePerSqYd: 12500,
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    bookingDate: '',
+    bookingAmount: '',
+    paymentStatus: 'unpaid',
     notes: ''
   });
 
@@ -274,6 +281,12 @@ export default function AdminPlots() {
       isCorner: plot.isCorner,
       status: plot.status,
       basePricePerSqYd: plot.basePricePerSqYd || 12500,
+      customerName: plot.customerName || '',
+      customerPhone: plot.customerPhone || '',
+      customerEmail: plot.customerEmail || '',
+      bookingDate: plot.bookingDate || '',
+      bookingAmount: plot.bookingAmount || '',
+      paymentStatus: plot.paymentStatus || 'unpaid',
       notes: plot.notes || ''
     });
   };
@@ -290,6 +303,12 @@ export default function AdminPlots() {
       isCorner: false,
       status: 'available',
       basePricePerSqYd: 12500,
+      customerName: '',
+      customerPhone: '',
+      customerEmail: '',
+      bookingDate: '',
+      bookingAmount: '',
+      paymentStatus: 'unpaid',
       notes: ''
     });
     setIsAddOpen(true);
@@ -753,6 +772,57 @@ export default function AdminPlots() {
                   )}
                 </div>
 
+                {/* Customer & Booking Details Card (for Reserved & Sold Plots) */}
+                {(selectedPlot.status === 'reserved' || selectedPlot.status === 'sold' || selectedPlot.customerName) && (
+                  <div className="bg-amber-50/80 rounded-xl p-3 border border-amber-200 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between pb-1 border-b border-amber-200/60">
+                      <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span>Buyer &amp; Booking Details</span>
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                        selectedPlot.status === 'sold' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {selectedPlot.status}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Buyer Name:</span>
+                      <strong className="text-slate-900">{selectedPlot.customerName || '(Not recorded)'}</strong>
+                    </div>
+
+                    {selectedPlot.customerPhone && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Phone:</span>
+                        <strong className="text-slate-900">{selectedPlot.customerPhone}</strong>
+                      </div>
+                    )}
+
+                    {selectedPlot.bookingDate && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Booking Date:</span>
+                        <span className="text-slate-800">{selectedPlot.bookingDate}</span>
+                      </div>
+                    )}
+
+                    {selectedPlot.bookingAmount ? (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Token Paid:</span>
+                        <strong className="text-emerald-700">₹{Number(selectedPlot.bookingAmount).toLocaleString()}</strong>
+                      </div>
+                    ) : null}
+
+                    <button
+                      onClick={() => openEditModal(selectedPlot)}
+                      className="w-full mt-1 py-1.5 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-2xs"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      <span>Modify Buyer &amp; Booking Info</span>
+                    </button>
+                  </div>
+                )}
+
                 {/* Edit & Delete Action Buttons */}
                 <div className="flex items-center gap-2 pt-1">
                   <button
@@ -873,6 +943,12 @@ export default function AdminPlots() {
                               <option value="sold">Sold</option>
                               <option value="blocked">Blocked</option>
                             </select>
+                            {plot.customerName && (
+                              <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-slate-700 truncate max-w-[130px]" title={`Buyer: ${plot.customerName}`}>
+                                <User className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate">{plot.customerName}</span>
+                              </div>
+                            )}
                           </td>
                           <td className="px-5 py-3 text-right">
                             <div className="flex items-center justify-end gap-1.5">
@@ -1080,6 +1156,88 @@ export default function AdminPlots() {
                   />
                   <span className="font-bold text-slate-700">Prime Corner Plot (+10% Premium)</span>
                 </label>
+              </div>
+
+              {/* Customer & Booking Information */}
+              <div className="p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-900 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-amber-600" />
+                    Buyer &amp; Booking Details
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-medium">For Reserved / Sold Plots</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Customer / Buyer Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ramesh Kumar"
+                      value={formData.customerName}
+                      onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={formData.customerPhone}
+                      onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Email Address</label>
+                    <input
+                      type="email"
+                      placeholder="buyer@example.com"
+                      value={formData.customerEmail}
+                      onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Booking / Token Date</label>
+                    <input
+                      type="date"
+                      value={formData.bookingDate ? formData.bookingDate.split('T')[0] : ''}
+                      onChange={(e) => setFormData({ ...formData, bookingDate: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Token Paid (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 100000"
+                      value={formData.bookingAmount}
+                      onChange={(e) => setFormData({ ...formData, bookingAmount: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">Payment Status</label>
+                    <select
+                      value={formData.paymentStatus}
+                      onChange={(e) => setFormData({ ...formData, paymentStatus: e.target.value })}
+                      className="w-full px-2.5 py-1.5 text-xs bg-white border border-slate-300 rounded-lg outline-none font-medium"
+                    >
+                      <option value="unpaid">Unpaid / In Discussion</option>
+                      <option value="token_paid">Token Paid</option>
+                      <option value="partially_paid">Partially Paid</option>
+                      <option value="fully_paid">Fully Paid</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <div>

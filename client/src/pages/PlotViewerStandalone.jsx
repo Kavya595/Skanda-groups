@@ -664,6 +664,16 @@ export default function PlotViewerStandalone({ settings }) {
                 </div>
               )}
             </form>
+
+            {/* Admin Portal Quick Access Button */}
+            <a
+              href="/admin/login"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs shrink-0"
+              title="Admin Portal (Manage Inventory & Bookings)"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Admin Portal</span>
+            </a>
           </div>
         </header>
 
@@ -734,19 +744,23 @@ export default function PlotViewerStandalone({ settings }) {
             <RotateCcw className="w-4 h-4" />
           </button>
 
-          {/* Locate Site on Geographic Map (Kadthal, Srisailam Highway) */}
+          {/* 3D Geographic Map View (Kadthal & Srisailam Highway Corridor) */}
           <button
             onClick={() => {
               if (viewMode === '2d') {
                 layout2DRef.current?.reset();
               } else {
-                setCameraPreset('overview');
+                setCameraPreset(prev => prev === 'mapView' ? 'overview' : 'mapView');
               }
             }}
-            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-emerald-600 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
-            title="Locate Layout on Map (Kadthal, Srisailam Highway NH-765)"
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'mapView'
+                ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-600 border-slate-200/90 hover:bg-white'
+            }`}
+            title="3D Geographic Map View (Kadthal & Srisailam Highway NH-765 Location)"
           >
-            <MapPin className="w-4 h-4 text-emerald-600" />
+            <MapPin className="w-4 h-4" />
           </button>
 
 
@@ -826,6 +840,15 @@ export default function PlotViewerStandalone({ settings }) {
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
+
+          {/* Admin Portal Direct Access */}
+          <a
+            href="/admin/login"
+            className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full shadow-lg border border-slate-200/90 text-slate-700 hover:text-emerald-700 hover:bg-white flex items-center justify-center transition-all duration-200 hover:scale-110"
+            title="Admin Portal (Manage Inventory & Customer Bookings)"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          </a>
         </aside>
 
         {/* Map Canvas (3D or 2D) */}
@@ -951,101 +974,19 @@ export default function PlotViewerStandalone({ settings }) {
         )}
 
 
-        {/* Floating Road View Walk Controller (USER REQUIREMENT: hand gesture drag navigation) */}
-        {cameraPreset === 'roadWalk' && viewMode === '3d' && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3 sm:p-4 space-y-2.5 pointer-events-auto animate-fadeIn">
-            {/* Header: Current Road Name & Exit */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 truncate">
-                <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse shrink-0" />
-                <span className="text-xs font-bold text-slate-900 truncate">
-                  Road View &bull; {WALK_ROADS[walkRoadIndex]?.name || "33' Internal Main Boulevard"}
-                </span>
-              </div>
-              <button
-                onClick={() => setCameraPreset('overview')}
-                className="text-[11px] text-slate-600 hover:text-slate-900 font-bold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
-              >
-                Exit Road View
-              </button>
+        {/* Floating 3D Map View Indicator Banner (when MapPin is clicked) */}
+        {cameraPreset === 'mapView' && viewMode === '3d' && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 bg-slate-900/90 backdrop-blur-md text-white rounded-full border border-slate-700/80 shadow-2xl px-4 py-2 flex items-center gap-3 animate-fadeIn pointer-events-auto">
+            <div className="flex items-center gap-2 text-xs font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>3D Geographic Map View &bull; Kadthal &bull; Srisailam Highway (NH 765) Corridor</span>
             </div>
-
-            {/* Avenue Switcher Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
-              {WALK_ROADS.map((r, idx) => (
-                <button
-                  key={r.id}
-                  onClick={() => {
-                    setWalkRoadIndex(idx);
-                    setWalkProgress(0.1);
-                  }}
-                  className={`px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition-all ${
-                    walkRoadIndex === idx
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {r.shortName}
-                </button>
-              ))}
-            </div>
-
-            {/* Hand Gesture Walk Hint */}
-            <div className="flex items-center justify-between text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-xl border border-slate-100">
-              <span className="flex items-center gap-1.5 font-medium">
-                <span>👆</span> Drag screen up/down to walk forward &amp; back &bull; Drag left/right to look around
-              </span>
-              <span className="font-bold text-slate-800 shrink-0">
-                {Math.round(walkProgress * 100)}%
-              </span>
-            </div>
-
-            {/* Interactive Navigation Scrubbing & Step Buttons */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => handleWalkStep(-0.06)}
-                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs"
-                title="Walk Backward"
-              >
-                &darr; Back
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={walkProgress}
-                onChange={(e) => setWalkProgress(parseFloat(e.target.value))}
-                className="flex-1 accent-orange-500 h-2 bg-slate-200 rounded-lg cursor-pointer"
-                title="Scrub position along avenue"
-              />
-              <button
-                onClick={() => handleWalkStep(0.06)}
-                className="px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-xs"
-                title="Walk Forward"
-              >
-                &uarr; Forward
-              </button>
-              <button
-                onClick={() => setIsAutoWalking(!isAutoWalking)}
-                className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 transition-colors ${
-                  isAutoWalking
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                }`}
-                title={isAutoWalking ? 'Pause Auto-Walk' : 'Start Auto-Walk along Road'}
-              >
-                {isAutoWalking ? (
-                  <>
-                    <Pause className="w-3.5 h-3.5" /> Pause
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5" /> Auto-Walk
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              onClick={() => setCameraPreset('overview')}
+              className="text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 px-2.5 py-0.5 rounded-full hover:bg-slate-700 transition-colors"
+            >
+              Exit Map View
+            </button>
           </div>
         )}
 

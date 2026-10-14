@@ -189,6 +189,11 @@ function CameraController({
       animatingRef.current = true;
     } else if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
+    } else if (cameraPreset === 'mapView') {
+      // High-angle 3D Geographic Regional Map View (Kadthal & Srisailam Highway NH-765)
+      targetPos.current.set(0, 160, 180);
+      targetLook.current.set(0, 0, 0);
+      animatingRef.current = true;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
       // Low eye-level ground perspective inside Ac. 0.758 park (exact match to Screenshots 3 & 4)
       targetPos.current.set(-73, 2.0, -14);
@@ -1265,16 +1270,15 @@ function RealWorldMapTerrain() {
           tex.needsUpdate = true;
         };
         img.onerror = () => {
-          // Fallback to our backend tile proxy if direct OSM fails
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
             ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
             tex.needsUpdate = true;
           };
-          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png`;
+          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
         };
-        img.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+        img.src = `/api/tiles/${zoom}/${x}/${y}.png`;
       }
     }
   }, []);
@@ -1305,6 +1309,64 @@ function RealWorldMapTerrain() {
 
       {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
+
+      {/* 3D Geographic Regional Map Landmarks (Kadthal & Srisailam Highway Corridor) */}
+      <group>
+        {/* Kadthal Town Center Landmark Badge */}
+        <Billboard position={[-140, 16, -90]}>
+          <mesh>
+            <planeGeometry args={[36, 7.5]} />
+            <meshBasicMaterial color="#0F172A" opacity={0.9} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={2.4} color="#FFFFFF" fontWeight="bold">
+            📍 Kadthal Town (2.5 km)
+          </Text>
+        </Billboard>
+
+        {/* Sri Maisigandi Maisamma Temple Landmark Badge */}
+        <Billboard position={[-30, 16, -80]}>
+          <mesh>
+            <planeGeometry args={[40, 7.5]} />
+            <meshBasicMaterial color="#1E293B" opacity={0.9} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={2.3} color="#FBBF24" fontWeight="bold">
+            🛕 Maisigandi Temple (1 min)
+          </Text>
+        </Billboard>
+
+        {/* Srisailam National Highway NH-765 Badge */}
+        <Billboard position={[86, 16, 10]}>
+          <mesh>
+            <planeGeometry args={[44, 7.5]} />
+            <meshBasicMaterial color="#1E3A8A" opacity={0.9} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={2.3} color="#FFFFFF" fontWeight="bold">
+            🛣️ Srisailam Highway NH-765
+          </Text>
+        </Billboard>
+
+        {/* 60ft Arterial Road to Temple Badge */}
+        <Billboard position={[10, 14, -50]}>
+          <mesh>
+            <planeGeometry args={[36, 6.5]} />
+            <meshBasicMaterial color="#334155" opacity={0.9} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={2.0} color="#FFFFFF" fontWeight="bold">
+            🛣️ Proposed 60' Arterial Road
+          </Text>
+        </Billboard>
+
+        {/* Regional Ring Road (RRR) Junction Badge */}
+        <Billboard position={[0, 16, 110]}>
+          <mesh>
+            <planeGeometry args={[44, 7.5]} />
+            <meshBasicMaterial color="#047857" opacity={0.9} transparent />
+          </mesh>
+          <Text position={[0, 0, 0.05]} fontSize={2.2} color="#FFFFFF" fontWeight="bold">
+            🚗 Regional Ring Road (10 mins)
+          </Text>
+        </Billboard>
+      </group>
     </group>
   );
 }
@@ -1389,9 +1451,10 @@ export default function Layout3DView({
   const bgColor = '#E5ECE3';
 
   return (
-    <div className="w-full h-full relative bg-[#E5ECE3] select-none">
+    <div className={`w-full h-full relative bg-[#E5ECE3] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       <Canvas
         shadows={false} // NO SHADOWS per user directive
+        className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
         camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 1600 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >

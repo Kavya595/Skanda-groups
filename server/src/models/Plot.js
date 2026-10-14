@@ -33,7 +33,16 @@ const plotSchema = new mongoose.Schema({
   x3d: Number,
   z3d: Number,
   w3d: Number,
-  d3d: Number,
+  customerName: { type: String, default: '' },
+  customerPhone: { type: String, default: '' },
+  customerEmail: { type: String, default: '' },
+  bookingDate: { type: String, default: '' },
+  bookingAmount: { type: Number, default: 0 },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'token_paid', 'partially_paid', 'fully_paid'],
+    default: 'unpaid'
+  },
   notes: { type: String, default: '' },
   updatedBy: { type: String }
 }, { timestamps: true });
