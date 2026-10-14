@@ -131,7 +131,7 @@ function CameraController({
       targetLook.current.set(0, 0, 4);
       animatingRef.current = true;
     }
-  }, [selectedPlot, cameraPreset, walkRoadIndex, walkProgress]);
+  }, [selectedPlot?.plotNumber, selectedPlot?.center?.[0], selectedPlot?.center?.[1], cameraPreset, walkRoadIndex, walkProgress]);
 
   useFrame((_, delta) => {
     if (animatingRef.current && controlsRef.current) {
@@ -670,7 +670,7 @@ function ConnectedRoadNetwork({ onRoadClick }) {
     return texture;
   }, []);
 
-  // Interlocking Stone Cobblestone Paver Texture for Raised Road Curbs (Matching Image 4 & 5)
+  // Organic Polygonal Flagstone / Cobblestone Paver Texture matching media_1791965028424_4ab01446.png
   const cobblestoneTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
@@ -678,32 +678,62 @@ function ConnectedRoadNetwork({ onRoadClick }) {
     canvas.height = 512;
     const ctx = canvas.getContext('2d');
 
-    // Dark mortar joint background
-    ctx.fillStyle = '#1E252F';
+    // Dark charcoal mortar joint background
+    ctx.fillStyle = '#1C222A';
     ctx.fillRect(0, 0, 512, 512);
 
-    const rows = 16;
-    const cols = 8;
-    const rh = 512 / rows;
-    const cw = 512 / cols;
+    // Natural stone tones from photo (cool slate, granite, ash greys)
+    const stoneColors = [
+      '#758393', '#8B99A9', '#63707F', '#9BAAB9', '#586472',
+      '#7E8C9C', '#8492A2', '#6C7988', '#92A1B1', '#606C7A'
+    ];
+
+    const rows = 14;
+    const cols = 10;
+    const cellH = 512 / rows;
+    const cellW = 512 / cols;
 
     for (let r = 0; r < rows; r++) {
-      const offset = (r % 2) * (cw / 2);
-      for (let c = -1; c <= cols; c++) {
-        const x = c * cw + offset + 2;
-        const y = r * rh + 2;
-        const w = cw - 4;
-        const h = rh - 4;
+      const rowOffset = (r % 2) * (cellW * 0.48);
+      for (let c = -1; c <= cols + 1; c++) {
+        // Natural jitter for organic cobblestone shapes
+        const seed = r * 13 + c * 37;
+        const jx = Math.sin(seed * 0.7) * (cellW * 0.18);
+        const jy = Math.cos(seed * 0.9) * (cellH * 0.18);
+        const cx = c * cellW + rowOffset + jx;
+        const cy = r * cellH + jy;
+        const radX = cellW * 0.44;
+        const radY = cellH * 0.42;
 
-        // Natural slate & granite paver tone variation (matching Image 4)
-        const tone = 125 + Math.floor(Math.random() * 45);
-        ctx.fillStyle = `rgb(${tone}, ${tone + 4}, ${tone + 9})`;
-        ctx.fillRect(x, y, w, h);
+        ctx.save();
+        ctx.beginPath();
+        // 8-point irregular polygon with rounded corners for organic flagstone
+        const pts = 8;
+        for (let i = 0; i < pts; i++) {
+          const ang = (i / pts) * Math.PI * 2;
+          const rMod = 0.86 + 0.22 * Math.sin(ang * 3 + seed);
+          const px = cx + Math.cos(ang) * radX * rMod;
+          const py = cy + Math.sin(ang) * radY * rMod;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
 
-        // Stone edge highlight / chamfer
-        ctx.strokeStyle = `rgba(255, 255, 255, 0.28)`;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+        // Fill natural stone color
+        ctx.fillStyle = stoneColors[(Math.abs(r * 5 + c * 7)) % stoneColors.length];
+        ctx.fill();
+
+        // 3D sunlit bevel highlight on stone top edge
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        // Dark mortar edge line
+        ctx.strokeStyle = 'rgba(20, 25, 32, 0.85)';
+        ctx.lineWidth = 2.0;
+        ctx.stroke();
+
+        ctx.restore();
       }
     }
 
@@ -740,65 +770,65 @@ function ConnectedRoadNetwork({ onRoadClick }) {
               if (onRoadClick) onRoadClick(road);
             }}
           >
-            {/* Raised Cobblestone Stone Curbs along Road Flanks (Matching Image 4 & 5) */}
+            {/* Raised Cobblestone Stone Curbs along Road Flanks (Matching media_1791965028424_4ab01446.png) */}
             {isHorizontal ? (
               <>
-                {/* North Stone Curb Strip (1.8m width, 0.18m height) */}
-                <mesh position={[0, 0.09, -d / 2 - 0.9]}>
-                  <boxGeometry args={[w + 1.8, 0.18, 1.8]} />
+                {/* North Stone Curb Strip (2.0m width, 0.18m height) */}
+                <mesh position={[0, 0.09, -d / 2 - 1.0]}>
+                  <boxGeometry args={[w + 2.0, 0.18, 2.0]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* South Stone Curb Strip (1.8m width, 0.18m height) */}
-                <mesh position={[0, 0.09, d / 2 + 0.9]}>
-                  <boxGeometry args={[w + 1.8, 0.18, 1.8]} />
+                {/* South Stone Curb Strip (2.0m width, 0.18m height) */}
+                <mesh position={[0, 0.09, d / 2 + 1.0]}>
+                  <boxGeometry args={[w + 2.0, 0.18, 2.0]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* Outer White Chamfer Curb Edge Lines */}
-                <lineSegments position={[0, 0.181, -d / 2 - 1.8]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.8, 0.01, 0.02)]} />
-                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                {/* Outer White Raised Curb Border Line */}
+                <lineSegments position={[0, 0.181, -d / 2 - 2.0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 2.0, 0.01, 0.02)]} />
+                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
                 </lineSegments>
-                <lineSegments position={[0, 0.181, d / 2 + 1.8]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 1.8, 0.01, 0.02)]} />
-                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                <lineSegments position={[0, 0.181, d / 2 + 2.0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(w + 2.0, 0.01, 0.02)]} />
+                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
                 </lineSegments>
               </>
             ) : (
               <>
-                {/* West Stone Curb Strip (1.8m width, 0.18m height) */}
-                <mesh position={[-w / 2 - 0.9, 0.09, 0]}>
-                  <boxGeometry args={[1.8, 0.18, d + 1.8]} />
+                {/* West Stone Curb Strip (2.0m width, 0.18m height) */}
+                <mesh position={[-w / 2 - 1.0, 0.09, 0]}>
+                  <boxGeometry args={[2.0, 0.18, d + 2.0]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* East Stone Curb Strip (1.8m width, 0.18m height) */}
-                <mesh position={[w / 2 + 0.9, 0.09, 0]}>
-                  <boxGeometry args={[1.8, 0.18, d + 1.8]} />
+                {/* East Stone Curb Strip (2.0m width, 0.18m height) */}
+                <mesh position={[w / 2 + 1.0, 0.09, 0]}>
+                  <boxGeometry args={[2.0, 0.18, d + 2.0]} />
                   <meshStandardMaterial
                     map={cobblestoneTexture || undefined}
                     color="#FFFFFF"
                     roughness={0.85}
                   />
                 </mesh>
-                {/* Outer White Chamfer Curb Edge Lines */}
-                <lineSegments position={[-w / 2 - 1.8, 0.181, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.8)]} />
-                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                {/* Outer White Raised Curb Border Line */}
+                <lineSegments position={[-w / 2 - 2.0, 0.181, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 2.0)]} />
+                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
                 </lineSegments>
-                <lineSegments position={[w / 2 + 1.8, 0.181, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 1.8)]} />
-                  <lineBasicMaterial color="#FFFFFF" linewidth={2} />
+                <lineSegments position={[w / 2 + 2.0, 0.181, 0]}>
+                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 2.0)]} />
+                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
                 </lineSegments>
               </>
             )}
@@ -1103,72 +1133,64 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Module-level cache for OpenStreetMap terrain texture
-let osmTerrainTextureCache = null;
+// Module-level cache for Map View terrain texture
+let mapTerrainTextureCache = null;
 
-// Real-World Kadthal / Srisailam Highway Map View Terrain Backdrop (Clean OpenStreetMap)
+// Real-World Kadthal / Srisailam Highway Map View Terrain Backdrop (Clean OpenStreetMap styling)
 function RealWorldMapTerrain() {
-  const [terrainTexture, setTerrainTexture] = useState(() => osmTerrainTextureCache);
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    if (osmTerrainTextureCache) {
-      setTerrainTexture(osmTerrainTextureCache);
-      return;
-    }
+  const terrainTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    if (mapTerrainTextureCache) return mapTerrainTextureCache;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 768;
-    canvas.height = 768;
+    canvas.width = 1024;
+    canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    // Clean OpenStreetMap pastel map tone
+    // Clean OpenStreetMap pastel land tone matching 2D View
     ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 768, 768);
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle cartographic grid
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+    // Subtle agricultural & open field parcels in light earthy greens
+    const parcels = [
+      { x: 30, y: 40, w: 260, h: 220, col: '#E0EAE0' },
+      { x: 320, y: 50, w: 340, h: 180, col: '#DCE8DC' },
+      { x: 40, y: 310, w: 240, h: 280, col: '#E2ECE1' },
+      { x: 40, y: 640, w: 260, h: 320, col: '#DEE8DD' },
+      { x: 330, y: 720, w: 310, h: 260, col: '#E0EAE0' },
+      { x: 720, y: 120, w: 270, h: 360, col: '#DEEADE' },
+      { x: 720, y: 530, w: 260, h: 420, col: '#E2EBE1' }
+    ];
+    parcels.forEach(p => {
+      ctx.fillStyle = p.col;
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(p.x, p.y, p.w, p.h);
+    });
+
+    // Subtle geographic cadastral grid
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.035)';
     ctx.lineWidth = 1;
-    for (let i = 0; i < 768; i += 64) {
+    for (let i = 0; i <= 1024; i += 64) {
       ctx.beginPath();
-      ctx.moveTo(i, 0); ctx.lineTo(i, 768);
-      ctx.moveTo(0, i); ctx.lineTo(768, i);
+      ctx.moveTo(i, 0); ctx.lineTo(i, 1024);
+      ctx.moveTo(0, i); ctx.lineTo(1024, i);
       ctx.stroke();
     }
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
-    osmTerrainTextureCache = tex;
-    setTerrainTexture(tex);
-
-    // Zoom 17 OpenStreetMap tile coordinates for Kadthal [17.0985, 78.5085]
-    const zoom = 17;
-    const startX = 94119;
-    const startY = 59215;
-
-    for (let dy = 0; dy < 3; dy++) {
-      for (let dx = 0; dx < 3; dx++) {
-        const x = startX + dx;
-        const y = startY + dy;
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-          ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-          tex.needsUpdate = true;
-        };
-        img.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-      }
-    }
+    mapTerrainTextureCache = tex;
+    return tex;
   }, []);
 
   return (
     <group>
-      {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad - Map View) */}
-      <mesh position={[125, -0.02, 119]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[877, 917]} />
+      {/* Real-World Geographic Terrain Plane Centered at Layout Origin [0, -0.025, 5] */}
+      <mesh position={[0, -0.025, 5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[480, 360]} />
         {terrainTexture ? (
           <meshBasicMaterial map={terrainTexture} />
         ) : (
@@ -1176,10 +1198,10 @@ function RealWorldMapTerrain() {
         )}
       </mesh>
 
-      {/* Layout Compound Boundary Base Ground Tile */}
+      {/* DTCP Sanctioned Layout Compound Base Ground Tile */}
       <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[186, 126]} />
-        <meshBasicMaterial color="#D5E8CE" opacity={0.88} transparent />
+        <meshBasicMaterial color="#D5E8CE" opacity={0.92} transparent />
       </mesh>
 
       {/* DTCP Sanctioned Layout Boundary Perimeter Fencing */}

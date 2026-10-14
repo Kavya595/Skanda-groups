@@ -214,7 +214,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         map.removeLayer(staticGroup);
       }
     };
-  }, [activeTileType]);
+  }, []);
 
   // 4. Render Dynamic Interactive Plots Layer
   useEffect(() => {
@@ -254,9 +254,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       layersMap[plot.plotNumber] = poly;
 
       // Plot Number Typography (matching Plots99 Screenshots 1 & 5)
-      // Display plot numbers on refresh and all viewing zoom levels
-      const showAllNumbers = currentZoom >= 16.5;
-      const shouldShowNumber = isVisible && (showAllNumbers || isSelected || isTargetMatch);
+      // Display plot numbers reliably on refresh and across viewing zoom levels
+      const shouldShowNumber = isVisible;
 
       if (shouldShowNumber) {
         if (isSelected || isTargetMatch) {
@@ -267,8 +266,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
               background: #EA580C;
               color: #FFFFFF;
               font-weight: 800;
-              font-size: 11px;
-              padding: 2px 6px;
+              font-size: 10px;
+              padding: 2px 5px;
               border-radius: 9999px;
               box-shadow: 0 2px 8px rgba(234, 88, 12, 0.5);
               border: 1.5px solid #FFFFFF;
@@ -277,21 +276,19 @@ const Layout2DView = React.forwardRef(function Layout2DView({
               transform: translate(-50%, -50%);
               pointer-events: none;
             ">#${plot.plotNumber}</div>`,
-            iconSize: [36, 18],
-            iconAnchor: [18, 9]
+            iconSize: [32, 16],
+            iconAnchor: [16, 8]
           });
           L.marker(plot.geoCenter, { icon: activeIcon, interactive: false, zIndexOffset: 1000 }).addTo(plotsGroup);
         } else {
           // Proportionally scaled typography based on zoom level & plot dimensions
-          // Narrow vertical strip plots (Block E plots 1-6 & Block K plots 83-96) get compact typography
+          // Narrow vertical strip plots (Block E plots 1-6 & Block K plots 83-96) get compact non-overlapping typography
           const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 6) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
-          let fontSize = '8.5px';
+          let fontSize = isNarrow ? '7px' : '8px';
           if (currentZoom >= 19.5) {
-            fontSize = isNarrow ? '9px' : '11px';
+            fontSize = isNarrow ? '8px' : '9.5px';
           } else if (currentZoom >= 18.5) {
-            fontSize = isNarrow ? '7.5px' : '9px';
-          } else {
-            fontSize = isNarrow ? '6.5px' : '7.5px';
+            fontSize = isNarrow ? '7px' : '8.5px';
           }
 
           const numColor = plot.status === 'sold' ? '#7F1D1D' : '#1E293B';
@@ -307,15 +304,15 @@ const Layout2DView = React.forwardRef(function Layout2DView({
               pointer-events: none;
               user-select: none;
               white-space: nowrap;
-              letter-spacing: -0.4px;
+              letter-spacing: -0.3px;
               text-shadow:
                 -1px -1px 0 #FFFFFF,
                  1px -1px 0 #FFFFFF,
                 -1px  1px 0 #FFFFFF,
                  1px  1px 0 #FFFFFF;
             ">${plot.plotNumber}</div>`,
-            iconSize: [18, 12],
-            iconAnchor: [9, 6]
+            iconSize: [16, 10],
+            iconAnchor: [8, 5]
           });
           L.marker(plot.geoCenter, { icon: numIcon, interactive: false }).addTo(plotsGroup);
         }
@@ -349,7 +346,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   useEffect(() => {
     if (!mapInstanceRef.current || !searchTerm) return;
     const clean = searchTerm.trim();
-    const found = plots.find(p => String(p.plotNumber) === clean);
+    const digits = clean.replace(/\D/g, '');
+    let found = plots.find(p => String(p.plotNumber) === clean || (digits && String(p.plotNumber) === digits));
+    if (!found && clean.length >= 1) {
+      found = plots.find(p => String(p.plotNumber).includes(clean));
+    }
     if (found && found.geoCenter) {
       const map = mapInstanceRef.current;
       const targetZoom = Math.max(map.getZoom(), 18.5);

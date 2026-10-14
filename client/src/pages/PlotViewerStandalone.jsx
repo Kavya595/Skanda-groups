@@ -236,10 +236,14 @@ export default function PlotViewerStandalone({ settings }) {
         found = plots.find(p => String(p.plotNumber) === digits);
       }
     }
+    // If still not match, try partial match
+    if (!found) {
+      found = plots.find(p => String(p.plotNumber).includes(clean));
+    }
 
     if (found) {
       setSearchNotFound(false);
-      handleSelectPlot(found);
+      handleSelectPlot({ ...found });
       // In 3D mode, ensure camera is in overview/topDown so it smoothly flies directly to the plot
       if (viewMode === '3d' && (cameraPreset === 'parkGround' || cameraPreset === 'park')) {
         setCameraPreset('overview');
@@ -569,7 +573,13 @@ export default function PlotViewerStandalone({ settings }) {
               className="relative flex items-center"
             >
               <div className="relative w-44 sm:w-60">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <button
+                  type="submit"
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-0.5 rounded-full transition-colors flex items-center justify-center cursor-pointer"
+                  title="Search plot"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                </button>
                 <input
                   type="text"
                   placeholder="Search..."
@@ -583,10 +593,13 @@ export default function PlotViewerStandalone({ settings }) {
                       return;
                     }
                     const digits = clean.replace(/\D/g, '');
-                    const found = plots.find(p => String(p.plotNumber) === clean || (digits && String(p.plotNumber) === digits));
+                    let found = plots.find(p => String(p.plotNumber) === clean || (digits && String(p.plotNumber) === digits));
+                    if (!found && clean.length >= 1) {
+                      found = plots.find(p => String(p.plotNumber).includes(clean));
+                    }
                     if (found) {
                       setSearchNotFound(false);
-                      handleSelectPlot(found);
+                      handleSelectPlot({ ...found });
                       if (viewMode === '3d' && (cameraPreset === 'parkGround' || cameraPreset === 'park')) {
                         setCameraPreset('overview');
                       }
