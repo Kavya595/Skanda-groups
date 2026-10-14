@@ -401,10 +401,12 @@ export default function PlotViewerStandalone({ settings }) {
 
   const handleSelectPlot = (plot) => {
     setSelectedPlot(plot);
-    trackActivityEvent('plot_viewed', plot.plotNumber, {
-      status: plot.status,
-      facing: plot.facing
-    });
+    if (plot && plot.plotNumber) {
+      trackActivityEvent('plot_viewed', plot.plotNumber, {
+        status: plot.status,
+        facing: plot.facing
+      });
+    }
   };
 
   const handleShareCurrentPlot = (plot) => {

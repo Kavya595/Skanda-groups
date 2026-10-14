@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
@@ -22,7 +22,7 @@ export const MAP_LAYERS = {
   google: GOOGLE_MAP_LAYER
 };
 
-// Perimeter Surrounding Greenery Belts Around Layout (Matching Real Kadthal Landscape)
+// Perimeter Surrounding Greenery Belts Around Layout (Clean, Attractive Open Landscape)
 const SURROUNDING_GREEN_BUFFERS = [
   // 1. West Agricultural & Plantation Green Belt
   {
@@ -34,8 +34,8 @@ const SURROUNDING_GREEN_BUFFERS = [
       [-92, 74],
       [-128, 74]
     ],
-    fillColor: '#79B746',
-    borderColor: '#4F8528'
+    fillColor: '#78B842',
+    borderColor: '#5C9A2A'
   },
   // 2. North Green Buffer Corridor (Behind 60ft Road to Maisigandi)
   {
@@ -47,8 +47,8 @@ const SURROUNDING_GREEN_BUFFERS = [
       [114, -52],
       [-128, -52]
     ],
-    fillColor: '#70AB3E',
-    borderColor: '#4A7D24'
+    fillColor: '#6FA838',
+    borderColor: '#558E24'
   },
   // 3. South Plantation Green Buffer Belt
   {
@@ -60,8 +60,8 @@ const SURROUNDING_GREEN_BUFFERS = [
       [114, 96],
       [-128, 96]
     ],
-    fillColor: '#79B746',
-    borderColor: '#4F8528'
+    fillColor: '#78B842',
+    borderColor: '#5C9A2A'
   },
   // 4. East Highway Landscaped Verge Buffer (NH-765)
   {
@@ -74,85 +74,8 @@ const SURROUNDING_GREEN_BUFFERS = [
       [88, 96]
     ],
     fillColor: '#659E36',
-    borderColor: '#417020'
+    borderColor: '#4C8222'
   }
-];
-
-// Outer Canopy Shade Tree Coordinates scattered in the Surrounding Greenery Belts
-const OUTER_CANOPY_TREE_COORDS = [
-  // West Buffer Trees
-  [-114, -50], [-114, -30], [-114, -10], [-114, 10], [-114, 30], [-114, 50], [-114, 65],
-  // North Buffer Trees
-  [-105, -67], [-75, -67], [-45, -67], [-15, -67], [15, -67], [45, -67], [75, -67], [98, -67],
-  // South Buffer Trees
-  [-105, 81], [-75, 81], [-45, 81], [-15, 81], [15, 81], [45, 81], [75, 81], [98, 81],
-  // East Highway Outer Trees
-  [104, -50], [104, -25], [104, 0], [104, 25], [104, 50], [104, 75]
-];
-
-// Authoritative Avenue Palm Trees along Block Borders on Road Verges (Zero Encroachment on Plots)
-const AVENUE_TREE_COORDS = [
-  // Block A (facing 60ft road, Road V1, Central Blvd)
-  [-54, -43.2], [-46.5, -43.2], [-39, -43.2],
-  [-34.8, -35], [-34.8, -23], [-34.8, -11],
-  [-54, -1.8], [-46.5, -1.8], [-39, -1.8],
-
-  // Block B (facing Road V1, 60ft road, Road V2, Central Blvd)
-  [-30.2, -35], [-30.2, -23], [-30.2, -11],
-  [-25, -43.2], [-18, -43.2], [-11, -43.2],
-  [-5.8, -35], [-5.8, -23], [-5.8, -11],
-  [-25, -1.8], [-18, -1.8], [-11, -1.8],
-
-  // Block C (facing Road V2, 60ft road, Road V3, Central Blvd)
-  [-1.2, -35], [-1.2, -23], [-1.2, -11],
-  [4, -43.2], [11, -43.2], [18, -43.2],
-  [23.2, -35], [23.2, -23], [23.2, -11],
-  [4, -1.8], [11, -1.8], [18, -1.8],
-
-  // Block D (facing Road V3, 60ft road, Road V4, Central Blvd)
-  [27.8, -35], [27.8, -23], [27.8, -11],
-  [33, -43.2], [39.5, -43.2], [46, -43.2],
-  [51.2, -35], [51.2, -23], [51.2, -11],
-  [33, -1.8], [39.5, -1.8], [46, -1.8],
-
-  // Block E (facing Road V4, Service Road, Central Blvd)
-  [55.8, -35], [55.8, -23], [55.8, -11],
-  [64.2, -35], [64.2, -23], [64.2, -11],
-  [60, -1.8],
-
-  // Block F (facing Central Blvd, Road V0)
-  [-71.5, 2.8],
-  [-63.8, 14], [-63.8, 26], [-63.8, 38], [-63.8, 50],
-
-  // Block G (facing Road V0, Central Blvd, Road V1, South road)
-  [-59.2, 14], [-59.2, 26], [-59.2, 38], [-59.2, 50],
-  [-54, 2.8], [-46.5, 2.8], [-39, 2.8],
-  [-34.8, 14], [-34.8, 26], [-34.8, 38], [-34.8, 50],
-  [-54, 61.2], [-46.5, 61.2], [-39, 61.2],
-
-  // Block H (facing Road V1, Central Blvd, Road V2, South road)
-  [-30.2, 14], [-30.2, 26], [-30.2, 38], [-30.2, 50],
-  [-25, 2.8], [-18, 2.8], [-11, 2.8],
-  [-5.8, 14], [-5.8, 26], [-5.8, 38], [-5.8, 50],
-  [-25, 61.2], [-18, 61.2], [-11, 61.2],
-
-  // Block I (facing Road V2, Central Blvd, Road V3, South road)
-  [-1.2, 14], [-1.2, 26], [-1.2, 38], [-1.2, 50],
-  [4, 2.8], [11, 2.8], [18, 2.8],
-  [23.2, 14], [23.2, 26], [23.2, 38], [23.2, 50],
-  [4, 61.2], [11, 61.2], [18, 61.2],
-
-  // Block J (facing Road V3, Central Blvd, Road V4, South road)
-  [27.8, 14], [27.8, 26], [27.8, 38], [27.8, 50],
-  [33, 2.8], [39.5, 2.8], [46, 2.8],
-  [51.2, 14], [51.2, 26], [51.2, 38], [51.2, 50],
-  [33, 61.2], [39.5, 61.2], [46, 61.2],
-
-  // Block K (facing Road V4, Central Blvd, Service Road, South road)
-  [55.8, 14], [55.8, 26], [55.8, 38], [55.8, 50],
-  [63.5, 2.8],
-  [71.2, 14], [71.2, 26], [71.2, 38], [71.2, 50],
-  [63.5, 61.2]
 ];
 
 const Layout2DView = React.forwardRef(function Layout2DView({
@@ -166,8 +89,13 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const tileLayerRef = useRef(null);
   const plotLayersRef = useRef({});
+  const onSelectPlotRef = useRef(onSelectPlot);
+
+  // Keep onSelectPlotRef updated without triggering map re-initialization
+  useEffect(() => {
+    onSelectPlotRef.current = onSelectPlot;
+  }, [onSelectPlot]);
 
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
 
@@ -179,7 +107,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     setMapType: () => {}
   }));
 
-  // 1. Initialize Leaflet Map with Pure Google Maps Roadmap
+  // 1. Initialize Leaflet Map and Permanent Base Master Plan Layers (Surrounding Greenery, Boundary, Roads, Park)
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -199,47 +127,29 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     mapInstanceRef.current = map;
 
     // Add base tile layer (Google Maps roadmap)
-    const tileLayer = L.tileLayer(GOOGLE_MAP_LAYER.url, {
+    L.tileLayer(GOOGLE_MAP_LAYER.url, {
       attribution: GOOGLE_MAP_LAYER.attribution,
       subdomains: GOOGLE_MAP_LAYER.subdomains,
       maxZoom: GOOGLE_MAP_LAYER.maxZoom
     }).addTo(map);
-    tileLayerRef.current = tileLayer;
 
-    // Track zoom updates for responsive number/label scaling
+    // Track zoom updates for responsive typography scaling
     const updateZoom = () => setCurrentZoom(map.getZoom());
     map.on('zoom', updateZoom);
     map.on('zoomend', updateZoom);
 
-    // Clicking map background deselects any currently active plot
+    // Clicking empty map background deselects plot safely
     map.on('click', (e) => {
-      // If user clicked the canvas background rather than a plot polygon
       if (e.originalEvent && !e.originalEvent._plotClicked) {
-        onSelectPlot(null);
+        if (onSelectPlotRef.current) {
+          onSelectPlotRef.current(null);
+        }
       }
     });
 
-    // Invalidate size after layout settles
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 150);
-
-    return () => {
-      clearTimeout(timer);
-      if (mapInstanceRef.current) {
-        map.off('zoom', updateZoom);
-        map.off('zoomend', updateZoom);
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
-  }, [onSelectPlot]);
-
-  // 2. Render Site Layers: Surrounding Greenery, Boundary, Roads, Park, Avenue Trees & Entrance
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    const map = mapInstanceRef.current;
-
+    // -------------------------------------------------------------
+    // Permanent Static Master Plan Group (Always Persistent on Map)
+    // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
     // (A) Surrounding Greenery Buffer Belts Around Layout
@@ -249,28 +159,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         color: buff.borderColor,
         weight: 1.5,
         fillColor: buff.fillColor,
-        fillOpacity: 0.88,
+        fillOpacity: 0.85,
         interactive: false
       }).addTo(staticGroup);
-    });
-
-    // Outer Canopy Shade Trees in the Surrounding Greenery
-    OUTER_CANOPY_TREE_COORDS.forEach(([tx, tz]) => {
-      const geo = localToLatLng(tx, tz);
-      const treeIcon = L.divIcon({
-        className: 'canopy-tree-icon',
-        html: `
-          <svg width="22" height="22" viewBox="0 0 24 24" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); pointer-events: none;">
-            <circle cx="12" cy="12" r="11" fill="#3D7022" opacity="0.9" />
-            <circle cx="12" cy="12" r="8.5" fill="#528F2E" />
-            <circle cx="10" cy="9.5" r="5" fill="#6CB53D" opacity="0.85" />
-            <circle cx="12" cy="12" r="2" fill="#2E1C0C" />
-          </svg>
-        `,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11]
-      });
-      L.marker(geo, { icon: treeIcon, interactive: false }).addTo(staticGroup);
     });
 
     // (B) DTCP Sanctioned Layout Boundary Polygon
@@ -278,7 +169,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       color: '#15803D',
       weight: 3.0,
       fillColor: '#D1FAE5',
-      fillOpacity: 0.25,
+      fillOpacity: 0.22,
       interactive: false
     }).addTo(staticGroup);
 
@@ -290,7 +181,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (C) Connected Road Network with Curbs & High-Definition Asphalt
+    // (C) Connected Road Network with White Curb Margins & Deep Asphalt
     layoutRoads.forEach(road => {
       const geoPoly = road.polygon.map(([x, z]) => localToLatLng(x, z));
       const isHighway = road.type === 'highway';
@@ -406,7 +297,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     });
 
-    // (D) Ac. 0.758 Central Park with Jogging Track & Manicured Lawn
+    // (D) Clean Ac. 0.758 Central Park (Jogging Track & Emerald Lawn, No Tree Dots)
     const parkOuterGeo = parkData.polygon.map(([x, z]) => localToLatLng(x, z));
     // Perimeter Walking / Jogging Track (Warm Sandstone Paver Border)
     L.polygon(parkOuterGeo, {
@@ -457,51 +348,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     });
     L.marker(parkCenterGeo, { icon: parkBadge, interactive: false }).addTo(staticGroup);
 
-    // Park Perimeter Palm Trees
-    const parkPerimeterTrees = [
-      [-86, -41], [-80, -41], [-74, -41], [-68, -41], [-62, -41],
-      [-86, -4], [-80, -4], [-74, -4], [-68, -4], [-62, -4],
-      [-87, -33], [-87, -25], [-87, -17], [-87, -9],
-      [-59, -33], [-59, -25], [-59, -17], [-59, -9]
-    ];
-    parkPerimeterTrees.forEach(([px, pz]) => {
-      const geo = localToLatLng(px, pz);
-      const icon = L.divIcon({
-        className: 'park-palm-tree-icon',
-        html: `
-          <svg width="12" height="12" viewBox="0 0 16 16" style="filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3)); pointer-events: none;">
-            <circle cx="8" cy="8" r="7" fill="#4D7C0F" opacity="0.9" />
-            <path d="M8 1 L8 15 M1 8 L15 8 M3 3 L13 13 M3 13 L13 3" stroke="#84CC16" stroke-width="1.4" stroke-linecap="round" />
-            <circle cx="8" cy="8" r="3" fill="#A3E635" />
-            <circle cx="8" cy="8" r="1.2" fill="#3D2817" />
-          </svg>
-        `,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
-      });
-      L.marker(geo, { icon, interactive: false }).addTo(staticGroup);
-    });
-
-    // (E) Avenue Palm Trees along Block Borders on Road Verges (Matching 3D Models)
-    AVENUE_TREE_COORDS.forEach(([tx, tz]) => {
-      const geo = localToLatLng(tx, tz);
-      const palmIcon = L.divIcon({
-        className: 'avenue-palm-tree-icon',
-        html: `
-          <svg width="14" height="14" viewBox="0 0 18 18" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); pointer-events: none;">
-            <circle cx="9" cy="9" r="8" fill="#528F22" opacity="0.92" />
-            <path d="M9 1.5 L9 16.5 M1.5 9 L16.5 9 M3.5 3.5 L14.5 14.5 M3.5 14.5 L14.5 3.5" stroke="#78B82B" stroke-width="1.6" stroke-linecap="round" />
-            <circle cx="9" cy="9" r="3.8" fill="#88C734" />
-            <circle cx="9" cy="9" r="1.4" fill="#3E2A18" />
-          </svg>
-        `,
-        iconSize: [14, 14],
-        iconAnchor: [7, 7]
-      });
-      L.marker(geo, { icon: palmIcon, interactive: false }).addTo(staticGroup);
-    });
-
-    // (F) Grand Entrance Arch Symbol connecting to Service Road
+    // (E) Grand Entrance Arch Symbol connecting to Service Road
     const entranceGeo = localToLatLng(63, 0.5);
     const archIcon = L.divIcon({
       className: 'entrance-arch-icon',
@@ -528,14 +375,23 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     });
     L.marker(entranceGeo, { icon: archIcon, interactive: false }).addTo(staticGroup);
 
+    // Invalidate size after layout settles
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
-        map.removeLayer(staticGroup);
+        map.off('zoom', updateZoom);
+        map.off('zoomend', updateZoom);
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, []); // Run ONCE on mount
 
-  // 3. Render Dynamic Interactive Plots Layer
+  // 2. Render Dynamic Interactive Plots Layer (Clean, Attractive Layout Blocks)
   useEffect(() => {
     if (!mapInstanceRef.current || !plots.length) return;
     const map = mapInstanceRef.current;
@@ -567,7 +423,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         if (e.originalEvent) {
           e.originalEvent._plotClicked = true;
         }
-        onSelectPlot(plot);
+        if (onSelectPlotRef.current) {
+          onSelectPlotRef.current(plot);
+        }
       });
 
       // Hover Effect for Realistic Interactive CAD Feel
@@ -594,7 +452,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       poly.addTo(plotsGroup);
       layersMap[plot.plotNumber] = poly;
 
-      // Plot Number & Dimension Typography (matching Plots99 Screenshots)
+      // Clean Plot Number Typography (matching Plots99 Screenshots)
       const shouldShowNumber = isVisible;
 
       if (shouldShowNumber) {
@@ -687,9 +545,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         map.removeLayer(plotsGroup);
       }
     };
-  }, [plots, selectedPlot, filterStatus, filterFacing, searchTerm, currentZoom, onSelectPlot]);
+  }, [plots, selectedPlot, filterStatus, filterFacing, searchTerm, currentZoom]);
 
-  // 4. Fly to and focus Selected Plot
+  // 3. Fly to and focus Selected Plot
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPlot) return;
     const map = mapInstanceRef.current;
@@ -703,7 +561,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     }
   }, [selectedPlot]);
 
-  // 5. Fly to search target when plot number entered
+  // 4. Fly to search target when plot number entered
   useEffect(() => {
     if (!mapInstanceRef.current || !searchTerm) return;
     const clean = searchTerm.trim();
@@ -723,7 +581,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     }
   }, [searchTerm, plots]);
 
-  // 6. Animated 2D Vehicles Driving along Highway & Venture Streets with Zoom-Proportional Scaling
+  // 5. Animated 2D Vehicles Driving along Highway & Venture Streets with Zoom-Proportional Scaling
   useEffect(() => {
     if (!mapInstanceRef.current || animateVehicles === false) return;
     const map = mapInstanceRef.current;
@@ -874,7 +732,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         .leaflet-control-attribution {
           display: none !important;
         }
-        .canopy-tree-icon, .park-palm-tree-icon, .avenue-palm-tree-icon, .entrance-arch-icon {
+        .entrance-arch-icon, .custom-park-typography, .hwy-road-label, .r60-road-label, .custom-road-label {
           pointer-events: none !important;
         }
       `}</style>
