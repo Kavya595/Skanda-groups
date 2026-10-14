@@ -847,7 +847,7 @@ export default function PlotViewerStandalone({ settings }) {
         </div>
 
         {/* Floating Upper-Right Quick Plot Card (Exact Match to Screenshot 1 & 3) */}
-        {selectedPlot && (
+        {selectedPlot && selectedPlot.plotNumber && (
           <div className="absolute top-16 right-3 sm:right-6 z-30 w-72 sm:w-84 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 sm:p-5 animate-fadeIn pointer-events-auto">
             {/* Top Header matching Screenshot 1 & 3 */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">

@@ -140,10 +140,13 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     // Clicking empty map background deselects plot safely
     map.on('click', (e) => {
-      if (e.originalEvent && !e.originalEvent._plotClicked) {
-        if (onSelectPlotRef.current) {
-          onSelectPlotRef.current(null);
-        }
+      if (e?.originalEvent?._plotClicked) return;
+      const target = e?.originalEvent?.target;
+      if (target && (target.tagName === 'path' || target.closest?.('.leaflet-interactive'))) {
+        return;
+      }
+      if (onSelectPlotRef.current) {
+        onSelectPlotRef.current(null);
       }
     });
 
@@ -445,8 +448,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
       // Interactive Click: selects the plot, opening the detail card
       poly.on('click', (e) => {
-        if (e.originalEvent) {
-          e.originalEvent._plotClicked = true;
+        if (e) {
+          if (e.originalEvent) {
+            e.originalEvent._plotClicked = true;
+          }
+          L.DomEvent.stopPropagation(e);
         }
         if (onSelectPlotRef.current) {
           onSelectPlotRef.current(plot);
