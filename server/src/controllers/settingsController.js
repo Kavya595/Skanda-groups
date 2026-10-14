@@ -1,8 +1,34 @@
+import mongoose from 'mongoose';
 import SiteSettings from '../models/SiteSettings.js';
 import AuditLog from '../models/AuditLog.js';
 
+const defaultPublicSettings = {
+  companyName: 'Skandha Group',
+  projectName: "Alekhya's Brundavan",
+  projectLocation: 'Kadthal, Srisailam Highway, Hyderabad',
+  officeAddress: 'Kadthal Mandal, Ranga Reddy District, Telangana',
+  contactEmail: 'contact@skandhagroup.com',
+  dtcpNumber: 'TLP NO. 87/2024/H',
+  reraNumber: 'P02400009081',
+  heroVideoUrl: '',
+  heroPosterUrl: '/assets/hero_cover.jpg',
+  brochurePdfUrl: '',
+  flyerPdfUrl: '',
+  socialLinks: {},
+  publicClaimsApproved: true,
+  seo: {},
+  whatsappAvailable: true
+};
+
 export async function getPublicSettings(req, res) {
   try {
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      return res.json({
+        success: true,
+        settings: defaultPublicSettings
+      });
+    }
+
     let settings = await SiteSettings.findOne();
     if (!settings) {
       settings = await SiteSettings.create({});
@@ -30,7 +56,10 @@ export async function getPublicSettings(req, res) {
       }
     });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    return res.json({
+      success: true,
+      settings: defaultPublicSettings
+    });
   }
 }
 

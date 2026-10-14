@@ -1,11 +1,50 @@
+import mongoose from 'mongoose';
 import Plot from '../models/Plot.js';
 import AuditLog from '../models/AuditLog.js';
 import { Parser } from 'json2csv';
-import { calculateExtraCharges } from '../data/plotsData.js';
+import { calculateExtraCharges, initialPlots } from '../data/plotsData.js';
 
 export async function getPlots(req, res) {
   try {
     const { status, facing, minArea, maxArea, search, page, limit, all } = req.query;
+
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      let filtered = [...initialPlots];
+      if (status) filtered = filtered.filter(p => p.status === status);
+      if (facing) filtered = filtered.filter(p => p.facing.toLowerCase().includes(facing.toLowerCase()));
+      if (minArea) filtered = filtered.filter(p => p.areaSqYds >= Number(minArea));
+      if (maxArea) filtered = filtered.filter(p => p.areaSqYds <= Number(maxArea));
+      if (search) {
+        const searchNum = Number(search);
+        if (!isNaN(searchNum)) {
+          filtered = filtered.filter(p => p.plotNumber === searchNum);
+        } else {
+          const s = search.toLowerCase();
+          filtered = filtered.filter(p => p.block.toLowerCase().includes(s) || p.facing.toLowerCase().includes(s));
+        }
+      }
+
+      if (all === 'true') {
+        return res.json({
+          success: true,
+          count: filtered.length,
+          plots: filtered
+        });
+      }
+
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 20;
+      const skip = (pageNum - 1) * limitNum;
+
+      return res.json({
+        success: true,
+        total: filtered.length,
+        page: pageNum,
+        totalPages: Math.ceil(filtered.length / limitNum),
+        plots: filtered.slice(skip, skip + limitNum)
+      });
+    }
+
     const query = {};
 
     if (status) query.status = status;
@@ -61,6 +100,18 @@ export async function getPlots(req, res) {
 export async function getPlotDetail(req, res) {
   try {
     const { plotNumber } = req.params;
+
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      const plot = initialPlots.find(p => p.plotNumber === Number(plotNumber));
+      if (!plot) {
+        return res.status(404).json({
+          success: false,
+          error: `Plot #${plotNumber} not found.`
+        });
+      }
+      return res.json({ success: true, plot });
+    }
+
     const plot = await Plot.findOne({ plotNumber: Number(plotNumber) });
 
     if (!plot) {
@@ -81,6 +132,25 @@ export async function getPlotDetail(req, res) {
 
 export async function getPlotStats(req, res) {
   try {
+    if (!mongoose.connection || mongoose.connection.readyState !== 1) {
+      const total = initialPlots.length;
+      const available = initialPlots.filter(p => p.status === 'available').length;
+      const reserved = initialPlots.filter(p => p.status === 'reserved').length;
+      const sold = initialPlots.filter(p => p.status === 'sold').length;
+      const blocked = initialPlots.filter(p => p.status === 'blocked').length;
+
+      return res.json({
+        success: true,
+        stats: {
+          total,
+          available,
+          reserved,
+          sold,
+          blocked
+        }
+      });
+    }
+
     const total = await Plot.countDocuments();
     const available = await Plot.countDocuments({ status: 'available' });
     const reserved = await Plot.countDocuments({ status: 'reserved' });
