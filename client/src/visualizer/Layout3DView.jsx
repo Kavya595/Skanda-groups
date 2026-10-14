@@ -568,6 +568,60 @@ function PerimeterCanopyTree({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
+// Shared Procedural Lush Grass Turf Texture Cache
+let grassTurfTextureCache = null;
+
+function getGrassTurfTexture() {
+  if (typeof document === 'undefined') return null;
+  if (grassTurfTextureCache) return grassTurfTextureCache;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  // 1. Lush Bermuda turf green base
+  ctx.fillStyle = '#6AA81A';
+  ctx.fillRect(0, 0, 512, 512);
+
+  // 2. Alternating subtle lawn mowing stripes
+  const stripeW = 64;
+  for (let x = 0; x < 512; x += stripeW * 2) {
+    ctx.fillStyle = 'rgba(126, 196, 32, 0.16)';
+    ctx.fillRect(x, 0, stripeW, 512);
+  }
+
+  // 3. Dense individual grass blades & turf stipples
+  const bladeColors = [
+    '#528A13', // shadow root blade
+    '#68A618', // natural grass body
+    '#76B820', // vibrant sunlit blade
+    '#86CC28', // fresh spring tip
+    '#44750F'  // deep thatch green
+  ];
+
+  for (let i = 0; i < 32000; i++) {
+    const gx = Math.random() * 512;
+    const gy = Math.random() * 512;
+    const len = Math.random() * 4.5 + 2.5;
+    const bw = Math.random() * 1.6 + 0.8;
+    const tilt = (Math.random() - 0.5) * 0.35;
+
+    ctx.save();
+    ctx.translate(gx, gy);
+    ctx.rotate(tilt);
+    ctx.fillStyle = bladeColors[Math.floor(Math.random() * bladeColors.length)];
+    ctx.fillRect(-bw / 2, -len, bw, len);
+    ctx.restore();
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  grassTurfTextureCache = texture;
+  return texture;
+}
+
 // Lush Surrounding Greenery Around Layout (Buffer Belts, Meadows & Tree Clusters)
 function LayoutSurroundingGreenery() {
   const outerTrees = useMemo(() => [
@@ -581,28 +635,55 @@ function LayoutSurroundingGreenery() {
     [98, -48], [98, -28], [98, -8], [98, 12], [98, 32], [98, 52]
   ], []);
 
+  const grassTexture = useMemo(() => {
+    const base = getGrassTurfTexture();
+    if (!base) return null;
+    const tex = base.clone();
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(12, 3);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
   return (
     <group>
-      {/* 1. Surrounding Perimeter Landscape Buffer Lawns / Green Belts */}
+      {/* 1. Surrounding Perimeter Landscape Buffer Lawns / Green Belts with Rich Grass Turf */}
       {/* West Buffer Lawn */}
       <mesh position={[-104, 0.02, 6]}>
         <boxGeometry args={[30, 0.04, 130]} />
-        <meshStandardMaterial color="#5E9942" roughness={0.85} />
+        <meshStandardMaterial
+          map={grassTexture || undefined}
+          color="#72B31E"
+          roughness={0.88}
+        />
       </mesh>
       {/* North Buffer Lawn */}
       <mesh position={[0, 0.02, -66]}>
         <boxGeometry args={[190, 0.04, 28]} />
-        <meshStandardMaterial color="#568F3B" roughness={0.85} />
+        <meshStandardMaterial
+          map={grassTexture || undefined}
+          color="#6BA81A"
+          roughness={0.88}
+        />
       </mesh>
       {/* South Buffer Lawn */}
       <mesh position={[0, 0.02, 78]}>
         <boxGeometry args={[190, 0.04, 30]} />
-        <meshStandardMaterial color="#5E9942" roughness={0.85} />
+        <meshStandardMaterial
+          map={grassTexture || undefined}
+          color="#72B31E"
+          roughness={0.88}
+        />
       </mesh>
       {/* East Highway Buffer Lawn */}
       <mesh position={[100, 0.02, 6]}>
         <boxGeometry args={[26, 0.04, 140]} />
-        <meshStandardMaterial color="#4E8434" roughness={0.85} />
+        <meshStandardMaterial
+          map={grassTexture || undefined}
+          color="#65A016"
+          roughness={0.88}
+        />
       </mesh>
 
       {/* 2. Surrounding Canopy Trees Array */}
@@ -1155,7 +1236,7 @@ function BlockBordersAndAvenueTrees() {
           {/* Manicured Emerald Turf Planter Top Surface */}
           <mesh position={[seg.x, 0.122, seg.z]}>
             <boxGeometry args={[seg.isHorizontal ? seg.w : seg.w - 0.1, 0.01, seg.isHorizontal ? seg.d - 0.1 : seg.d]} />
-            <meshStandardMaterial color="#4D7C0F" roughness={0.8} />
+            <meshStandardMaterial color="#68A816" roughness={0.8} />
           </mesh>
 
           {/* White Painted Road Margin Line on road-facing curb edge */}
@@ -1489,6 +1570,18 @@ function ParkArea3D({ onParkClick }) {
     return list;
   }, [cx, cz, w, d]);
 
+  // Procedural Park Grass Turf Texture
+  const parkGrassTexture = useMemo(() => {
+    const base = getGrassTurfTexture();
+    if (!base) return null;
+    const tex = base.clone();
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(6, 8);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
   return (
     <group
       onClick={(e) => {
@@ -1496,10 +1589,14 @@ function ParkArea3D({ onParkClick }) {
         if (onParkClick) onParkClick();
       }}
     >
-      {/* Vibrant Grass Lawn (matching Plots99 #7CB518) */}
+      {/* Vibrant Grass Lawn with Natural Turf Texture */}
       <mesh position={[cx, 0.03, cz]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[w, d]} />
-        <meshBasicMaterial color="#7CB518" />
+        <meshStandardMaterial
+          map={parkGrassTexture || undefined}
+          color="#72B31E"
+          roughness={0.85}
+        />
       </mesh>
 
       {/* Dark green perimeter outline */}
