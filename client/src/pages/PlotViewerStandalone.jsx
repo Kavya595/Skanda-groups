@@ -514,6 +514,15 @@ export default function PlotViewerStandalone({ settings }) {
   });
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
+  const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolledPastMap(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Smooth Section Scrolling
   const scrollToSection = (id) => {
@@ -667,7 +676,9 @@ export default function PlotViewerStandalone({ settings }) {
         </header>
 
         {/* Top-Left Zoom Controls & Compass Rose (Plots99 Exact Match) */}
-        <div className="absolute top-20 left-4 z-30 flex flex-col gap-2.5 pointer-events-auto">
+        <div className={`absolute top-20 left-4 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
+          isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
           {/* Vertical OpenLayers-style Zoom Pill (matching Plots99 .ol-zoom) */}
           <div className="bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex flex-col items-center overflow-hidden">
             <button
@@ -716,41 +727,10 @@ export default function PlotViewerStandalone({ settings }) {
           </button>
         </div>
 
-        {/* Floating Right Circular Toolbar (matching Screenshot 2, 3) */}
-        <aside className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto">
-          {/* 3D Geographic Map View (Kadthal & Srisailam Highway Corridor) */}
-          <button
-            onClick={() => {
-              if (viewMode === '2d') {
-                layout2DRef.current?.reset();
-              } else {
-                setCameraPreset(prev => prev === 'mapView' ? 'overview' : 'mapView');
-              }
-            }}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              cameraPreset === 'mapView'
-                ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
-                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-600 border-slate-200/90 hover:bg-white'
-            }`}
-            title="3D Geographic Map View (Kadthal & Srisailam Highway NH-765 Location)"
-          >
-            <MapPin className="w-4 h-4" />
-          </button>
-
-
-          {/* Road View (Eye-Level Walk along 33' & 60' Avenues with Hand Gesture Drag) */}
-          <button
-            onClick={handleToggleRoadView}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              cameraPreset === 'roadWalk'
-                ? 'bg-orange-600 text-white border-orange-700 ring-2 ring-orange-400/50'
-                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-orange-600 border-slate-200/90 hover:bg-white'
-            }`}
-            title="Road View (Eye-level walk down the layout avenues with hand gesture drag)"
-          >
-            <Navigation className="w-4 h-4" />
-          </button>
-
+        {/* Floating Right Circular Toolbar */}
+        <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
+          isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -766,7 +746,7 @@ export default function PlotViewerStandalone({ settings }) {
 
           {/* Top-Down Orthographic */}
           <button
-            onClick={() => setCameraPreset('topDown')}
+            onClick={() => setCameraPreset(cameraPreset === 'topDown' ? 'overview' : 'topDown')}
             className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
               cameraPreset === 'topDown'
                 ? 'bg-slate-900 text-white border-slate-950'
@@ -775,35 +755,6 @@ export default function PlotViewerStandalone({ settings }) {
             title="Top-Down Overhead View"
           >
             <Layers className="w-4 h-4" />
-          </button>
-
-          {/* Distance Measurement */}
-          <button
-            onClick={() => {
-              setIsMeasureMode(!isMeasureMode);
-              setMeasurePoints([]);
-            }}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              isMeasureMode
-                ? 'bg-brand-orange text-white border-orange-600 ring-2 ring-orange-400/50'
-                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90 hover:bg-white'
-            }`}
-            title="Measure Distance between Plots (Click any 2 points)"
-          >
-            <Ruler className="w-4 h-4" />
-          </button>
-
-          {/* Moving Vehicles Toggle */}
-          <button
-            onClick={() => setAnimateVehicles(!animateVehicles)}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              animateVehicles
-                ? 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90'
-                : 'bg-slate-200 text-slate-400 border-slate-300'
-            }`}
-            title={animateVehicles ? 'Pause Moving Vehicles' : 'Resume Moving Vehicles'}
-          >
-            <Car className="w-4 h-4" />
           </button>
 
           {/* Fullscreen */}
@@ -980,7 +931,9 @@ export default function PlotViewerStandalone({ settings }) {
         )}
 
         {/* Bottom Left Floating Legend (Plots99 Exact Structure - Vertical) */}
-        <div className="absolute bottom-4 left-4 z-30 pointer-events-auto">
+        <div className={`absolute bottom-4 left-4 z-30 pointer-events-auto transition-opacity duration-300 ${
+          isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
           <div className="bg-white/95 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/90 shadow-2xl">
             <div className="flex flex-col gap-1.5 text-xs font-bold">
               {/* SOLD */}
@@ -1041,14 +994,18 @@ export default function PlotViewerStandalone({ settings }) {
         </div>
 
         {/* Bottom Right Map Attribution (Single Clean Text) */}
-        <div className="absolute bottom-4 right-24 z-20 pointer-events-auto hidden md:block select-none">
+        <div className={`absolute bottom-4 right-24 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
+          isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
             &copy; Google Maps &bull; Kadthal, Srisailam Highway (NH-765)
           </div>
         </div>
 
         {/* Bottom Right 2D/3D Pill */}
-        <div className="absolute bottom-4 right-4 z-30 pointer-events-auto">
+        <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 ${
+          isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
           <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
             <button
               onClick={() => handleViewModeToggle('2d')}

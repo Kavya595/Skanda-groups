@@ -536,76 +536,100 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   );
 }
 
-// Avenue Landscaping between Block to Block along Internal Road Curbs (Matching Plots99 Image 2 & 3)
+// Avenue Landscaping between Block to Block along Internal Road Curbs (100% Unblocked Streets)
 function Landscaping() {
   const trees = useMemo(() => {
     const list = [];
 
-    // 1. Top 60ft Road Curbs (North boundary of Blocks A, B, C, D, E; inside layout X <= 56)
-    for (let x = -86; x <= 56; x += 11) {
-      list.push({ pos: [x, 0.18, -52.9], scale: 1.05 });
-      list.push({ pos: [x, 0.18, -41.1], scale: 1.05 });
-    }
+    // Strict clearance guard: guarantees NO tree is inside any road or within 8.5m of any intersection
+    const isBlockingStreet = (x, z) => {
+      // 1. Inside 60ft Road corridor (Z: -53.5 to -40.5)
+      if (z >= -53.5 && z <= -40.5) return true;
+      // 2. Inside Central Boulevard corridor (Z: -4.5 to 5.5)
+      if (z >= -4.5 && z <= 5.5) return true;
+      // 3. Inside any vertical road corridor (with safety margins)
+      const vCorridors = [
+        [-89.5, -79.5], // West Boundary Road
+        [-66.5, -56.5], // Road V0
+        [-37.5, -27.5], // Road V1
+        [-8.5, 1.5],    // Road V2
+        [20.5, 30.5],   // Road V3
+        [48.5, 58.5],   // Road V4
+        [61.5, 71.5],   // Service Road
+        [71.5, 90.0]    // Srisailam Highway
+      ];
+      for (const [xmin, xmax] of vCorridors) {
+        if (x >= xmin && x <= xmax) return true;
+      }
+      // 4. Near any intersection (keep turning mouths and street entrances wide open)
+      const junctions = [-84.5, -61.5, -32.5, -3.5, 25.5, 53.5, 66.5];
+      for (const jx of junctions) {
+        if (Math.hypot(x - jx, z - (-47)) < 8.5) return true;
+        if (Math.hypot(x - jx, z - 0.5) < 8.5) return true;
+      }
+      return false;
+    };
 
-    // 2. Central Main Boulevard (between North Blocks and South Blocks; inside layout X <= 56)
-    for (let x = -86; x <= 56; x += 10) {
-      list.push({ pos: [x, 0.18, -3.9], scale: 0.95 });
-      list.push({ pos: [x, 0.18, 4.9], scale: 0.95 });
-    }
+    const addSafeTree = (pos, scale = 0.95) => {
+      if (!isBlockingStreet(pos[0], pos[2])) {
+        list.push({ pos, scale });
+      }
+    };
 
-    // 3. Road V0 (between Block F and Central Park / Block G, South section Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 11) {
-      list.push({ pos: [-65.9, 0.18, z], scale: 0.92 });
-      list.push({ pos: [-57.1, 0.18, z], scale: 0.92 });
-    }
+    // 1. Avenue Palms along North side of Central Boulevard (fronting Blocks A, B, C, D)
+    [-74, -62, -50, -22, -14, 7, 15, 36, 44].forEach((x) => {
+      addSafeTree([x, 0.14, -5.4], 0.95);
+    });
 
-    // 4. Road V1 (between Block A & B in North, Block G & H in South)
-    // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 10) {
-      list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
-      list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
-    }
-    // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 11) {
-      list.push({ pos: [-36.9, 0.18, z], scale: 0.92 });
-      list.push({ pos: [-28.1, 0.18, z], scale: 0.92 });
-    }
+    // 2. Avenue Palms along South side of Central Boulevard (fronting Blocks F, Park, H, I, J)
+    [-74, -52, -42, -22, -14, 7, 15, 36, 44].forEach((x) => {
+      addSafeTree([x, 0.14, 6.4], 0.95);
+    });
 
-    // 5. Road V2 (between Block B & C in North, Block H & I in South)
-    // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 10) {
-      list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
-      list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
-    }
-    // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 11) {
-      list.push({ pos: [-7.9, 0.18, z], scale: 0.92 });
-      list.push({ pos: [0.9, 0.18, z], scale: 0.92 });
-    }
+    // 3. Avenue Palms along 60ft Road verge (North boundary of Blocks A, B, C, D)
+    [-74, -62, -50, -22, -14, 7, 15, 36, 44].forEach((x) => {
+      addSafeTree([x, 0.14, -39.8], 1.02);
+    });
 
-    // 6. Road V3 (between Block C & D in North, Block I & J in South)
-    // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 10) {
-      list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
-      list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
-    }
-    // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 11) {
-      list.push({ pos: [21.1, 0.18, z], scale: 0.92 });
-      list.push({ pos: [29.9, 0.18, z], scale: 0.92 });
-    }
+    // 4. Avenue Palms along Vertical Road V1 (between Block A & B; Block G & H)
+    [-34, -24, -14].forEach((z) => {
+      addSafeTree([-38.2, 0.14, z], 0.9);
+      addSafeTree([-26.8, 0.14, z], 0.9);
+    });
+    [16, 28, 40, 50].forEach((z) => {
+      addSafeTree([-38.2, 0.14, z], 0.9);
+      addSafeTree([-26.8, 0.14, z], 0.9);
+    });
 
-    // 7. Road V4 (between Block D & E in North, Block J & K in South)
-    // North section (Z: -40 to -6)
-    for (let z = -40; z <= -6; z += 10) {
-      list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
-      list.push({ pos: [55.5, 0.18, z], scale: 0.92 });
-    }
-    // South section (Z: 8 to 56)
-    for (let z = 8; z <= 56; z += 11) {
-      list.push({ pos: [49.1, 0.18, z], scale: 0.92 });
-      list.push({ pos: [55.5, 0.18, z], scale: 0.92 });
-    }
+    // 5. Avenue Palms along Vertical Road V2 (between Block B & C; Block H & I)
+    [-34, -24, -14].forEach((z) => {
+      addSafeTree([-9.2, 0.14, z], 0.9);
+      addSafeTree([2.2, 0.14, z], 0.9);
+    });
+    [16, 28, 40, 50].forEach((z) => {
+      addSafeTree([-9.2, 0.14, z], 0.9);
+      addSafeTree([2.2, 0.14, z], 0.9);
+    });
+
+    // 6. Avenue Palms along Vertical Road V3 (between Block C & D; Block I & J)
+    [-34, -24, -14].forEach((z) => {
+      addSafeTree([19.8, 0.14, z], 0.9);
+      addSafeTree([31.2, 0.14, z], 0.9);
+    });
+    [16, 28, 40, 50].forEach((z) => {
+      addSafeTree([19.8, 0.14, z], 0.9);
+      addSafeTree([31.2, 0.14, z], 0.9);
+    });
+
+    // 7. Avenue Palms along Vertical Road V4 (between Block D & E; Block J & K)
+    [-34, -24, -14].forEach((z) => {
+      addSafeTree([47.8, 0.14, z], 0.9);
+      addSafeTree([59.2, 0.14, z], 0.9);
+    });
+    [16, 28, 40, 50].forEach((z) => {
+      addSafeTree([47.8, 0.14, z], 0.9);
+      addSafeTree([59.2, 0.14, z], 0.9);
+    });
 
     return list;
   }, []);
@@ -619,115 +643,61 @@ function Landscaping() {
   );
 }
 
-// Low-poly Moving Vehicles (matching Screenshot 3: Red sedan on road!)
-function LowPolyCar({ color = '#FFFFFF', position = [0, 0, 0], rotation = [0, 0, 0] }) {
-  return (
-    <group position={position} rotation={rotation}>
-      <mesh position={[0, 0.38, 0]}>
-        <boxGeometry args={[1.5, 0.48, 2.8]} />
-        <meshBasicMaterial color={color} />
-      </mesh>
-      <mesh position={[0, 0.72, -0.15]}>
-        <boxGeometry args={[1.2, 0.38, 1.7]} />
-        <meshBasicMaterial color="#1E293B" />
-      </mesh>
-      {/* Headlights */}
-      <mesh position={[-0.45, 0.38, 1.42]}>
-        <boxGeometry args={[0.22, 0.14, 0.05]} />
-        <meshBasicMaterial color="#FEF08A" />
-      </mesh>
-      <mesh position={[0.45, 0.38, 1.42]}>
-        <boxGeometry args={[0.22, 0.14, 0.05]} />
-        <meshBasicMaterial color="#FEF08A" />
-      </mesh>
-      {/* Wheels */}
-      {[-0.75, 0.75].map((wx, i) =>
-        [-0.85, 0.85].map((wz, j) => (
-          <mesh key={`${i}-${j}`} position={[wx, 0.18, wz]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.2, 0.2, 0.16, 8]} />
-            <meshBasicMaterial color="#0F172A" />
-          </mesh>
-        ))
-      )}
-    </group>
-  );
-}
+// Block frontage curb definition: precast kerbs & painted road borders that DO NOT block any intersection
+const BLOCK_CURB_SEGMENTS = [
+  // HORIZONTAL CURB SEGMENTS
+  // North side of Central Boulevard (facing South Blocks A, B, C, D, E at Z = -3.12)
+  { x: -58.0, z: -3.14, w: 38.0, d: 0.3, isHorizontal: true, isNorth: true },
+  { x: -18.0, z: -3.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: true },
+  { x: 11.0, z: -3.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: true },
+  { x: 39.5, z: -3.14, w: 16.0, d: 0.3, isHorizontal: true, isNorth: true },
+  { x: 60.0, z: -3.14, w: 4.0, d: 0.3, isHorizontal: true, isNorth: true },
 
-// Moving Vehicles across Highway AND Internal Layout Roads (Screenshot 3 Red Sedan!)
-function MovingVehicles({ animate }) {
-  const hwySouthRef = useRef();
-  const hwyNorthRef = useRef();
-  const road60Ref = useRef();
-  const roadMidEastRef = useRef();
-  const roadV1SouthRef = useRef();
-  const roadV3NorthRef = useRef();
+  // South side of Central Boulevard (facing North Blocks F, Park, H, I, J, K at Z = 4.14)
+  { x: -72.5, z: 4.14, w: 11.0, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: -47.0, z: 4.14, w: 19.0, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: -18.0, z: 4.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 11.0, z: 4.14, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 39.5, z: 4.14, w: 16.0, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 60.0, z: 4.14, w: 4.0, d: 0.3, isHorizontal: true, isNorth: false },
 
-  useFrame((_, delta) => {
-    if (!animate) return;
-    // Srisailam Highway Southbound
-    if (hwySouthRef.current) {
-      hwySouthRef.current.position.z += delta * 15;
-      if (hwySouthRef.current.position.z > 62) hwySouthRef.current.position.z = -54;
-    }
-    // Srisailam Highway Northbound
-    if (hwyNorthRef.current) {
-      hwyNorthRef.current.position.z -= delta * 13;
-      if (hwyNorthRef.current.position.z < -54) hwyNorthRef.current.position.z = 62;
-    }
-    // 60ft Arterial Road
-    if (road60Ref.current) {
-      road60Ref.current.position.x += delta * 12;
-      if (road60Ref.current.position.x > 84) road60Ref.current.position.x = -88;
-    }
-    // INTERNAL ROAD: Red Sedan driving on 33' Mid Road (matching Screenshot 3!)
-    if (roadMidEastRef.current) {
-      roadMidEastRef.current.position.x += delta * 9;
-      if (roadMidEastRef.current.position.x > 60) roadMidEastRef.current.position.x = -62;
-    }
-    // Internal Road V1 (Southbound)
-    if (roadV1SouthRef.current) {
-      roadV1SouthRef.current.position.z += delta * 8;
-      if (roadV1SouthRef.current.position.z > 58) roadV1SouthRef.current.position.z = 6;
-    }
-    // Internal Road V3 (Northbound)
-    if (roadV3NorthRef.current) {
-      roadV3NorthRef.current.position.z -= delta * 8;
-      if (roadV3NorthRef.current.position.z < 6) roadV3NorthRef.current.position.z = 58;
-    }
-  });
+  // South side of 60ft Road (facing North Blocks A, B, C, D, E at Z = -41.86)
+  { x: -58.0, z: -41.86, w: 38.0, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: -18.0, z: -41.86, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 11.0, z: -41.86, w: 16.5, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 39.5, z: -41.86, w: 16.0, d: 0.3, isHorizontal: true, isNorth: false },
+  { x: 60.0, z: -41.86, w: 4.0, d: 0.3, isHorizontal: true, isNorth: false },
 
-  return (
-    <group>
-      {/* Highway Southbound SUV */}
-      <group ref={hwySouthRef} position={[76, 0, -20]}>
-        <LowPolyCar color="#FFFFFF" />
-      </group>
-      {/* Highway Northbound Sedan */}
-      <group ref={hwyNorthRef} position={[83, 0, 30]} rotation={[0, Math.PI, 0]}>
-        <LowPolyCar color="#10B981" />
-      </group>
-      {/* 60ft Road Blue Sedan */}
-      <group ref={road60Ref} position={[-30, 0, -47]} rotation={[0, Math.PI / 2, 0]}>
-        <LowPolyCar color="#2563EB" />
-      </group>
+  // North side of 60ft Road outer perimeter
+  { x: -12.5, z: -52.14, w: 151.0, d: 0.3, isHorizontal: true, isNorth: true },
 
-      {/* INTERNAL ROAD: Iconic RED CAR matching Screenshot 3! */}
-      <group ref={roadMidEastRef} position={[-15, 0, 0.5]} rotation={[0, Math.PI / 2, 0]}>
-        <LowPolyCar color="#DC2626" />
-      </group>
+  // VERTICAL CURB SEGMENTS
+  // North section: between 60ft road and Central Blvd (Z: -40.5 to -4.5, center Z = -22.5, length = 35.0m)
+  { x: -80.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
+  { x: -36.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
+  { x: -28.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
+  { x: -7.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
+  { x: 0.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
+  { x: 21.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
+  { x: 29.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
+  { x: 49.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
+  { x: 57.14, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: false },
+  { x: 62.86, z: -22.5, w: 0.3, d: 35.0, isHorizontal: false, isWest: true },
 
-      {/* Internal Road V1 (Yellow Car) */}
-      <group ref={roadV1SouthRef} position={[-32.5, 0, 15]}>
-        <LowPolyCar color="#FBBF24" />
-      </group>
-
-      {/* Internal Road V3 (Silver Car) */}
-      <group ref={roadV3NorthRef} position={[25.5, 0, 45]} rotation={[0, Math.PI, 0]}>
-        <LowPolyCar color="#E2E8F0" />
-      </group>
-    </group>
-  );
-}
+  // South section: between Central Blvd and South Boundary (Z: 5.5 to 57.5, center Z = 31.5, length = 51.0m)
+  { x: -80.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: -64.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
+  { x: -58.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: -36.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
+  { x: -28.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: -7.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
+  { x: 0.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: 21.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
+  { x: 29.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: 49.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true },
+  { x: 57.14, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: false },
+  { x: 62.86, z: 31.5, w: 0.3, d: 51.0, isHorizontal: false, isWest: true }
+];
 
 // Connected Road Network with Realistic Deep Asphalt, Raised Cobblestone Curbs, and Printed Road Names (Matching Image 4 & 5)
 function ConnectedRoadNetwork({ onRoadClick }) {
@@ -866,70 +836,7 @@ function ConnectedRoadNetwork({ onRoadClick }) {
               if (onRoadClick) onRoadClick(road);
             }}
           >
-            {/* Raised Cobblestone Stone Curbs along Road Flanks (Matching media_1791965028424_4ab01446.png) */}
-            {isHorizontal ? (
-              <>
-                {/* North Stone Curb Strip (2.0m width, 0.18m height) */}
-                <mesh position={[0, 0.09, -d / 2 - 1.0]}>
-                  <boxGeometry args={[w + 2.0, 0.18, 2.0]} />
-                  <meshStandardMaterial
-                    map={cobblestoneTexture || undefined}
-                    color="#FFFFFF"
-                    roughness={0.85}
-                  />
-                </mesh>
-                {/* South Stone Curb Strip (2.0m width, 0.18m height) */}
-                <mesh position={[0, 0.09, d / 2 + 1.0]}>
-                  <boxGeometry args={[w + 2.0, 0.18, 2.0]} />
-                  <meshStandardMaterial
-                    map={cobblestoneTexture || undefined}
-                    color="#FFFFFF"
-                    roughness={0.85}
-                  />
-                </mesh>
-                {/* Outer White Raised Curb Border Line */}
-                <lineSegments position={[0, 0.181, -d / 2 - 2.0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 2.0, 0.01, 0.02)]} />
-                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
-                </lineSegments>
-                <lineSegments position={[0, 0.181, d / 2 + 2.0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(w + 2.0, 0.01, 0.02)]} />
-                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
-                </lineSegments>
-              </>
-            ) : (
-              <>
-                {/* West Stone Curb Strip (2.0m width, 0.18m height) */}
-                <mesh position={[-w / 2 - 1.0, 0.09, 0]}>
-                  <boxGeometry args={[2.0, 0.18, d + 2.0]} />
-                  <meshStandardMaterial
-                    map={cobblestoneTexture || undefined}
-                    color="#FFFFFF"
-                    roughness={0.85}
-                  />
-                </mesh>
-                {/* East Stone Curb Strip (2.0m width, 0.18m height) */}
-                <mesh position={[w / 2 + 1.0, 0.09, 0]}>
-                  <boxGeometry args={[2.0, 0.18, d + 2.0]} />
-                  <meshStandardMaterial
-                    map={cobblestoneTexture || undefined}
-                    color="#FFFFFF"
-                    roughness={0.85}
-                  />
-                </mesh>
-                {/* Outer White Raised Curb Border Line */}
-                <lineSegments position={[-w / 2 - 2.0, 0.181, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 2.0)]} />
-                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
-                </lineSegments>
-                <lineSegments position={[w / 2 + 2.0, 0.181, 0]}>
-                  <edgesGeometry args={[new THREE.BoxGeometry(0.02, 0.01, d + 2.0)]} />
-                  <lineBasicMaterial color="#E2E8F0" linewidth={2.5} />
-                </lineSegments>
-              </>
-            )}
-
-            {/* Deep Rich Blacktop Asphalt Road Bed (Exact match to Image 4 & 5) */}
+            {/* Deep Rich Blacktop Asphalt Road Bed (Continuous open network) */}
             <mesh rotation={[-Math.PI / 2, 0, 0]}>
               <planeGeometry args={[w, d]} />
               <meshStandardMaterial
@@ -964,6 +871,44 @@ function ConnectedRoadNetwork({ onRoadClick }) {
           </group>
         );
       })}
+
+      {/* 2. Realistic Block-Frontage Curbs, Sidewalk Verges & Painted Margins (Zero Blockades at Intersections!) */}
+      <group>
+        {BLOCK_CURB_SEGMENTS.map((seg, idx) => (
+          <group key={`curb-${idx}`}>
+            {/* Raised Precast Concrete Kerb Stone (0.12m height above road) */}
+            <mesh position={[seg.x, 0.08, seg.z]}>
+              <boxGeometry args={[seg.w, 0.12, seg.d]} />
+              <meshStandardMaterial color="#CBD5E1" roughness={0.65} metalness={0.1} />
+            </mesh>
+
+            {/* Painted White Road Margin Line along the asphalt edge directly adjoining the curb */}
+            <mesh
+              position={[
+                seg.isHorizontal ? seg.x : (seg.isWest ? seg.x + 0.22 : seg.x - 0.22),
+                0.026,
+                seg.isHorizontal ? (seg.isNorth ? seg.z + 0.22 : seg.z - 0.22) : seg.z
+              ]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
+              <planeGeometry args={[seg.isHorizontal ? seg.w : 0.12, seg.isHorizontal ? 0.12 : seg.d]} />
+              <meshBasicMaterial color="#FFFFFF" opacity={0.92} transparent />
+            </mesh>
+
+            {/* Paved Walkway / Sidewalk Paver Verge behind the curb */}
+            <mesh
+              position={[
+                seg.isHorizontal ? seg.x : (seg.isWest ? seg.x - 0.6 : seg.x + 0.6),
+                0.035,
+                seg.isHorizontal ? (seg.isNorth ? seg.z - 0.6 : seg.z + 0.6) : seg.z
+              ]}
+            >
+              <boxGeometry args={[seg.isHorizontal ? seg.w : 0.9, 0.04, seg.isHorizontal ? 0.9 : seg.d]} />
+              <meshStandardMaterial map={cobblestoneTexture || undefined} color="#E2E8F0" roughness={0.8} />
+            </mesh>
+          </group>
+        ))}
+      </group>
 
       {/* Street Name Typography printed directly on asphalt (Matching Image 5) */}
       <Text
@@ -1440,11 +1385,8 @@ export default function Layout3DView({
         {/* Ac. 0.758 Park Area with Flowers, Perimeter Palms & Cycads */}
         <ParkArea3D onParkClick={onParkClick} />
 
-        {/* Avenue Royal Palms Landscaping */}
+        {/* Avenue Royal Palms Landscaping (with 100% clear streets) */}
         <Landscaping />
-
-        {/* Moving Vehicles along Highway AND Internal Layout Roads */}
-        <MovingVehicles animate={animateVehicles} />
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>

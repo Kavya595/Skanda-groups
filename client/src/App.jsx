@@ -8,7 +8,6 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollProgress from './components/ScrollProgress';
 import BackToTop from './components/BackToTop';
-import FloatingPlotPill from './components/FloatingPlotPill';
 
 // Public Marketing Pages
 import HomePage from './pages/HomePage';
@@ -75,7 +74,6 @@ function PublicLayout({ settings }) {
       </main>
       <Footer settings={settings} />
       <BackToTop />
-      <FloatingPlotPill />
     </div>
   );
 }

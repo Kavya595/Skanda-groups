@@ -5,6 +5,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  ShieldCheck,
   Calendar,
   Sparkles,
   ChevronRight,
@@ -31,8 +32,7 @@ export default function Navbar({ settings }) {
     { label: 'Project Specs', path: '/project' },
     { label: 'Site Gallery', path: '/gallery' },
     { label: 'About Skandha', path: '/about' },
-    { label: 'Contact & Map', path: '/contact' },
-    { label: 'Admin Portal', path: '/admin/login' }
+    { label: 'Contact & Map', path: '/contact' }
   ];
 
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -131,8 +131,16 @@ export default function Navbar({ settings }) {
               </a>
             </nav>
 
-            {/* Action CTA Button */}
-            <div className="hidden sm:flex items-center gap-3">
+            {/* Action CTA Button & Admin Login Symbol */}
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/admin/login"
+                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-emerald-700 flex items-center justify-center transition-all duration-200 border border-slate-200/80 shadow-2xs hover:shadow-xs shrink-0"
+                title="Admin Staff Portal"
+                aria-label="Admin Staff Portal"
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </Link>
               <button
                 onClick={() => setIsEnquiryModalOpen(true)}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
@@ -144,7 +152,15 @@ export default function Navbar({ settings }) {
             </div>
 
             {/* Mobile Menu Trigger Button */}
-            <div className="lg:hidden flex items-center">
+            <div className="lg:hidden flex items-center gap-2">
+              <Link
+                to="/admin/login"
+                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-emerald-700 flex items-center justify-center transition-all duration-200 border border-slate-200/80 shadow-2xs"
+                title="Admin Staff Portal"
+                aria-label="Admin Staff Portal"
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 type="button"
@@ -190,6 +206,18 @@ export default function Navbar({ settings }) {
                 <span>Interactive Plot Availability (2D/3D)</span>
                 <ExternalLink className="w-4 h-4 text-brand-orange" />
               </a>
+
+              <Link
+                to="/admin/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-between"
+              >
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Admin Staff Portal</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </Link>
             </div>
 
             <div className="pt-3 border-t border-slate-100 space-y-2">

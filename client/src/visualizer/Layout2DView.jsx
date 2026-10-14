@@ -51,8 +51,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
   const plotLayersRef = useRef({});
-  const carsGroupRef = useRef(null);
-  const animationFrameRef = useRef(null);
 
   const [activeTileType, setActiveTileType] = useState('google');
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
@@ -398,81 +396,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     }
   }, [searchTerm, plots]);
-
-  // 7. Optional Animated 2D Vehicles on Roads (Smooth position updates, enabled only when animateVehicles is true)
-  useEffect(() => {
-    if (!mapInstanceRef.current || !animateVehicles) return;
-    const map = mapInstanceRef.current;
-
-    const carsGroup = L.layerGroup().addTo(map);
-    carsGroupRef.current = carsGroup;
-
-    // Road waypoints
-    const hwyStart = localToLatLng(80, -54);
-    const hwyEnd = localToLatLng(80, 64);
-    const r60Start = localToLatLng(80, -47);
-    const r60End = localToLatLng(-90, -47);
-    const r33Start = localToLatLng(-60, 0.5);
-    const r33End = localToLatLng(60, 0.5);
-
-    // Initial Marker Instances
-    const redSedan = L.marker(hwyStart, {
-      icon: L.divIcon({
-        html: `<div style="width: 14px; height: 7px; background: #DC2626; border-radius: 2px; border: 1px solid #7F1D1D; box-shadow: 0 1px 3px rgba(0,0,0,0.5); transform: rotate(90deg);"></div>`,
-        iconSize: [14, 7]
-      }),
-      interactive: false
-    }).addTo(carsGroup);
-
-    const whiteSuv = L.marker(r60Start, {
-      icon: L.divIcon({
-        html: `<div style="width: 13px; height: 7px; background: #FFFFFF; border-radius: 2px; border: 1px solid #334155; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>`,
-        iconSize: [13, 7]
-      }),
-      interactive: false
-    }).addTo(carsGroup);
-
-    const yellowCar = L.marker(r33Start, {
-      icon: L.divIcon({
-        html: `<div style="width: 12px; height: 6px; background: #FBBF24; border-radius: 2px; border: 1px solid #78350F; box-shadow: 0 1px 3px rgba(0,0,0,0.4);"></div>`,
-        iconSize: [12, 6]
-      }),
-      interactive: false
-    }).addTo(carsGroup);
-
-    let t = 0;
-    const animateCars = () => {
-      t += 0.003;
-      if (t > 1) t = 0;
-
-      const lat1 = hwyStart[0] + (hwyEnd[0] - hwyStart[0]) * t;
-      const lng1 = hwyStart[1] + (hwyEnd[1] - hwyStart[1]) * t;
-      redSedan.setLatLng([lat1, lng1]);
-
-      const t2 = (t + 0.35) % 1;
-      const lat2 = r60Start[0] + (r60End[0] - r60Start[0]) * t2;
-      const lng2 = r60Start[1] + (r60End[1] - r60Start[1]) * t2;
-      whiteSuv.setLatLng([lat2, lng2]);
-
-      const t3 = (t + 0.7) % 1;
-      const lat3 = r33Start[0] + (r33End[0] - r33Start[0]) * t3;
-      const lng3 = r33Start[1] + (r33End[1] - r33Start[1]) * t3;
-      yellowCar.setLatLng([lat3, lng3]);
-
-      animationFrameRef.current = requestAnimationFrame(animateCars);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(animateCars);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      if (mapInstanceRef.current && carsGroup) {
-        map.removeLayer(carsGroup);
-      }
-    };
-  }, [animateVehicles]);
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
