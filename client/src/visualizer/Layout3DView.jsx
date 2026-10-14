@@ -347,36 +347,36 @@ function PalmTree({ position = [0, 0, 0], scale = 1.0 }) {
     <group position={position} scale={scale}>
       {/* Soft circular contact shadow on stone curb */}
       <mesh position={[0, 0.085, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[1.3, 16]} />
-        <meshBasicMaterial color="#000000" opacity={0.28} transparent />
+        <circleGeometry args={[0.95, 16]} />
+        <meshBasicMaterial color="#000000" opacity={0.25} transparent />
       </mesh>
 
       {/* Slender Tapered Textured Trunk */}
-      <mesh position={[0, 1.5, 0]}>
-        <cylinderGeometry args={[0.13, 0.22, 3.0, 8]} />
+      <mesh position={[0, 1.4, 0]}>
+        <cylinderGeometry args={[0.11, 0.18, 2.8, 8]} />
         <meshStandardMaterial color="#785B3A" roughness={0.9} />
       </mesh>
 
       {/* Crown Joint */}
-      <mesh position={[0, 3.0, 0]}>
-        <sphereGeometry args={[0.24, 8, 8]} />
+      <mesh position={[0, 2.8, 0]}>
+        <sphereGeometry args={[0.2, 8, 8]} />
         <meshStandardMaterial color="#5C4528" roughness={0.8} />
       </mesh>
 
-      {/* 8 Broad Tropical Fronds radiating and drooping gracefully down (matching Image 4) */}
+      {/* 8 Compact Tropical Fronds radiating and drooping down (reduced length for realism) */}
       {leafAngles.map((angle, idx) => (
         <group
           key={idx}
-          position={[0, 2.95, 0]}
-          rotation={[0.35, (angle * Math.PI) / 180, -0.45]}
+          position={[0, 2.75, 0]}
+          rotation={[0.32, (angle * Math.PI) / 180, -0.42]}
         >
-          {/* Inner Frond Arch */}
-          <mesh position={[1.4, -0.22, 0]} rotation={[0, 0, -0.25]} scale={[2.6, 0.08, 1.15]}>
+          {/* Inner Frond Arch (compact realistic length) */}
+          <mesh position={[0.75, -0.12, 0]} rotation={[0, 0, -0.22]} scale={[1.35, 0.05, 0.72]}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color="#65A30D" roughness={0.65} />
           </mesh>
-          {/* Outer Drooping Tip */}
-          <mesh position={[2.8, -0.75, 0]} rotation={[0, 0, -0.58]} scale={[1.6, 0.06, 0.95]}>
+          {/* Outer Drooping Tip (compact realistic length) */}
+          <mesh position={[1.5, -0.42, 0]} rotation={[0, 0, -0.52]} scale={[0.85, 0.04, 0.52]}>
             <boxGeometry args={[1, 1, 1]} />
             <meshStandardMaterial color="#84CC16" roughness={0.65} />
           </mesh>

@@ -284,9 +284,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       layersMap[plot.plotNumber] = poly;
 
       // Plot Number Typography (matching Plots99 Screenshots 1 & 5)
-      // Overview zoom (currentZoom < 19.0) shows ONLY clean colored plots without crowding.
-      // Numbers appear when zoomed in close (>= 19.0) OR if specifically selected/searched.
-      const showAllNumbers = currentZoom >= 19.0;
+      // Display plot numbers on refresh and all viewing zoom levels
+      const showAllNumbers = currentZoom >= 16.5;
       const shouldShowNumber = isVisible && (showAllNumbers || isSelected || isTargetMatch);
 
       if (shouldShowNumber) {
@@ -313,8 +312,18 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           });
           L.marker(plot.geoCenter, { icon: activeIcon, interactive: false, zIndexOffset: 1000 }).addTo(plotsGroup);
         } else {
-          // Regular Plot Number when zoomed in close (>= 19.0)
-          const fontSize = currentZoom >= 19.5 ? '11px' : '10px';
+          // Proportionally scaled typography based on zoom level & plot dimensions
+          // Narrow vertical strip plots (Block E plots 1-6 & Block K plots 83-96) get compact typography
+          const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 6) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
+          let fontSize = '8.5px';
+          if (currentZoom >= 19.5) {
+            fontSize = isNarrow ? '9px' : '11px';
+          } else if (currentZoom >= 18.5) {
+            fontSize = isNarrow ? '7.5px' : '9px';
+          } else {
+            fontSize = isNarrow ? '6.5px' : '7.5px';
+          }
+
           const numColor = plot.status === 'sold' ? '#7F1D1D' : '#1E293B';
           const numIcon = L.divIcon({
             className: `plot-num-icon-${plot.plotNumber}`,
@@ -327,15 +336,16 @@ const Layout2DView = React.forwardRef(function Layout2DView({
               transform: translate(-50%, -50%);
               pointer-events: none;
               user-select: none;
-              letter-spacing: -0.3px;
+              white-space: nowrap;
+              letter-spacing: -0.4px;
               text-shadow:
-                -1px -1px 0 rgba(255,255,255,0.92),
-                 1px -1px 0 rgba(255,255,255,0.92),
-                -1px  1px 0 rgba(255,255,255,0.92),
-                 1px  1px 0 rgba(255,255,255,0.92);
+                -1px -1px 0 #FFFFFF,
+                 1px -1px 0 #FFFFFF,
+                -1px  1px 0 #FFFFFF,
+                 1px  1px 0 #FFFFFF;
             ">${plot.plotNumber}</div>`,
-            iconSize: [22, 14],
-            iconAnchor: [11, 7]
+            iconSize: [18, 12],
+            iconAnchor: [9, 6]
           });
           L.marker(plot.geoCenter, { icon: numIcon, interactive: false }).addTo(plotsGroup);
         }
