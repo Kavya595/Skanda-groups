@@ -56,7 +56,16 @@ export default function Navbar({ settings }) {
               </span>
             </div>
 
-            <div className="flex items-center gap-4 text-slate-300">
+            <div className="flex items-center gap-3 text-slate-300">
+              <Link
+                to="/admin/login"
+                className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-200 bg-slate-800/90 hover:bg-slate-700/90 px-2 py-0.5 rounded-md border border-slate-700"
+                title="Admin Staff Access Portal"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Admin Access</span>
+              </Link>
+              <span className="text-slate-600 hidden sm:inline">|</span>
               <a
                 href={`mailto:${email}`}
                 className="hover:text-brand-orange transition-colors hidden sm:inline-flex items-center gap-1 text-[11px]"
@@ -131,15 +140,15 @@ export default function Navbar({ settings }) {
               </a>
             </nav>
 
-            {/* Action CTA Button & Admin Login Symbol */}
+            {/* Action CTA Button & Admin Access Icon */}
             <div className="hidden sm:flex items-center gap-2">
               <Link
                 to="/admin/login"
-                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-emerald-700 flex items-center justify-center transition-all duration-200 border border-slate-200/80 shadow-2xs hover:shadow-xs shrink-0"
+                className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 flex items-center justify-center transition-all duration-200 border border-slate-700 shadow-xs hover:scale-105 shrink-0"
                 title="Admin Staff Portal"
-                aria-label="Admin Staff Portal"
+                aria-label="Admin Access"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
               </Link>
               <button
                 onClick={() => setIsEnquiryModalOpen(true)}
@@ -155,11 +164,11 @@ export default function Navbar({ settings }) {
             <div className="lg:hidden flex items-center gap-2">
               <Link
                 to="/admin/login"
-                className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-emerald-700 flex items-center justify-center transition-all duration-200 border border-slate-200/80 shadow-2xs"
+                className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 flex items-center justify-center transition-all duration-200 border border-slate-700 shadow-xs"
                 title="Admin Staff Portal"
-                aria-label="Admin Staff Portal"
+                aria-label="Admin Access"
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
               </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
