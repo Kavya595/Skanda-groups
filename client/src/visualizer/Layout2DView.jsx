@@ -22,59 +22,59 @@ export const MAP_LAYERS = {
   google: GOOGLE_MAP_LAYER
 };
 
-// Perimeter Surrounding Greenery Belts Around Layout (Clean, Attractive Open Landscape)
+// Perimeter Surrounding Greenery Belts Around Layout (Clean, Attractive Grass Landscape)
 const SURROUNDING_GREEN_BUFFERS = [
   // 1. West Agricultural & Plantation Green Belt
   {
     id: 'green-west',
     name: 'West Agricultural & Plantation Belt',
     polygon: [
-      [-128, -62],
-      [-92, -62],
-      [-92, 74],
-      [-128, 74]
+      [-160, -90],
+      [-90, -90],
+      [-90, 85],
+      [-160, 85]
     ],
-    fillColor: '#72B31E',
-    borderColor: '#4D8212'
+    fillColor: '#6DAE1C',
+    borderColor: '#42750F'
   },
   // 2. North Green Buffer Corridor (Behind 60ft Road to Maisigandi)
   {
     id: 'green-north',
     name: 'North Green Buffer Corridor',
     polygon: [
-      [-128, -82],
-      [114, -82],
-      [114, -52],
-      [-128, -52]
+      [-160, -90],
+      [125, -90],
+      [125, -52],
+      [-160, -52]
     ],
-    fillColor: '#6BA81A',
-    borderColor: '#487A10'
+    fillColor: '#65A318',
+    borderColor: '#3E6E0D'
   },
   // 3. South Plantation Green Buffer Belt
   {
     id: 'green-south',
     name: 'South Plantation Green Buffer',
     polygon: [
-      [-128, 66],
-      [114, 66],
-      [114, 96],
-      [-128, 96]
+      [-160, 64],
+      [125, 64],
+      [125, 95],
+      [-160, 95]
     ],
-    fillColor: '#72B31E',
-    borderColor: '#4D8212'
+    fillColor: '#6DAE1C',
+    borderColor: '#42750F'
   },
   // 4. East Highway Landscaped Verge Buffer (NH-765)
   {
     id: 'green-east',
     name: 'Highway Landscaped Green Buffer',
     polygon: [
-      [88, -82],
-      [118, -82],
-      [118, 96],
-      [88, 96]
+      [88, -90],
+      [125, -90],
+      [125, 95],
+      [88, 95]
     ],
-    fillColor: '#65A016',
-    borderColor: '#44750E'
+    fillColor: '#5E9B14',
+    borderColor: '#39630B'
   }
 ];
 
@@ -155,41 +155,59 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
-    // Inject Procedural SVG Grass Turf Pattern into Leaflet SVG defs
-    const overlayPane = map.getPanes().overlayPane;
-    if (overlayPane) {
-      const svg = overlayPane.querySelector('svg');
-      if (svg) {
-        let defs = svg.querySelector('defs');
-        if (!defs) {
-          defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-          svg.insertBefore(defs, svg.firstChild);
-        }
-        defs.innerHTML += `
-          <pattern id="leaflet-grass-turf-pattern" width="28" height="28" patternUnits="userSpaceOnUse">
-            <rect width="28" height="28" fill="#6AA81A" />
-            <rect x="0" y="0" width="14" height="28" fill="#78BF22" opacity="0.32" />
-            <path d="M4 24 L5 17 M6 24 L7 16 M5 24 L3 18" stroke="#4D8012" stroke-width="1.1" stroke-linecap="round" />
-            <path d="M16 12 L17 5 M18 12 L19 4 M17 12 L15 6" stroke="#8CD428" stroke-width="1.1" stroke-linecap="round" />
-            <path d="M10 20 L11 13 M12 20 L13 14 M11 20 L9 15" stroke="#4D8012" stroke-width="1.1" stroke-linecap="round" />
-            <path d="M22 24 L23 18 M24 24 L25 17 M23 24 L21 19" stroke="#84CE25" stroke-width="1.1" stroke-linecap="round" />
-          </pattern>
-        `;
-      }
-    }
-
-    // (A) Surrounding Greenery Buffer Belts Around Layout with Grass Turf
+    // (A) Surrounding Greenery Buffer Belts Around Layout (Lush Grass-Type Green)
     SURROUNDING_GREEN_BUFFERS.forEach(buff => {
       const geoPoly = buff.polygon.map(([x, z]) => localToLatLng(x, z));
       L.polygon(geoPoly, {
         color: buff.borderColor,
         weight: 1.5,
         fillColor: buff.fillColor,
-        fillOpacity: 0.92,
-        className: 'grass-turf-polygon',
+        fillOpacity: 0.94,
         interactive: false
       }).addTo(staticGroup);
     });
+
+    // North Green Buffer Corridor Label
+    const northLabelPos = localToLatLng(0, -68);
+    const northLabel = L.divIcon({
+      className: 'green-buffer-label',
+      html: `
+        <div style="
+          color: rgba(255, 255, 255, 0.92);
+          font-size: 8px;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+          white-space: nowrap;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+        ">🌿 PROPOSED GREEN BUFFER CORRIDOR</div>
+      `,
+      iconSize: [0, 0]
+    });
+    L.marker(northLabelPos, { icon: northLabel, interactive: false }).addTo(staticGroup);
+
+    // West Green Buffer Label
+    const westLabelPos = localToLatLng(-120, 6);
+    const westLabel = L.divIcon({
+      className: 'green-buffer-label',
+      html: `
+        <div style="
+          color: rgba(255, 255, 255, 0.92);
+          font-size: 8px;
+          font-weight: 800;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+          white-space: nowrap;
+          transform: translate(-50%, -50%) rotate(-90deg);
+          pointer-events: none;
+        ">🌿 AGRICULTURAL & PLANTATION ZONE</div>
+      `,
+      iconSize: [0, 0]
+    });
+    L.marker(westLabelPos, { icon: westLabel, interactive: false }).addTo(staticGroup);
 
     // (B) DTCP Sanctioned Layout Boundary Polygon
     L.polygon(SITE_BOUNDARY_GEO, {
@@ -344,11 +362,10 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     ].map(([x, z]) => localToLatLng(x, z));
 
     L.polygon(parkInnerPoly, {
-      color: '#4A7C12',
+      color: '#3B6E0E',
       weight: 1.8,
-      fillColor: '#72B31E',
+      fillColor: '#68B31E',
       fillOpacity: 0.98,
-      className: 'grass-turf-polygon',
       interactive: false
     }).addTo(staticGroup);
 
@@ -763,11 +780,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         .leaflet-control-attribution {
           display: none !important;
         }
-        .grass-turf-polygon {
-          fill: url(#leaflet-grass-turf-pattern) !important;
-          fill-opacity: 0.96 !important;
-        }
-        .entrance-arch-icon, .custom-park-typography, .hwy-road-label, .r60-road-label, .custom-road-label {
+        .entrance-arch-icon, .custom-park-typography, .hwy-road-label, .r60-road-label, .custom-road-label, .green-buffer-label {
           pointer-events: none !important;
         }
       `}</style>
