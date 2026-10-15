@@ -7,8 +7,7 @@ import {
   SITE_BOUNDARY_LOCAL,
   layoutRoads,
   parkData,
-  statusColors,
-  REGIONAL_LANDMARKS
+  statusColors
 } from './masterPlanData';
 
 // Road definitions for the interactive Street Walk / Road Travel mode
@@ -845,209 +844,6 @@ function MovingVehicles3D({ animate = true }) {
   );
 }
 
-// Regional Map Location Pins and Surrounding Landmarks (Displayed when layout is minimized in Map View)
-function RegionalMapLocationPin({ isMapView, onLandmarkClick }) {
-  const ringRef = useRef();
-
-  useFrame(({ clock }) => {
-    if (!isMapView) return;
-    const t = clock.getElapsedTime();
-    if (ringRef.current) {
-      const s = 1 + (Math.sin(t * 2.5) + 1) * 0.25;
-      ringRef.current.scale.set(s, s, 1);
-    }
-  });
-
-  if (!isMapView) return null;
-
-  const surroundingLandmarks = REGIONAL_LANDMARKS.filter(lm => lm.id !== 'LM-SITE');
-
-  return (
-    <group position={[0, 0, 0]}>
-      {/* 1. Ground Pulsing Radar Target Rings on Alekhya's Brundavan */}
-      <group ref={ringRef} position={[0, 0.25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <mesh>
-          <ringGeometry args={[8, 12, 32]} />
-          <meshBasicMaterial color="#EF4444" transparent opacity={0.65} />
-        </mesh>
-        <mesh>
-          <ringGeometry args={[4, 6.5, 32]} />
-          <meshBasicMaterial color="#FBBF24" transparent opacity={0.8} />
-        </mesh>
-        <mesh>
-          <circleGeometry args={[2.5, 24]} />
-          <meshBasicMaterial color="#DC2626" />
-        </mesh>
-      </group>
-
-      {/* 2. Vertical Light Beacon Ray to Main Layout Pin */}
-      <mesh position={[0, 14, 0]}>
-        <cylinderGeometry args={[0.35, 1.2, 28, 16]} />
-        <meshBasicMaterial color="#EF4444" transparent opacity={0.3} />
-      </mesh>
-
-      {/* 3. Floating 3D Google Maps Location Pin Marker for Alekhya's Brundavan */}
-      <group position={[0, 28, 0]}>
-        {/* Red Pin Head Sphere */}
-        <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[4.2, 24, 24]} />
-          <meshStandardMaterial color="#EA4335" roughness={0.3} metalness={0.1} />
-        </mesh>
-        {/* White Inner Dot */}
-        <mesh position={[0, 0, 0]}>
-          <sphereGeometry args={[1.8, 16, 16]} />
-          <meshBasicMaterial color="#FFFFFF" />
-        </mesh>
-        {/* Inverted Pin Cone Tip Pointing Down to Layout Center */}
-        <mesh position={[0, -3.8, 0]} rotation={[Math.PI, 0, 0]}>
-          <coneGeometry args={[3.2, 5.5, 24]} />
-          <meshStandardMaterial color="#C5221F" roughness={0.3} />
-        </mesh>
-
-        {/* High-Altitude Brochure Title Card */}
-        <group position={[0, 8.5, 0]} rotation={[-Math.PI * 0.2, 0, 0]}>
-          <mesh position={[0, 0, -0.2]}>
-            <planeGeometry args={[48, 12]} />
-            <meshBasicMaterial color="#0F172A" opacity={0.92} transparent />
-          </mesh>
-          <lineSegments position={[0, 0, -0.18]}>
-            <edgesGeometry args={[new THREE.PlaneGeometry(48, 12)]} />
-            <lineBasicMaterial color="#38BDF8" linewidth={2} />
-          </lineSegments>
-
-          <Text
-            position={[0, 3.2, 0]}
-            fontSize={3.2}
-            color="#FEF08A"
-            fontWeight="bold"
-            anchorX="center"
-            anchorY="middle"
-          >
-            ALEKHYA'S BRUNDAVAN
-          </Text>
-          <Text
-            position={[0, 0.2, 0]}
-            fontSize={2.1}
-            color="#FFFFFF"
-            fontWeight="600"
-            anchorX="center"
-            anchorY="middle"
-          >
-            📍 Kadthal, Srisailam Highway (NH-765)
-          </Text>
-          <Text
-            position={[0, -2.8, 0]}
-            fontSize={1.7}
-            color="#4ADE80"
-            fontWeight="500"
-            anchorX="center"
-            anchorY="middle"
-          >
-            DTCP &amp; TS RERA APPROVED REGIONAL VENTURE
-          </Text>
-        </group>
-      </group>
-
-      {/* 4. Surrounding Regional Landmark Beacons & Connecting Rays */}
-      {surroundingLandmarks.map((lm) => {
-        const [lx, ly, lz] = lm.threePos;
-        return (
-          <group
-            key={lm.id}
-            position={[lx, ly, lz]}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onLandmarkClick) onLandmarkClick(lm);
-            }}
-          >
-            {/* Ground Radial Line connecting Layout to Landmark */}
-            <Line
-              points={[[-lx, 0.1, -lz], [0, 0.1, 0]]}
-              color={lm.color || '#38BDF8'}
-              lineWidth={2}
-              dashed
-              dashScale={1.2}
-              transparent
-              opacity={0.7}
-            />
-
-            {/* Ground Target Rings at Landmark Base */}
-            <group position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-              <mesh>
-                <ringGeometry args={[3, 5, 24]} />
-                <meshBasicMaterial color={lm.color || '#38BDF8'} transparent opacity={0.5} />
-              </mesh>
-              <mesh>
-                <circleGeometry args={[1.6, 16]} />
-                <meshBasicMaterial color={lm.color || '#38BDF8'} />
-              </mesh>
-            </group>
-
-            {/* Vertical Beacon Pillar Ray */}
-            <mesh position={[0, 10, 0]}>
-              <cylinderGeometry args={[0.2, 0.6, 20, 12]} />
-              <meshBasicMaterial color={lm.color || '#38BDF8'} transparent opacity={0.35} />
-            </mesh>
-
-            {/* Floating Landmark Pin Marker & Plaque */}
-            <group position={[0, 20, 0]} rotation={[-Math.PI * 0.2, 0, 0]}>
-              {/* Landmark Pin Head */}
-              <mesh position={[0, 4.5, 0]}>
-                <sphereGeometry args={[2.5, 16, 16]} />
-                <meshStandardMaterial color={lm.color || '#38BDF8'} roughness={0.3} />
-              </mesh>
-
-              {/* Plaque Background */}
-              <mesh position={[0, 0, -0.15]}>
-                <planeGeometry args={[38, 9.5]} />
-                <meshBasicMaterial color="#0B132B" opacity={0.92} transparent />
-              </mesh>
-              <lineSegments position={[0, 0, -0.12]}>
-                <edgesGeometry args={[new THREE.PlaneGeometry(38, 9.5)]} />
-                <lineBasicMaterial color={lm.color || '#38BDF8'} linewidth={2} />
-              </lineSegments>
-
-              {/* Landmark Title */}
-              <Text
-                position={[0, 2.3, 0]}
-                fontSize={2.1}
-                color="#FFFFFF"
-                fontWeight="bold"
-                anchorX="center"
-                anchorY="middle"
-              >
-                {`${lm.icon} ${lm.shortName}`}
-              </Text>
-
-              {/* Distance & Travel Time Tag */}
-              <Text
-                position={[0, -0.3, 0]}
-                fontSize={1.7}
-                color="#FEF08A"
-                fontWeight="600"
-                anchorX="center"
-                anchorY="middle"
-              >
-                {`⏱️ ${lm.time} (${lm.distance})`}
-              </Text>
-
-              {/* Direction Indicator */}
-              <Text
-                position={[0, -2.5, 0]}
-                fontSize={1.3}
-                color="#94A3B8"
-                anchorX="center"
-                anchorY="middle"
-              >
-                {lm.direction}
-              </Text>
-            </group>
-          </group>
-        );
-      })}
-    </group>
-  );
-}
 
 // Low Cycad Palm Shrub for the Park Lawn (matching Screenshot 3 & 4)
 function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
@@ -2022,8 +1818,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
   measurePoints = [],
   onMeasurePoint,
   onRoadClick,
-  onParkClick,
-  onLandmarkClick
+  onParkClick
 }, ref) {
   const cleanSearch = (searchTerm || '').trim();
   const bgColor = '#E5ECE3';
@@ -2067,12 +1862,6 @@ const Layout3DView = React.forwardRef(function Layout3DView({
 
         {/* Moving Vehicles across Highway AND Venture Roads */}
         <MovingVehicles3D animate={animateVehicles} />
-
-        {/* Regional Map Location Pins and Surrounding Landmarks (Displayed when layout is minimized in Map View) */}
-        <RegionalMapLocationPin
-          isMapView={cameraPreset === 'mapView'}
-          onLandmarkClick={onLandmarkClick}
-        />
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>

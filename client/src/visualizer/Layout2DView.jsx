@@ -7,8 +7,7 @@ import {
   localToLatLng,
   layoutRoads,
   parkData,
-  statusColors,
-  REGIONAL_LANDMARKS
+  statusColors
 } from './masterPlanData';
 
 // Real Google Maps Roadmap tile provider (Zero API Key Required)
@@ -32,9 +31,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
   filterStatus = 'all',
   filterFacing = 'all',
   searchTerm = '',
-  animateVehicles = true,
-  isLocationMapMode = false,
-  onLandmarkSelect = () => {}
+  animateVehicles = true
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -56,16 +53,10 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     showLocationMap: (show = true) => {
       if (!mapInstanceRef.current) return;
       if (show) {
-        const bounds = L.latLngBounds([SITE_GEO.center, ...REGIONAL_LANDMARKS.map(l => l.coordinates)]);
-        mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], animate: true });
+        // Zoom out smoothly to regional map level (Z12: Kadthal, Maisigandi, Srisailam Highway corridor)
+        mapInstanceRef.current.setView(SITE_GEO.center, 12, { animate: true });
       } else {
         mapInstanceRef.current.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true });
-      }
-    },
-    focusLandmark: (id) => {
-      const lm = REGIONAL_LANDMARKS.find(l => l.id === id);
-      if (lm && mapInstanceRef.current) {
-        mapInstanceRef.current.setView(lm.coordinates, 15, { animate: true });
       }
     },
     setMapType: () => {}
@@ -715,140 +706,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     };
   }, [animateVehicles, currentZoom]);
-
-  // 3. Render Regional Landmarks & Connectivity when in Location Map mode or zoomed out
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    const map = mapInstanceRef.current;
-    const shouldShow = isLocationMapMode || currentZoom <= 15;
-
-    if (!shouldShow) return;
-
-    const landmarkGroup = L.layerGroup().addTo(map);
-
-    // Pulsing concentric radar circles around Alekhya's Brundavan
-    const radarDistances = [
-      { r: 800, label: '800m (Maisigandi)' },
-      { r: 2500, label: '2.5 km (Kadthal)' },
-      { r: 5000, label: '5 km (RRR Corridor)' },
-      { r: 15000, label: '15 km (Pharma City)' },
-      { r: 28000, label: '28 km (RGIA Airport)' }
-    ];
-
-    radarDistances.forEach(({ r }) => {
-      L.circle(SITE_GEO.center, {
-        radius: r,
-        color: '#10B981',
-        weight: 1.2,
-        dashArray: '4, 8',
-        fill: false,
-        opacity: 0.45,
-        interactive: false
-      }).addTo(landmarkGroup);
-    });
-
-    REGIONAL_LANDMARKS.forEach((lm) => {
-      const isSite = lm.id === 'LM-SITE';
-      const markerLatLng = lm.coordinates;
-
-      // Connecting dashline from layout to landmark
-      if (!isSite) {
-        L.polyline([SITE_GEO.center, markerLatLng], {
-          color: lm.color || '#3B82F6',
-          weight: 2,
-          dashArray: '6, 6',
-          opacity: 0.65,
-          interactive: false
-        }).addTo(landmarkGroup);
-      }
-
-      // Rich DivIcon for Landmark
-      const lmIcon = L.divIcon({
-        className: `regional-lm-${lm.id}`,
-        html: `
-          <div style="
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(15, 23, 42, 0.95);
-            border: 2px solid ${lm.color || '#38BDF8'};
-            color: #FFFFFF;
-            padding: 4px 8px;
-            border-radius: 9999px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            white-space: nowrap;
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-          ">
-            <span style="font-size: 13px;">${lm.icon}</span>
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: 10px; font-weight: 800; color: #FFFFFF; line-height: 1.1;">${lm.shortName}</span>
-              <span style="font-size: 8px; font-weight: 700; color: #FEF08A;">${lm.time} (${lm.distance})</span>
-            </div>
-          </div>
-        `,
-        iconSize: [0, 0]
-      });
-
-      const marker = L.marker(markerLatLng, { icon: lmIcon, interactive: true }).addTo(landmarkGroup);
-
-      // Popup with directions & full info
-      const popupHtml = `
-        <div style="font-family: inherit; min-width: 200px; padding: 4px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <span style="font-size: 20px;">${lm.icon}</span>
-            <div>
-              <div style="font-weight: 800; font-size: 13px; color: #0F172A;">${lm.name}</div>
-              <div style="font-size: 9.5px; font-weight: 700; color: #64748B; text-transform: uppercase;">${lm.categoryLabel}</div>
-            </div>
-          </div>
-          <p style="font-size: 11px; color: #334155; margin: 6px 0 8px 0; line-height: 1.4;">${lm.desc}</p>
-          <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; font-size: 11px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
-              <span style="color: #64748B;">Travel Time:</span>
-              <strong style="color: #0F172A;">⏱️ ${lm.time}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748B;">Distance:</span>
-              <strong style="color: #0F172A;">📍 ${lm.distance}</strong>
-            </div>
-          </div>
-          <a
-            href="${lm.mapsUrl}"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="
-              display: block;
-              text-align: center;
-              background: #059669;
-              color: #FFFFFF;
-              font-weight: 700;
-              font-size: 11px;
-              padding: 6px 10px;
-              border-radius: 6px;
-              text-decoration: none;
-              box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
-            "
-          >
-            🧭 Get Driving Directions &rarr;
-          </a>
-        </div>
-      `;
-
-      marker.bindPopup(popupHtml);
-
-      marker.on('click', () => {
-        if (onLandmarkSelect) onLandmarkSelect(lm);
-      });
-    });
-
-    return () => {
-      if (mapInstanceRef.current && landmarkGroup) {
-        map.removeLayer(landmarkGroup);
-      }
-    };
-  }, [isLocationMapMode, currentZoom, onLandmarkSelect]);
 
   return (
     <div className="relative w-full h-full overflow-hidden select-none">
