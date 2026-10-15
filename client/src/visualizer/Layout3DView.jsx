@@ -93,6 +93,7 @@ function CameraController({
   walkRoadIndex = 0,
   walkProgress = 0,
   onWalkProgressChange,
+  onAzimuthChange,
   onResetComplete,
   apiRef
 }) {
@@ -101,6 +102,7 @@ function CameraController({
   const animatingRef = useRef(false);
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
+  const lastAzimuthRef = useRef(0);
 
   // Expose smooth zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -227,6 +229,11 @@ function CameraController({
       targetPos.current.set(-9, 210, 6);
       targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
+    } else if (cameraPreset === 'mapView') {
+      // 3D Regional Map View matching Plots99 Image (media_1792061116841_a13f2ed9.png)
+      targetPos.current.set(0, 520, 640);
+      targetLook.current.set(0, 0, -20);
+      animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
       targetPos.current.set(78, 22, 22);
       targetLook.current.set(50, 0, -4);
@@ -240,6 +247,18 @@ function CameraController({
   }, [cameraPreset]);
 
   useFrame((_, delta) => {
+    // Notify parent of camera azimuth rotation for compass needle sync
+    if (controlsRef.current && onAzimuthChange) {
+      const az = Math.atan2(
+        camera.position.x - controlsRef.current.target.x,
+        camera.position.z - controlsRef.current.target.z
+      );
+      if (Math.abs(az - lastAzimuthRef.current) > 0.015) {
+        lastAzimuthRef.current = az;
+        onAzimuthChange(az);
+      }
+    }
+
     if (cameraPreset === 'roadWalk') {
       // Direct Responsive Road Walk Camera Control
       const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
@@ -299,10 +318,10 @@ function CameraController({
         ONE: THREE.TOUCH.ROTATE,
         TWO: THREE.TOUCH.DOLLY_PAN
       }}
-      minPolarAngle={Math.PI / 10}
+      minPolarAngle={Math.PI / 12}
       maxPolarAngle={Math.PI / 2.15}
-      minDistance={12}
-      maxDistance={650}
+      minDistance={10}
+      maxDistance={2800}
       enableDamping={true}
       dampingFactor={0.07}
     />
@@ -1523,8 +1542,93 @@ export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Clean Master Plan 3D Ground matching Plots99 Image 2
+// Module-level caches for 3D Regional Ground Canvas and Texture
+let regionalCanvasCache = null;
+let regionalTextureCache = null;
+
+// Clean Master Plan 3D Ground with Real Regional Kadthal Map matching Plots99 Image (media_1792061116841_a13f2ed9.png)
 export function CleanMasterPlanTerrain() {
+  const [tilesLoaded, setTilesLoaded] = useState(0);
+
+  // Initialize 1280x1280 canvas covering ~23.4 km at zoom 13
+  const canvas = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    if (regionalCanvasCache) return regionalCanvasCache;
+
+    const cvs = document.createElement('canvas');
+    cvs.width = 1280;
+    cvs.height = 1280;
+    const ctx = cvs.getContext('2d');
+    // Pre-fill with natural map background color matching OSM/Carto
+    ctx.fillStyle = '#E8ECE1';
+    ctx.fillRect(0, 0, 1280, 1280);
+    regionalCanvasCache = cvs;
+    return cvs;
+  }, []);
+
+  const texture = useMemo(() => {
+    if (!canvas) return null;
+    if (regionalTextureCache) return regionalTextureCache;
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    regionalTextureCache = tex;
+    return tex;
+  }, [canvas]);
+
+  // Stream 5x5 Zoom 13 tiles centered on Kadthal (lat: 16.9555, lng: 78.5125)
+  useEffect(() => {
+    if (!canvas || !texture) return;
+    const ctx = canvas.getContext('2d');
+    const zoom = 13;
+    const minTx = 5880;
+    const minTy = 3702;
+    const xCenter = 5882.59555;
+    const yCenter = 3704.4101;
+
+    for (let dy = 0; dy < 5; dy++) {
+      for (let dx = 0; dx < 5; dx++) {
+        const tx = minTx + dx;
+        const ty = minTy + dy;
+        const cx = Math.round(640 + (tx - xCenter) * 256);
+        const cy = Math.round(640 + (ty - yCenter) * 256);
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            ctx.drawImage(img, cx, cy, 256, 256);
+            texture.needsUpdate = true;
+            setTilesLoaded((c) => c + 1);
+          } catch (e) {
+            console.warn('Map tile draw warning:', e);
+          }
+        };
+
+        img.onerror = () => {
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            try {
+              ctx.drawImage(fallback, cx, cy, 256, 256);
+              texture.needsUpdate = true;
+              setTilesLoaded((c) => c + 1);
+            } catch (e) {}
+          };
+          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
+        };
+
+        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=voyager`;
+      }
+    }
+  }, [canvas, texture]);
+
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
     const shape = new THREE.Shape();
@@ -1544,24 +1648,36 @@ export function CleanMasterPlanTerrain() {
     return pts;
   }, []);
 
+  const groundSize = 23393; // 1280px * 18.276m/px
+
   return (
     <group>
-      {/* 1. Natural Meadow Green Ground Plane matching Plots99 Image 2 (#C8DFC4) */}
-      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[3000, 3000]} />
-        <meshStandardMaterial color="#C8DFC4" roughness={0.92} metalness={0.05} />
+      {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 23km) */}
+      <mesh position={[0, -0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[65000, 65000]} />
+        <meshBasicMaterial color="#E8ECE1" />
       </mesh>
 
-      {/* 2. DTCP Sanctioned Layout Compound Base Shape (#D7EBD4) */}
+      {/* 2. Full 23.4-Kilometer 3D Regional Map Plane (Zoom 13: Kadthal, Maisigandi, Srisailam Highway, Mucherla) */}
+      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[groundSize, groundSize]} />
+        <meshBasicMaterial
+          key={`map-texture-${tilesLoaded}`}
+          map={texture || undefined}
+          color="#FFFFFF"
+        />
+      </mesh>
+
+      {/* 3. DTCP Sanctioned Layout Compound Base Shape (#D7EBD4) */}
       <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[compoundShape]} />
         <meshStandardMaterial color="#D7EBD4" roughness={0.85} metalness={0.05} />
       </mesh>
 
-      {/* 3. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
+      {/* 4. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
-      {/* 4. 4th Phase road opening markers matching brochure */}
+      {/* 5. 4th Phase road opening markers matching brochure */}
       {[
         [-61.5, 53.5], // Road V0 opening to 4th Phase
         [-32.5, 65.5], // Road V1 opening to 4th Phase
@@ -1572,7 +1688,7 @@ export function CleanMasterPlanTerrain() {
         <group key={`phase4-3d-${i}`} position={[px, 0.035, pz]} rotation={[-Math.PI / 2, 0, 0]}>
           <Text
             fontSize={1.2}
-            color="#64748B"
+            color="#475569"
             fontWeight="bold"
             anchorX="center"
             anchorY="middle"
@@ -1582,7 +1698,7 @@ export function CleanMasterPlanTerrain() {
         </group>
       ))}
 
-      {/* 5. Clean Highway Directional Landmarks (Orientation without messy 2D map tiles) */}
+      {/* 6. Clean Highway Directional Landmarks */}
       {/* Highway North to Hyderabad */}
       <group position={[80, 0.04, -55]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
         <Text fontSize={1.4} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
@@ -1604,7 +1720,7 @@ export function CleanMasterPlanTerrain() {
         </Text>
       </group>
 
-      {/* 6. Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
+      {/* 7. Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
     </group>
   );
@@ -1679,6 +1795,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
   walkRoadIndex = 0,
   walkProgress = 0,
   onWalkProgressChange,
+  onAzimuthChange,
   animateVehicles = true,
   isMeasureMode = false,
   measurePoints = [],
@@ -1687,14 +1804,14 @@ const Layout3DView = React.forwardRef(function Layout3DView({
   onParkClick
 }, ref) {
   const cleanSearch = (searchTerm || '').trim();
-  const bgColor = '#C8DFC4';
+  const bgColor = '#E5ECE3';
 
   return (
-    <div className={`w-full h-full relative bg-[#C8DFC4] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+    <div className={`w-full h-full relative bg-[#E5ECE3] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       <Canvas
         shadows={false}
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [-9, 85, 120], fov: 42, near: 0.5, far: 5000 }}
+        camera={{ position: [-9, 85, 120], fov: 42, near: 0.5, far: 90000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
@@ -1710,6 +1827,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
           walkRoadIndex={walkRoadIndex}
           walkProgress={walkProgress}
           onWalkProgressChange={onWalkProgressChange}
+          onAzimuthChange={onAzimuthChange}
           apiRef={ref}
         />
 

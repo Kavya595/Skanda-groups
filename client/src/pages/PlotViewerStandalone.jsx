@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   X,
   Info,
+  Map,
   MapPin,
   Clock,
   Sparkles,
@@ -295,6 +296,7 @@ export default function PlotViewerStandalone({ settings }) {
 
   // Tools & State
   const [cameraPreset, setCameraPreset] = useState('overview');
+  const [cameraAzimuth, setCameraAzimuth] = useState(0);
   const [animateVehicles, setAnimateVehicles] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMeasureMode, setIsMeasureMode] = useState(false);
@@ -708,7 +710,10 @@ export default function PlotViewerStandalone({ settings }) {
             className="w-10 h-10 bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex items-center justify-center group hover:bg-white transition-all"
             title="Reset to True North (Overview)"
           >
-            <Compass className="w-5 h-5 text-emerald-600 group-hover:rotate-45 transition-transform duration-300" />
+            <Compass
+              className="w-5 h-5 text-emerald-600 transition-transform duration-200"
+              style={{ transform: `rotate(${cameraAzimuth}rad)` }}
+            />
           </button>
         </div>
 
@@ -716,6 +721,21 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
+          {/* Regional Map View Toggle (USER REQUIREMENT: Zoom out to see surrounding map & Kadthal corridor, minimize/maximize 3D view) */}
+          {viewMode === '3d' && (
+            <button
+              onClick={() => setCameraPreset(cameraPreset === 'mapView' ? 'overview' : 'mapView')}
+              className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+                cameraPreset === 'mapView'
+                  ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400/50'
+                  : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-blue-600 border-slate-200/90 hover:bg-white'
+              }`}
+              title={cameraPreset === 'mapView' ? 'Zoom to 3D Layout' : 'Regional Map View (Kadthal Corridor)'}
+            >
+              <Map className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -769,6 +789,7 @@ export default function PlotViewerStandalone({ settings }) {
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
               cameraPreset={cameraPreset}
+              onAzimuthChange={setCameraAzimuth}
               searchTerm={searchTerm}
               filterStatus={statusFilter}
               filterFacing={facingFilter}
@@ -867,6 +888,30 @@ export default function PlotViewerStandalone({ settings }) {
 
 
 
+
+        {/* Floating Regional Map View Controller (USER REQUIREMENT matching Screenshot media_1792061116841_a13f2ed9.png) */}
+        {cameraPreset === 'mapView' && viewMode === '3d' && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-lg bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 space-y-2 pointer-events-auto animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                <span className="text-xs font-bold text-slate-900">
+                  Regional Map &bull; Srisailam Highway &bull; Kadthal Corridor
+                </span>
+              </div>
+              <button
+                onClick={() => setCameraPreset('overview')}
+                className="text-[11px] text-white font-bold px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
+              >
+                Zoom to 3D Layout
+              </button>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-600">
+              <span>Kadthal &bull; Maisigandi Temple &bull; Mucherla Future City</span>
+              <span className="text-blue-700 font-bold">Zoom in or click layout to explore 3D plots</span>
+            </div>
+          </div>
+        )}
 
         {/* Floating Park View Controller (USER REQUIREMENT matching Screenshot 3 & 4) */}
         {(cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (

@@ -38,10 +38,15 @@ router.get('/tiles/:z/:x/:y.png', async (req, res) => {
     urlsToTry.push(`https://mt1.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}`);
   } else if (type === 'osm') {
     urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
-  } else {
-    // Default: Google Maps Roadmap
-    urlsToTry.push(`https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}`);
+    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
+  } else if (type === 'voyager') {
+    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
     urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+  } else {
+    // Default: CartoDB Voyager / Google Maps / OSM
+    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
+    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+    urlsToTry.push(`https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}`);
   }
 
   for (const tileUrl of urlsToTry) {
