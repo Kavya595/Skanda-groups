@@ -50,8 +50,7 @@ import {
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent, submitLead } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
-import Layout3DView, { WALK_ROADS } from '../visualizer/Layout3DView';
-import Layout2DView from '../visualizer/Layout2DView';
+import LayoutMasterView, { WALK_ROADS } from '../visualizer/LayoutMasterView';
 import EnquiryModal from '../components/EnquiryModal';
 
 // Authoritative Location Highlights matching Plots99 structure
@@ -345,8 +344,7 @@ export default function PlotViewerStandalone({ settings }) {
 
   const containerRef = useRef(null);
   const mapSectionRef = useRef(null);
-  const layout2DRef = useRef(null);
-  const layout3DRef = useRef(null);
+  const layoutRef = useRef(null);
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { viewMode, standalone: true });
@@ -685,13 +683,7 @@ export default function PlotViewerStandalone({ settings }) {
           {/* Vertical OpenLayers-style Zoom Pill (matching Plots99 .ol-zoom) */}
           <div className="bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex flex-col items-center overflow-hidden">
             <button
-              onClick={() => {
-                if (viewMode === '2d') {
-                  layout2DRef.current?.zoomIn();
-                } else {
-                  layout3DRef.current?.zoomIn();
-                }
-              }}
+              onClick={() => layoutRef.current?.zoomIn()}
               className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
               title="Zoom In (+)"
             >
@@ -699,13 +691,7 @@ export default function PlotViewerStandalone({ settings }) {
             </button>
             <div className="w-5 h-px bg-slate-200/80" />
             <button
-              onClick={() => {
-                if (viewMode === '2d') {
-                  layout2DRef.current?.zoomOut();
-                } else {
-                  layout3DRef.current?.zoomOut();
-                }
-              }}
+              onClick={() => layoutRef.current?.zoomOut()}
               className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
               title="Zoom Out (−) Minimize Layout"
             >
@@ -716,12 +702,8 @@ export default function PlotViewerStandalone({ settings }) {
           {/* Compass Needle (matching Plots99 top-left compass) */}
           <button
             onClick={() => {
-              if (viewMode === '2d') {
-                layout2DRef.current?.reset();
-              } else {
-                layout3DRef.current?.reset();
-                setCameraPreset('overview');
-              }
+              layoutRef.current?.reset();
+              setCameraPreset('overview');
             }}
             className="w-10 h-10 bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex items-center justify-center group hover:bg-white transition-all"
             title="Reset to True North (Overview)"
@@ -779,9 +761,10 @@ export default function PlotViewerStandalone({ settings }) {
                 <div className="text-xs font-semibold text-slate-700">Loading master plan...</div>
               </div>
             </div>
-          ) : viewMode === '3d' ? (
-            <Layout3DView
-              ref={layout3DRef}
+          ) : (
+            <LayoutMasterView
+              ref={layoutRef}
+              viewMode={viewMode}
               plots={plots}
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
@@ -798,17 +781,6 @@ export default function PlotViewerStandalone({ settings }) {
               onMeasurePoint={handleMeasurePoint}
               onRoadClick={handleRoadClick}
               onParkClick={handleParkClick}
-            />
-          ) : (
-            <Layout2DView
-              ref={layout2DRef}
-              plots={plots}
-              selectedPlot={selectedPlot}
-              onSelectPlot={handleSelectPlot}
-              filterStatus={statusFilter}
-              filterFacing={facingFilter}
-              searchTerm={searchTerm}
-              animateVehicles={animateVehicles}
             />
           )}
         </div>

@@ -311,16 +311,18 @@ function CameraController({
 }
 
 // 3D Volumetric Plot Tile with physical Height, Width, Depth and Plinth Base
-function Plot3D({
+export function Plot3D({
   plot,
   isSelected,
   isDimmed = false,
   isSearchedMatch = false,
+  isHovered = false,
   onSelect,
   isMeasureMode,
   onMeasurePoint
 }) {
   const [hovered, setHovered] = useState(false);
+  const activeHover = isHovered || hovered;
   const meta = statusColors[plot.status] || statusColors.available;
 
   const color = useMemo(() => {
@@ -330,9 +332,9 @@ function Plot3D({
       return '#68D391';
     }
     if (isSearchedMatch) return '#EA580C';
-    if (hovered) return '#FB923C';
+    if (activeHover) return '#FB923C';
     return meta.threeColor;
-  }, [plot.status, isSelected, isSearchedMatch, hovered, meta.threeColor]);
+  }, [plot.status, isSelected, isSearchedMatch, activeHover, meta.threeColor]);
 
   const [cx, cz] = plot.center || [0, 0];
   const w = plot.bounds?.width || 10;
@@ -340,7 +342,7 @@ function Plot3D({
 
   // Realistic Physical 3D Tile Dimensions: Height (0.22m plinth slab), Width and Depth
   const tileHeight = 0.22;
-  const liftY = isSelected ? 0.32 : isSearchedMatch ? 0.22 : hovered ? 0.12 : 0;
+  const liftY = isSelected ? 0.32 : isSearchedMatch ? 0.22 : activeHover ? 0.12 : 0;
   const posY = (tileHeight / 2) + 0.02 + liftY;
   const tileW = Math.max(w - 0.08, 0.5);
   const tileD = Math.max(d - 0.08, 0.5);
@@ -472,7 +474,7 @@ function Plot3D({
       </group>
 
       {/* Edge Dimensions when Selected or Hovered (matching Screenshot 3: 50', 30') */}
-      {(isSelected || hovered) && (
+      {(isSelected || activeHover) && (
         <group position={[0, topSurfaceY + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <Text
             position={[0, d / 2 - 0.7, 0]}
@@ -523,7 +525,7 @@ function Plot3D({
 }
 
 // Authoritative Plots99 Avenue Palm Tree (Exact match to User's Uploaded Images 1 & 2: low human-scale, leaves drooping downward)
-function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
+export function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
   // 6 radial main frond angles matching user reference photos (media_1791978949814_743b6c5a.png & media_1791978967243_dc66c9dd.png)
   const frondAngles = [0, 60, 120, 180, 240, 300];
   // 4 secondary outer drooping fronds for natural fullness
@@ -629,10 +631,10 @@ function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
   );
 }
 
-const StraightAvenueTree = Plots99AvenuePalm;
+export const StraightAvenueTree = Plots99AvenuePalm;
 
 // Natural Perimeter Canopy Shade Tree for Surrounding Greenery
-function PerimeterCanopyTree({ position = [0, 0, 0], scale = 1.0 }) {
+export function PerimeterCanopyTree({ position = [0, 0, 0], scale = 1.0 }) {
   return (
     <group position={position} scale={scale}>
       {/* Natural Bark Trunk */}
@@ -657,7 +659,7 @@ function PerimeterCanopyTree({ position = [0, 0, 0], scale = 1.0 }) {
 // Shared Procedural Lush Grass Turf Texture Cache
 let grassTurfTextureCache = null;
 
-function getGrassTurfTexture() {
+export function getGrassTurfTexture() {
   if (typeof document === 'undefined') return null;
   if (grassTurfTextureCache) return grassTurfTextureCache;
 
@@ -711,7 +713,7 @@ function getGrassTurfTexture() {
 
 
 // High-Quality Realistic 3D Low-Poly Vehicles driving on Venture Roads
-function Vehicle3D({ color }) {
+export function Vehicle3D({ color }) {
   return (
     <group>
       {/* Aerodynamic Car Body with glossy finish */}
@@ -772,7 +774,7 @@ function Vehicle3D({ color }) {
 }
 
 // Moving Vehicles across Highway AND Venture Roads
-function MovingVehicles3D({ animate = true }) {
+export function MovingVehicles3D({ animate = true }) {
   const hwySouthRef = useRef();
   const hwyNorthRef = useRef();
   const road60EastRef = useRef();
@@ -856,7 +858,7 @@ function MovingVehicles3D({ animate = true }) {
 
 
 // Low Cycad Palm Shrub for the Park Lawn (matching Screenshot 3 & 4)
-function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
+export function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
   const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
   return (
@@ -881,7 +883,7 @@ function ParkCycadShrub({ position = [0, 0, 0], scale = 1.0 }) {
 }
 
 // Little Flower Patch for Park Lawn (matching Screenshot 3 & 4: white and orange flowers)
-function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
+export function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   return (
     <group position={position}>
       {/* Flower Petals */}
@@ -900,7 +902,7 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
 
 // Authoritative Block-by-Block Avenue Borders & Straight Trees
 // Placed strictly along internal streets in between blocks all the way through; zero trees at entrance or corners
-const BLOCK_AVENUE_BORDERS = [
+export const BLOCK_AVENUE_BORDERS = [
   // ==========================================
   // NORTH STREETS (IN BETWEEN BLOCKS, Z: -40 to -5)
   // Continuous avenue palm trees lining both curbs of each internal avenue
@@ -1044,7 +1046,7 @@ const BLOCK_AVENUE_BORDERS = [
 ];
 
 // Block Borders with Landscaped Turf and Straight Upright Trees (No Bending, Kept for Every Set of Blocks)
-function BlockBordersAndAvenueTrees() {
+export function BlockBordersAndAvenueTrees() {
   return (
     <group>
       {/* 1. Raised Concrete Curbs with Landscaped Turf Top along Every Block Perimeter */}
@@ -1092,7 +1094,7 @@ function BlockBordersAndAvenueTrees() {
 }
 
 // Connected Road Network with Realistic Deep Asphalt, Raised Cobblestone Curbs, and Printed Road Names (Matching Image 4 & 5)
-function ConnectedRoadNetwork({ onRoadClick }) {
+export function ConnectedRoadNetwork({ onRoadClick }) {
   // High-Resolution Deep Bitumen Asphalt Texture with aggregate specks
   const asphaltTexture = useMemo(() => {
     if (typeof document === 'undefined') return null;
@@ -1338,7 +1340,7 @@ function ConnectedRoadNetwork({ onRoadClick }) {
 }
 
 // Ac. 0.758 Park Area (matching Screenshot 3 & 4: clean flowering lawn, perimeter palms, cycad shrubs)
-function ParkArea3D({ onParkClick }) {
+export function ParkArea3D({ onParkClick }) {
   const [cx, cz] = parkData.center;
   const w = parkData.width;
   const d = parkData.depth;
@@ -1447,7 +1449,7 @@ function ParkArea3D({ onParkClick }) {
 }
 
 // Grand Entrance Arch connecting Layout to Srisailam Highway Service Road
-function GrandEntranceArch({ position = [63, 0, 0.5] }) {
+export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   return (
     <group position={position} rotation={[0, Math.PI / 2, 0]}>
       {/* Left Stone Pillar */}
@@ -1778,7 +1780,7 @@ function GeographicMapTerrain() {
 }
 
 // Interactive Distance Measurement Line
-function MeasureOverlay({ points }) {
+export function MeasureOverlay({ points }) {
   if (!points || points.length === 0) return null;
 
   const [p1, p2] = points;
@@ -1835,98 +1837,10 @@ function MeasureOverlay({ points }) {
   );
 }
 
-const Layout3DView = React.forwardRef(function Layout3DView({
-  plots,
-  selectedPlot,
-  onSelectPlot,
-  cameraPreset = 'overview',
-  searchTerm = '',
-  filterStatus = 'all',
-  filterFacing = 'all',
-  walkRoadIndex = 0,
-  walkProgress = 0,
-  onWalkProgressChange,
-  animateVehicles = true,
-  isMeasureMode = false,
-  measurePoints = [],
-  onMeasurePoint,
-  onRoadClick,
-  onParkClick
-}, ref) {
-  const cleanSearch = (searchTerm || '').trim();
-  const bgColor = '#E5ECE3';
+import LayoutMasterView from './LayoutMasterView';
 
-  return (
-    <div className={`w-full h-full relative bg-[#E5ECE3] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
-      <Canvas
-        shadows={false} // NO SHADOWS per user directive
-        className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [-9, 200, 7.5], fov: 42, near: 0.5, far: 90000 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-      >
-        <color attach="background" args={[bgColor]} />
-
-        {/* Clean, Bright, Shadowless Illumination */}
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[30, 80, 40]} intensity={0.65} />
-
-        {/* Camera Controller supporting Street Walk & Park Ground views */}
-        <CameraController
-          selectedPlot={selectedPlot}
-          cameraPreset={cameraPreset}
-          walkRoadIndex={walkRoadIndex}
-          walkProgress={walkProgress}
-          onWalkProgressChange={onWalkProgressChange}
-          apiRef={ref}
-        />
-
-        {/* Real-World Geographic Kadthal Map Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
-        <GeographicMapTerrain />
-
-
-        {/* Connected Asphalt Road Network with Sidewalks */}
-        <ConnectedRoadNetwork onRoadClick={onRoadClick} />
-
-        {/* Ac. 0.758 Park Area with Flowers, Perimeter Palms & Cycads */}
-        <ParkArea3D onParkClick={onParkClick} />
-
-        {/* Block Borders with Landscaped Turf and Straight Upright Trees (No Bending, Kept for Every Set of Blocks) */}
-        <BlockBordersAndAvenueTrees />
-
-        {/* Moving Vehicles across Highway AND Venture Roads */}
-        <MovingVehicles3D animate={animateVehicles} />
-
-        {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
-        <group>
-          {plots.map((plot) => {
-            const matchesSearch = !cleanSearch || String(plot.plotNumber).includes(cleanSearch);
-            const matchesStatus = !filterStatus || filterStatus === 'all' || plot.status === filterStatus;
-            const matchesFacing = !filterFacing || filterFacing === 'all' || (plot.facing && plot.facing.toLowerCase().includes(filterFacing.toLowerCase()));
-            const isMatch = matchesSearch && matchesStatus && matchesFacing;
-            const hasActiveFilter = Boolean(cleanSearch) || (filterStatus && filterStatus !== 'all') || (filterFacing && filterFacing !== 'all');
-            const isDimmed = hasActiveFilter && !isMatch;
-            const isSearchedMatch = Boolean(cleanSearch) && String(plot.plotNumber) === cleanSearch;
-
-            return (
-              <Plot3D
-                key={plot.plotNumber}
-                plot={plot}
-                isSelected={selectedPlot?.plotNumber === plot.plotNumber}
-                isDimmed={isDimmed}
-                isSearchedMatch={isSearchedMatch}
-                onSelect={onSelectPlot}
-                isMeasureMode={isMeasureMode}
-                onMeasurePoint={onMeasurePoint}
-              />
-            );
-          })}
-        </group>
-
-        {/* Interactive Measure Tool Line */}
-        {isMeasureMode && <MeasureOverlay points={measurePoints} />}
-      </Canvas>
-    </div>
-  );
+const Layout3DView = React.forwardRef(function Layout3DView(props, ref) {
+  return <LayoutMasterView ref={ref} viewMode="3d" {...props} />;
 });
 
 export default Layout3DView;

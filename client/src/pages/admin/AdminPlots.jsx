@@ -32,8 +32,7 @@ import {
   adminImportPlotsCsv
 } from '../../api/client';
 import { getEnrichedPlots, statusColors } from '../../visualizer/masterPlanData';
-import Layout2DView from '../../visualizer/Layout2DView';
-import Layout3DView from '../../visualizer/Layout3DView';
+import LayoutMasterView from '../../visualizer/LayoutMasterView';
 
 export default function AdminPlots() {
   const [viewMode, setViewMode] = useState('table'); // 'table' | '2d' | '3d'
@@ -650,28 +649,18 @@ export default function AdminPlots() {
 
           {/* Interactive Visualizer Map Canvas */}
           <div className="w-full h-[680px] relative bg-slate-900">
-            {viewMode === '2d' ? (
-              <Layout2DView
-                ref={layout2DRef}
-                plots={allPlots}
-                selectedPlot={selectedPlot}
-                onSelectPlot={(p) => setSelectedPlot(p)}
-                filterStatus={statusFilter}
-                filterFacing={facingFilter}
-                searchTerm={search}
-              />
-            ) : (
-              <Layout3DView
-                plots={allPlots}
-                selectedPlot={selectedPlot}
-                onSelectPlot={(p) => setSelectedPlot(p)}
-                cameraPreset={adminCameraPreset}
-                searchTerm={search}
-                filterStatus={statusFilter}
-                filterFacing={facingFilter}
-                animateVehicles={animateVehicles}
-              />
-            )}
+            <LayoutMasterView
+              ref={layout2DRef}
+              viewMode={viewMode}
+              plots={allPlots}
+              selectedPlot={selectedPlot}
+              onSelectPlot={(p) => setSelectedPlot(p)}
+              cameraPreset={adminCameraPreset}
+              searchTerm={search}
+              filterStatus={statusFilter}
+              filterFacing={facingFilter}
+              animateVehicles={animateVehicles}
+            />
 
             {/* Floating Plot Quick Inspector Card (When clicked in 2D or 3D) */}
             {selectedPlot && (
