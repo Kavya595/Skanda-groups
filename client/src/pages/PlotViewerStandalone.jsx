@@ -894,21 +894,7 @@ export default function PlotViewerStandalone({ settings }) {
         )}
 
 
-        {/* Floating 3D Map View Indicator Banner (when MapPin is clicked) */}
-        {cameraPreset === 'mapView' && viewMode === '3d' && (
-          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 bg-slate-900/90 backdrop-blur-md text-white rounded-full border border-slate-700/80 shadow-2xl px-4 py-2 flex items-center gap-3 animate-fadeIn pointer-events-auto">
-            <div className="flex items-center gap-2 text-xs font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>3D Geographic Map View &bull; Kadthal &bull; Srisailam Highway (NH 765) Corridor</span>
-            </div>
-            <button
-              onClick={() => setCameraPreset('overview')}
-              className="text-[11px] font-bold text-slate-300 hover:text-white bg-slate-800 px-2.5 py-0.5 rounded-full hover:bg-slate-700 transition-colors"
-            >
-              Exit Map View
-            </button>
-          </div>
-        )}
+
 
         {/* Floating Park View Controller (USER REQUIREMENT matching Screenshot 3 & 4) */}
         {(cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (

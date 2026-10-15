@@ -99,8 +99,8 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
-  const targetPos = useRef(new THREE.Vector3(0, 68, 76));
-  const targetLook = useRef(new THREE.Vector3(0, 0, 4));
+  const targetPos = useRef(new THREE.Vector3(0, 115, 1.2));
+  const targetLook = useRef(new THREE.Vector3(0, 0, 0));
 
   // Expose smooth zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -117,8 +117,8 @@ function CameraController({
       }
     },
     reset: () => {
-      targetPos.current.set(0, 68, 76);
-      targetLook.current.set(0, 0, 4);
+      targetPos.current.set(0, 115, 1.2);
+      targetLook.current.set(0, 0, 0);
       animatingRef.current = true;
     }
   }));
@@ -223,7 +223,7 @@ function CameraController({
       targetLook.current.set(-71, 1.2, -34);
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
-      targetPos.current.set(0, 105, 0.1);
+      targetPos.current.set(0, 115, 1.2);
       targetLook.current.set(0, 0, 0);
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
@@ -231,9 +231,9 @@ function CameraController({
       targetLook.current.set(50, 0, -4);
       animatingRef.current = true;
     } else {
-      // Overview preset (default)
-      targetPos.current.set(0, 68, 76);
-      targetLook.current.set(0, 0, 4);
+      // Overview preset (default: top-down, flat, upright, normally visible map view)
+      targetPos.current.set(0, 115, 1.2);
+      targetLook.current.set(0, 0, 0);
       animatingRef.current = true;
     }
   }, [
@@ -289,11 +289,20 @@ function CameraController({
     <OrbitControls
       ref={controlsRef}
       enabled={cameraPreset !== 'roadWalk'}
-      enableRotate={false}
+      enableRotate={true}
       screenSpacePanning={true}
-      maxPolarAngle={Math.PI / 2.1}
-      minDistance={2}
-      maxDistance={4500}
+      mouseButtons={{
+        LEFT: THREE.MOUSE.PAN,
+        MIDDLE: THREE.MOUSE.DOLLY,
+        RIGHT: THREE.MOUSE.ROTATE
+      }}
+      touches={{
+        ONE: THREE.TOUCH.PAN,
+        TWO: THREE.TOUCH.DOLLY_ROTATE
+      }}
+      maxPolarAngle={Math.PI / 2.05}
+      minDistance={4}
+      maxDistance={35000}
       enableDamping
       dampingFactor={0.08}
     />
@@ -990,6 +999,46 @@ const BLOCK_AVENUE_BORDERS = [
   {
     x: 55.8, z: 35.5, w: 0.8, d: 55.0, isHorizontal: false,
     trees: [[55.8, 9], [55.8, 14], [55.8, 19], [55.8, 24], [55.8, 29], [55.8, 34], [55.8, 39], [55.8, 44], [55.8, 49], [55.8, 54], [55.8, 59], [55.8, 63]]
+  },
+
+  // ==========================================
+  // CENTRAL 33' MAIN BOULEVARD (BETWEEN NORTH & SOUTH BLOCKS, Z: -4.5 to 5.5)
+  // Continuous avenue palm trees lining both curbs of 33' Boulevard strictly in between blocks
+  // ==========================================
+  // North Curb of 33' Boulevard (Facing North Blocks A, B, C, D)
+  {
+    x: -47.0, z: -4.5, w: 22.0, d: 0.8, isHorizontal: true,
+    trees: [[-55, -4.5], [-49, -4.5], [-43, -4.5], [-37, -4.5]]
+  },
+  {
+    x: -18.0, z: -4.5, w: 20.0, d: 0.8, isHorizontal: true,
+    trees: [[-26, -4.5], [-20, -4.5], [-14, -4.5], [-8, -4.5]]
+  },
+  {
+    x: 11.0, z: -4.5, w: 20.0, d: 0.8, isHorizontal: true,
+    trees: [[3, -4.5], [9, -4.5], [15, -4.5]]
+  },
+  {
+    x: 39.5, z: -4.5, w: 19.0, d: 0.8, isHorizontal: true,
+    trees: [[32, -4.5], [38, -4.5], [44, -4.5]]
+  },
+
+  // South Curb of 33' Boulevard (Facing South Blocks F, G, H, I, J)
+  {
+    x: -47.0, z: 5.5, w: 22.0, d: 0.8, isHorizontal: true,
+    trees: [[-55, 5.5], [-49, 5.5], [-43, 5.5], [-37, 5.5]]
+  },
+  {
+    x: -18.0, z: 5.5, w: 20.0, d: 0.8, isHorizontal: true,
+    trees: [[-26, 5.5], [-20, 5.5], [-14, 5.5], [-8, 5.5]]
+  },
+  {
+    x: 11.0, z: 5.5, w: 20.0, d: 0.8, isHorizontal: true,
+    trees: [[3, 5.5], [9, 5.5], [15, 5.5]]
+  },
+  {
+    x: 39.5, z: 5.5, w: 19.0, d: 0.8, isHorizontal: true,
+    trees: [[32, 5.5], [38, 5.5], [44, 5.5]]
   }
 ];
 
@@ -1478,6 +1527,9 @@ let cachedRegionalCanvas = null;
 
 // Dual-Tier Geographic Map Terrain (1.2 km Local Kadthal Layout + 38 km Regional South Hyderabad/Srisailam Highway)
 function GeographicMapTerrain() {
+  const [localTilesLoaded, setLocalTilesLoaded] = useState(0);
+  const [regionalTilesLoaded, setRegionalTilesLoaded] = useState(0);
+
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
     const shape = new THREE.Shape();
@@ -1565,37 +1617,42 @@ function GeographicMapTerrain() {
     if (!localCanvas) return;
     const ctx = localCanvas.getContext('2d');
     const zoom = 17;
-    const startX = 94120;
-    const startY = 59269;
+    const startX = 94118;
+    const startY = 59268;
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = (dx + dy) % 4;
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
         img.onload = () => {
           try {
             ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-            if (localTexture) localTexture.needsUpdate = true;
+            if (localTexture) {
+              localTexture.needsUpdate = true;
+              setLocalTilesLoaded(c => c + 1);
+            }
           } catch (e) {
             console.warn('Local map tile draw warning:', e);
           }
         };
 
         img.onerror = () => {
-          // Direct Google Maps fallback
+          // Fallback to OSM tile proxy which supports CORS
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
             try {
               ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              if (localTexture) localTexture.needsUpdate = true;
+              if (localTexture) {
+                localTexture.needsUpdate = true;
+                setLocalTilesLoaded(c => c + 1);
+              }
             } catch (e) {}
           };
-          fallback.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
+          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=osm`;
         };
 
         // Primary: Load Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
@@ -1616,14 +1673,16 @@ function GeographicMapTerrain() {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = (dx + dy) % 4;
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
         img.onload = () => {
           try {
             ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-            if (regionalTexture) regionalTexture.needsUpdate = true;
+            if (regionalTexture) {
+              regionalTexture.needsUpdate = true;
+              setRegionalTilesLoaded(c => c + 1);
+            }
           } catch (e) {
             console.warn('Regional map tile draw warning:', e);
           }
@@ -1635,10 +1694,13 @@ function GeographicMapTerrain() {
           fallback.onload = () => {
             try {
               ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              if (regionalTexture) regionalTexture.needsUpdate = true;
+              if (regionalTexture) {
+                regionalTexture.needsUpdate = true;
+                setRegionalTilesLoaded(c => c + 1);
+              }
             } catch (e) {}
           };
-          fallback.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
+          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=osm`;
         };
 
         // Primary: Load Regional Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
@@ -1650,32 +1712,35 @@ function GeographicMapTerrain() {
   return (
     <group>
       {/* 1. Vast 38-Kilometer Regional Terrain Plane (Zoom 12: South Hyderabad, Kadthal, Airport, ORR, RRR, Pharma City) */}
-      <mesh position={[-2789, -0.06, -1919]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[-2152, -0.08, -1778]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
         <planeGeometry args={[37500, 37500]} />
-        {regionalTexture ? (
-          <meshBasicMaterial map={regionalTexture} />
-        ) : (
-          <meshBasicMaterial color="#E5ECE3" />
-        )}
+        <meshBasicMaterial
+          key={`reg-mat-${regionalTilesLoaded}`}
+          map={regionalTexture || undefined}
+          color={regionalTexture ? '#FFFFFF' : '#E5ECE3'}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* 2. Crisp Local Kadthal Layout Terrain Plane (Zoom 17: ~1.2 km around Alekhya's Brundavan) */}
-      <mesh position={[137.8, -0.025, 127.9]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[169.6, -0.04, -17.5]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
         <planeGeometry args={[1170, 1170]} />
-        {localTexture ? (
-          <meshBasicMaterial map={localTexture} />
-        ) : (
-          <meshBasicMaterial color="#E5ECE3" />
-        )}
+        <meshBasicMaterial
+          key={`loc-mat-${localTilesLoaded}`}
+          map={localTexture || undefined}
+          color={localTexture ? '#FFFFFF' : '#E5ECE3'}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* DTCP Sanctioned Layout Compound Base Ground Tile (Exact brochure cuts polygon with matching 0.35 opacity) */}
-      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={3}>
         <shapeGeometry args={[compoundShape]} />
         <meshBasicMaterial
           color="#F0FDF4"
           opacity={0.35}
           transparent
+          depthWrite={false}
         />
       </mesh>
 
@@ -1794,7 +1859,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 15000 }}
+        camera={{ position: [0, 115, 1.2], fov: 42, near: 0.5, far: 50000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
