@@ -4,6 +4,7 @@ import { OrbitControls, Text, Line } from '@react-three/drei';
 import * as THREE from 'three';
 import {
   LAYOUT_BOUNDS,
+  SITE_BOUNDARY_LOCAL,
   layoutRoads,
   parkData,
   statusColors
@@ -322,45 +323,88 @@ function Plot3D({
     }
   };
 
+  const customShape = useMemo(() => {
+    if (!plot.polygon) return null;
+    const shape = new THREE.Shape();
+    plot.polygon.forEach(([px, pz], idx) => {
+      const lx = px - cx;
+      const lz = -(pz - cz);
+      if (idx === 0) shape.moveTo(lx, lz);
+      else shape.lineTo(lx, lz);
+    });
+    shape.closePath();
+    return shape;
+  }, [plot.polygon, cx, cz]);
+
   return (
     <group position={[cx, posY, cz]}>
       {/* 3D Volumetric Foundation Plinth Box with Height, Width, and Depth */}
-      <mesh
-        onClick={handleClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          setHovered(false);
-        }}
-      >
-        <boxGeometry args={[tileW, tileHeight, tileD]} />
-        {/* +X (Right side) */}
-        <meshStandardMaterial attach="material-0" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
-        {/* -X (Left side) */}
-        <meshStandardMaterial attach="material-1" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
-        {/* +Y (Top surface) with vibrant status color */}
-        <meshStandardMaterial attach="material-2" color={color} roughness={0.5} opacity={isDimmed ? 0.25 : 1.0} transparent={isDimmed} />
-        {/* -Y (Bottom) */}
-        <meshStandardMaterial attach="material-3" color="#94A3B8" roughness={0.9} />
-        {/* +Z (Front side) */}
-        <meshStandardMaterial attach="material-4" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
-        {/* -Z (Back side) */}
-        <meshStandardMaterial attach="material-5" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
-      </mesh>
+      {customShape ? (
+        <group
+          onClick={handleClick}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={(e) => {
+            e.stopPropagation();
+            setHovered(false);
+          }}
+        >
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
+            <extrudeGeometry args={[customShape, { depth: tileHeight, bevelEnabled: false }]} />
+            <meshStandardMaterial color={color} roughness={0.5} opacity={isDimmed ? 0.25 : 1.0} transparent={isDimmed} />
+          </mesh>
+          <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
+            <edgesGeometry args={[new THREE.ExtrudeGeometry(customShape, { depth: tileHeight, bevelEnabled: false })]} />
+            <lineBasicMaterial
+              color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
+              linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
+              opacity={isDimmed ? 0.3 : 1.0}
+              transparent={isDimmed}
+            />
+          </lineSegments>
+        </group>
+      ) : (
+        <>
+          <mesh
+            onClick={handleClick}
+            onPointerOver={(e) => {
+              e.stopPropagation();
+              setHovered(true);
+            }}
+            onPointerOut={(e) => {
+              e.stopPropagation();
+              setHovered(false);
+            }}
+          >
+            <boxGeometry args={[tileW, tileHeight, tileD]} />
+            {/* +X (Right side) */}
+            <meshStandardMaterial attach="material-0" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+            {/* -X (Left side) */}
+            <meshStandardMaterial attach="material-1" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+            {/* +Y (Top surface) with vibrant status color */}
+            <meshStandardMaterial attach="material-2" color={color} roughness={0.5} opacity={isDimmed ? 0.25 : 1.0} transparent={isDimmed} />
+            {/* -Y (Bottom) */}
+            <meshStandardMaterial attach="material-3" color="#94A3B8" roughness={0.9} />
+            {/* +Z (Front side) */}
+            <meshStandardMaterial attach="material-4" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+            {/* -Z (Back side) */}
+            <meshStandardMaterial attach="material-5" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
+          </mesh>
 
-      {/* Crisp 3D Demarcation Bevel Edges highlighting Height, Width, Depth */}
-      <lineSegments>
-        <edgesGeometry args={[new THREE.BoxGeometry(tileW, tileHeight, tileD)]} />
-        <lineBasicMaterial
-          color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
-          linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
-          opacity={isDimmed ? 0.3 : 1.0}
-          transparent={isDimmed}
-        />
-      </lineSegments>
+          {/* Crisp 3D Demarcation Bevel Edges highlighting Height, Width, Depth */}
+          <lineSegments>
+            <edgesGeometry args={[new THREE.BoxGeometry(tileW, tileHeight, tileD)]} />
+            <lineBasicMaterial
+              color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
+              linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
+              opacity={isDimmed ? 0.3 : 1.0}
+              transparent={isDimmed}
+            />
+          </lineSegments>
+        </>
+      )}
 
       {/* Glowing Target Ring on Searched Match */}
       {isSearchedMatch && (
@@ -622,77 +666,7 @@ function getGrassTurfTexture() {
   return texture;
 }
 
-// Lush Surrounding Greenery Around Layout (Buffer Belts, Meadows & Tree Clusters)
-function LayoutSurroundingGreenery() {
-  const outerTrees = useMemo(() => [
-    // West Boundary buffer tree line
-    [-100, -48], [-100, -32], [-100, -16], [-100, 0], [-100, 16], [-100, 32], [-100, 48], [-100, 62],
-    // North Boundary buffer tree line (behind 60ft road)
-    [-80, -66], [-60, -66], [-40, -66], [-20, -66], [0, -66], [20, -66], [40, -66], [60, -66], [78, -66],
-    // South Boundary buffer tree line (outside south boundary road)
-    [-80, 78], [-60, 78], [-40, 78], [-20, 78], [0, 78], [20, 78], [40, 78], [60, 78], [78, 78],
-    // East Highway outer green buffer
-    [98, -48], [98, -28], [98, -8], [98, 12], [98, 32], [98, 52]
-  ], []);
 
-  const grassTexture = useMemo(() => {
-    const base = getGrassTurfTexture();
-    if (!base) return null;
-    const tex = base.clone();
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(12, 3);
-    tex.needsUpdate = true;
-    return tex;
-  }, []);
-
-  return (
-    <group>
-      {/* 1. Surrounding Perimeter Landscape Buffer Lawns / Green Belts with Rich Grass Turf */}
-      {/* West Buffer Lawn */}
-      <mesh position={[-104, 0.02, 6]}>
-        <boxGeometry args={[30, 0.04, 130]} />
-        <meshStandardMaterial
-          map={grassTexture || undefined}
-          color="#72B31E"
-          roughness={0.88}
-        />
-      </mesh>
-      {/* North Buffer Lawn */}
-      <mesh position={[0, 0.02, -66]}>
-        <boxGeometry args={[190, 0.04, 28]} />
-        <meshStandardMaterial
-          map={grassTexture || undefined}
-          color="#6BA81A"
-          roughness={0.88}
-        />
-      </mesh>
-      {/* South Buffer Lawn */}
-      <mesh position={[0, 0.02, 78]}>
-        <boxGeometry args={[190, 0.04, 30]} />
-        <meshStandardMaterial
-          map={grassTexture || undefined}
-          color="#72B31E"
-          roughness={0.88}
-        />
-      </mesh>
-      {/* East Highway Buffer Lawn */}
-      <mesh position={[100, 0.02, 6]}>
-        <boxGeometry args={[26, 0.04, 140]} />
-        <meshStandardMaterial
-          map={grassTexture || undefined}
-          color="#65A016"
-          roughness={0.88}
-        />
-      </mesh>
-
-      {/* 2. Surrounding Canopy Trees Array */}
-      {outerTrees.map(([ox, oz], idx) => (
-        <PerimeterCanopyTree key={`outer-${idx}`} position={[ox, 0.04, oz]} scale={0.95} />
-      ))}
-    </group>
-  );
-}
 
 // High-Quality Realistic 3D Low-Poly Vehicles driving on Venture Roads
 function Vehicle3D({ color }) {
@@ -1703,8 +1677,28 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
 let mapTerrainTextureCache = null;
 
 // Real-World Kadthal / Srisailam Highway Geographic Map Terrain Backdrop
+// Real-World Kadthal / Srisailam Highway Geographic Map Terrain Backdrop
 function GeographicMapTerrain() {
   const [terrainTexture, setTerrainTexture] = useState(() => mapTerrainTextureCache);
+
+  // Exact DTCP layout compound base shape matching brochure cuts
+  const compoundShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    SITE_BOUNDARY_LOCAL.forEach(([x, z], idx) => {
+      // In Three.js, rotating [-PI/2, 0, 0] maps 2D (x, y) to 3D (x, 0, -y). So y = -z.
+      if (idx === 0) shape.moveTo(x, -z);
+      else shape.lineTo(x, -z);
+    });
+    shape.closePath();
+    return shape;
+  }, []);
+
+  // Perimeter fencing points tracing the exact brochure cuts
+  const fencePoints = useMemo(() => {
+    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.015, z));
+    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.015, SITE_BOUNDARY_LOCAL[0][1]));
+    return pts;
+  }, []);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
@@ -1758,11 +1752,11 @@ function GeographicMapTerrain() {
     mapTerrainTextureCache = tex;
     setTerrainTexture(tex);
 
-    // Zoom 17 tile coordinates for Kadthal [17.0985, 78.5085]
-    // Kadthal center: tile x=94119.56, y=59216.52. Covers ~1.17 km x 1.17 km around the venture!
+    // Zoom 17 tile coordinates for Kadthal [16.9555, 78.5125]
+    // Kadthal center tile: 94121.53, 59270.56. Covers ~1.17 km x 1.17 km around venture
     const zoom = 17;
-    const startX = 94118;
-    const startY = 59215;
+    const startX = 94120;
+    const startY = 59269;
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
@@ -1794,8 +1788,8 @@ function GeographicMapTerrain() {
   return (
     <group>
       {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad) */}
-      <mesh position={[128, -0.025, 140]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[1168, 1168]} />
+      <mesh position={[138, -0.025, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[1170, 1170]} />
         {terrainTexture ? (
           <meshBasicMaterial map={terrainTexture} />
         ) : (
@@ -1803,9 +1797,9 @@ function GeographicMapTerrain() {
         )}
       </mesh>
 
-      {/* DTCP Sanctioned Layout Compound Base Ground Tile */}
-      <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[186, 126]} />
+      {/* DTCP Sanctioned Layout Compound Base Ground Tile (Exact brochure cuts polygon) */}
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <shapeGeometry args={[compoundShape]} />
         <meshBasicMaterial
           color="#D5E8CE"
           opacity={0.88}
@@ -1813,11 +1807,30 @@ function GeographicMapTerrain() {
         />
       </mesh>
 
-      {/* DTCP Sanctioned Layout Boundary Perimeter Fencing */}
-      <lineSegments position={[0, 0.012, 5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <edgesGeometry args={[new THREE.PlaneGeometry(186, 126)]} />
-        <lineBasicMaterial color="#15803D" linewidth={3} />
-      </lineSegments>
+      {/* DTCP Sanctioned Layout Boundary Perimeter Fencing following exact cuts */}
+      <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
+
+      {/* 4th Phase road opening markers matching brochure */}
+      {[
+        [-61.5, 65], // Road V0
+        [-32.5, 65], // Road V1
+        [-3.5, 65],  // Road V2
+        [25.5, 65],  // Road V3
+        [53.5, 65]   // Road V4
+      ].map(([px, pz], i) => (
+        <Text
+          key={`phase4-3d-${i}`}
+          position={[px, 0.035, pz]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={1.2}
+          color="#94A3B8"
+          fontWeight="bold"
+          anchorX="center"
+          anchorY="middle"
+        >
+          &darr; 4th Phase
+        </Text>
+      ))}
 
       {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
@@ -1930,8 +1943,6 @@ export default function Layout3DView({
         {/* Real-World Geographic Kadthal Map Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
         <GeographicMapTerrain />
 
-        {/* Surrounding Perimeter Greenery Around Layout (Buffer Belts & Canopy Trees) */}
-        <LayoutSurroundingGreenery />
 
         {/* Connected Asphalt Road Network with Sidewalks */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />

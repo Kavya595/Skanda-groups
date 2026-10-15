@@ -12,22 +12,23 @@
  */
 
 export const LAYOUT_BOUNDS = {
-  minX: -92,
-  maxX: 90,
-  minZ: -56,
-  maxZ: 68,
-  centerX: 0,
-  centerZ: 5,
-  width: 182,
-  depth: 124
+  minX: -88,
+  maxX: 70,
+  minZ: -52,
+  maxZ: 64,
+  centerX: -9,
+  centerZ: 6,
+  width: 158,
+  depth: 116
 };
 
 /**
- * Real-World Geographic Alignment at Kadthal, Srisailam Highway, Hyderabad
+ * Real-World Geographic Alignment at Kadthal, Srisailam Highway (NH-765)
+ * Location: Maisigandi Temple Road, Kadthal, Ranga Reddy Dist, Telangana
  * DTCP Approval: TLP NO. 87/2024/H | TS RERA: PO2400009081
  */
 export const SITE_GEO = {
-  center: [17.0985, 78.5085], // [lat, lng] Kadthal, Telangana
+  center: [16.9555, 78.5125], // [lat, lng] Kadthal Maisigandi Temple Road, Srisailam Highway
   zoom: 18,
   minZoom: 10,
   maxZoom: 21,
@@ -44,6 +45,60 @@ export function localToLatLng(x, z) {
   const lng = SITE_GEO.center[1] + (x / LNG_METERS_PER_DEG);
   return [lat, lng];
 }
+
+/**
+ * Exact Digitized Sanctioned Boundary Polygon from Authoritative Brochure Map
+ * Traces exact cuts, the diagonal taper under Plot 36 (42'-9" down to 19'-9"),
+ * the stepped southern blocks, vertical road stubs opening to 4th Phase,
+ * East 33' road boundary, and Central Park (Ac. 0.758 cents).
+ */
+export const SITE_BOUNDARY_LOCAL = [
+  // 1. Top-Left: North-West corner at 60'-0" road frontage
+  [-88, -52],
+  // 2. Top-Right: North-East corner at 60' road & East 33' road junction
+  [70, -52],
+  // 3. East: Along East 33' road to Southeast corner of Plot 96
+  [70, 60],
+  // 4. Block K bottom (Plot 96 & 83)
+  [57, 60],
+  // 5-6. Road V4 opening to 4th Phase (between Block K and Block J)
+  [57, 64],
+  [50, 64],
+  // 7. Block J bottom (Plot 82 & 71)
+  [50, 60],
+  [29, 60],
+  // 8-9. Road V3 opening to 4th Phase (between Block J and Block I)
+  [29, 64],
+  [22, 64],
+  // 10. Block I bottom (Plot 70 & 59)
+  [22, 60],
+  [0, 60],
+  // 11-12. Road V2 opening to 4th Phase (between Block I and Block H)
+  [0, 64],
+  [-7, 64],
+  // 13. Block H bottom (Plot 57 & 56)
+  [-7, 60],
+  [-29, 60],
+  // 14-15. Road V1 opening to 4th Phase (between Block H and Block G)
+  [-29, 64],
+  [-36, 64],
+  // 16. Block G bottom (Plot 46 & 37)
+  [-36, 60],
+  [-58, 60],
+  // 17-18. Road V0 opening to 4th Phase (between Block G and Block F)
+  [-58, 64],
+  [-65, 64],
+  // 19. Block F bottom: Southeast corner of Plot 36 (facing Road V0)
+  [-65, 60],
+  // 20. Exact diagonal taper cut under Plot 36 (19'-9" west vs 42'-9" east depth)
+  [-78, 54],
+  // 21. West edge of Block F (along Plots 36, 35, 34, 33, 32, 31)
+  [-78, 4],
+  // 22. Jog West along 33' Road to Southwest corner of Park
+  [-88, 4],
+  // 23. Up West boundary of Park (Ac. 0.758 cents, 209'-9" length)
+  [-88, -42]
+];
 
 export const statusColors = {
   available: {
@@ -105,12 +160,12 @@ export const layoutRoads = [
     width: '60ft',
     type: 'arterial',
     polygon: [
-      [-92, -52],
-      [88, -52],
-      [88, -42],
-      [-92, -42]
+      [-88, -52],
+      [70, -52],
+      [70, -42],
+      [-88, -42]
     ],
-    center: [0, -47],
+    center: [-9, -47],
     widthMeters: 10,
     hasDivider: true
   },
@@ -121,28 +176,28 @@ export const layoutRoads = [
     width: '100ft+',
     type: 'highway',
     polygon: [
-      [72, -56],
-      [88, -56],
-      [88, 66],
-      [72, 66]
+      [74, -56],
+      [90, -56],
+      [90, 66],
+      [74, 66]
     ],
-    center: [80, 5],
+    center: [82, 5],
     widthMeters: 16,
     hasDivider: true
   },
   {
     id: 'ROAD-33-SERVICE',
-    name: "Proposed 33'-0\" Wide Highway Service Road",
-    shortName: "33' SERVICE ROAD",
+    name: "Proposed 33'-0\" Wide Road (facing Srisailam Highway)",
+    shortName: "33' EAST ROAD",
     width: '33ft',
     type: 'service',
     polygon: [
       [63, -52],
       [70, -52],
-      [70, 64],
-      [63, 64]
+      [70, 60],
+      [63, 60]
     ],
-    center: [66.5, 6],
+    center: [66.5, 4],
     widthMeters: 7
   },
   {
@@ -162,108 +217,78 @@ export const layoutRoads = [
   },
   {
     id: 'ROAD-33-V0',
-    name: "Proposed 33'-0\" Wide Road",
+    name: "Proposed 33'-0\" Wide Road (to 4th Phase)",
     shortName: "33' ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [-65, 4],
       [-58, 4],
-      [-58, 60],
-      [-65, 60]
+      [-58, 64],
+      [-65, 64]
     ],
-    center: [-61.5, 32],
+    center: [-61.5, 34],
     widthMeters: 7
   },
   {
     id: 'ROAD-33-V1',
-    name: "Proposed 33'-0\" Wide Road",
+    name: "Proposed 33'-0\" Wide Road (to 4th Phase)",
     shortName: "33' ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [-36, -42],
       [-29, -42],
-      [-29, 60],
-      [-36, 60]
+      [-29, 64],
+      [-36, 64]
     ],
-    center: [-32.5, 9],
+    center: [-32.5, 11],
     widthMeters: 7
   },
   {
     id: 'ROAD-33-V2',
-    name: "Proposed 33'-0\" Wide Road",
+    name: "Proposed 33'-0\" Wide Road (to 4th Phase)",
     shortName: "33' ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [-7, -42],
       [0, -42],
-      [0, 60],
-      [-7, 60]
+      [0, 64],
+      [-7, 64]
     ],
-    center: [-3.5, 9],
+    center: [-3.5, 11],
     widthMeters: 7
   },
   {
     id: 'ROAD-33-V3',
-    name: "Proposed 33'-0\" Wide Road",
+    name: "Proposed 33'-0\" Wide Road (to 4th Phase)",
     shortName: "33' ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [22, -42],
       [29, -42],
-      [29, 60],
-      [22, 60]
+      [29, 64],
+      [22, 64]
     ],
-    center: [25.5, 9],
+    center: [25.5, 11],
     widthMeters: 7
   },
   {
     id: 'ROAD-33-V4',
-    name: "Proposed 33'-0\" Wide Road",
+    name: "Proposed 33'-0\" Wide Road (to 4th Phase)",
     shortName: "33' ROAD",
     width: '33ft',
     type: 'internal',
     polygon: [
       [50, -42],
       [57, -42],
-      [57, 60],
-      [50, 60]
+      [57, 64],
+      [50, 64]
     ],
-    center: [53.5, 9],
+    center: [53.5, 11],
     widthMeters: 7
-  },
-  {
-    id: 'ROAD-33-WEST',
-    name: "Proposed 33'-0\" Wide Western Boundary Road",
-    shortName: "33' WEST ROAD",
-    width: '33ft',
-    type: 'internal',
-    polygon: [
-      [-88, 4],
-      [-78, 4],
-      [-78, 60],
-      [-88, 60]
-    ],
-    center: [-83, 32],
-    widthMeters: 10
-  },
-  {
-    id: 'ROAD-33-SOUTH',
-    name: "Proposed 33'-0\" Wide Southern Boundary Road",
-    shortName: "33' SOUTH ROAD",
-    width: '33ft',
-    type: 'internal',
-    polygon: [
-      [-88, 60],
-      [70, 60],
-      [70, 66],
-      [-88, 66]
-    ],
-    center: [-9, 63],
-    widthMeters: 6
   }
 ];
 
@@ -351,7 +376,23 @@ export const masterPlotsData = [
   { plotNumber: 33, block: 'Block F', areaSqYds: 221, dimensions: "60'-3\" x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-78, -65, 22.6, 32.0] },
   { plotNumber: 34, block: 'Block F', areaSqYds: 223, dimensions: "60'-9\" x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-78, -65, 32.0, 41.3] },
   { plotNumber: 35, block: 'Block F', areaSqYds: 223, dimensions: "60'-9\" x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-78, -65, 41.3, 50.6] },
-  { plotNumber: 36, block: 'Block F', areaSqYds: 672, dimensions: "60'-9\" x 99'-6\"", facing: 'South-East', isCorner: true, roadWidth: '33ft', status: 'blocked', quad: [-78, -65, 50.6, 60] },
+  {
+    plotNumber: 36,
+    block: 'Block F',
+    areaSqYds: 672,
+    dimensions: "60'-9\" x 99'-6\"",
+    facing: 'South-East',
+    isCorner: true,
+    roadWidth: '33ft',
+    status: 'blocked',
+    quad: [-78, -65, 50.6, 60],
+    polygon: [
+      [-78, 50.6],
+      [-65, 50.6],
+      [-65, 60],
+      [-78, 54]
+    ]
+  },
 
   // BLOCK G-MID (Plots 37 to 46)
   // Between Road V0 (X: -58) and Road V1 (X: -36). Center X: -47.
@@ -465,7 +506,7 @@ export function getEnrichedPlots(overridePlots = null) {
       status: baseStatus,
       price,
       areaSqFt: def.areaSqYds * 9,
-      polygon: createQuad(x0, x1, z0, z1),
+      polygon: def.polygon || createQuad(x0, x1, z0, z1),
       bounds: {
         x: x0,
         z: z0,
@@ -475,29 +516,28 @@ export function getEnrichedPlots(overridePlots = null) {
       center: [centerX, centerZ],
       // Geographic Coordinates [latitude, longitude] at Kadthal, Srisailam Highway
       geoCenter: localToLatLng(centerX, centerZ),
-      geoPolygon: [
-        localToLatLng(x0, z0),
-        localToLatLng(x1, z0),
-        localToLatLng(x1, z1),
-        localToLatLng(x0, z1)
-      ],
+      geoPolygon: def.polygon
+        ? def.polygon.map(([px, pz]) => localToLatLng(px, pz))
+        : [
+            localToLatLng(x0, z0),
+            localToLatLng(x1, z0),
+            localToLatLng(x1, z1),
+            localToLatLng(x0, z1)
+          ],
       // 2D SVG canvas normalized coordinates (scaled to standard 1200x800 viewBox)
       // Map X: [-90, +90] -> SVG [60, 1140] (factor: 6.0)
       // Map Z: [-55, +65] -> SVG [60, 740] (factor: 5.66)
-      svgPolygon: [
-        [(x0 + 95) * 6.0, (z0 + 58) * 5.6],
-        [(x1 + 95) * 6.0, (z0 + 58) * 5.6],
-        [(x1 + 95) * 6.0, (z1 + 58) * 5.6],
-        [(x0 + 95) * 6.0, (z1 + 58) * 5.6]
-      ]
+      svgPolygon: def.polygon
+        ? def.polygon.map(([px, pz]) => [(px + 95) * 6.0, (pz + 58) * 5.6])
+        : [
+            [(x0 + 95) * 6.0, (z0 + 58) * 5.6],
+            [(x1 + 95) * 6.0, (z0 + 58) * 5.6],
+            [(x1 + 95) * 6.0, (z1 + 58) * 5.6],
+            [(x0 + 95) * 6.0, (z1 + 58) * 5.6]
+          ]
     };
   });
 }
 
-// Site boundary in geographic coordinates [lat, lng]
-export const SITE_BOUNDARY_GEO = [
-  localToLatLng(LAYOUT_BOUNDS.minX, LAYOUT_BOUNDS.minZ),
-  localToLatLng(LAYOUT_BOUNDS.maxX, LAYOUT_BOUNDS.minZ),
-  localToLatLng(LAYOUT_BOUNDS.maxX, LAYOUT_BOUNDS.maxZ),
-  localToLatLng(LAYOUT_BOUNDS.minX, LAYOUT_BOUNDS.maxZ)
-];
+// Site boundary in geographic coordinates [lat, lng] tracing exact brochure cuts
+export const SITE_BOUNDARY_GEO = SITE_BOUNDARY_LOCAL.map(([x, z]) => localToLatLng(x, z));

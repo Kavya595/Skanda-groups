@@ -22,61 +22,7 @@ export const MAP_LAYERS = {
   google: GOOGLE_MAP_LAYER
 };
 
-// Perimeter Surrounding Greenery Belts Around Layout (Clean, Attractive Grass Landscape)
-const SURROUNDING_GREEN_BUFFERS = [
-  // 1. West Agricultural & Plantation Green Belt
-  {
-    id: 'green-west',
-    name: 'West Agricultural & Plantation Belt',
-    polygon: [
-      [-160, -90],
-      [-90, -90],
-      [-90, 85],
-      [-160, 85]
-    ],
-    fillColor: '#6DAE1C',
-    borderColor: '#42750F'
-  },
-  // 2. North Green Buffer Corridor (Behind 60ft Road to Maisigandi)
-  {
-    id: 'green-north',
-    name: 'North Green Buffer Corridor',
-    polygon: [
-      [-160, -90],
-      [125, -90],
-      [125, -52],
-      [-160, -52]
-    ],
-    fillColor: '#65A318',
-    borderColor: '#3E6E0D'
-  },
-  // 3. South Plantation Green Buffer Belt
-  {
-    id: 'green-south',
-    name: 'South Plantation Green Buffer',
-    polygon: [
-      [-160, 64],
-      [125, 64],
-      [125, 95],
-      [-160, 95]
-    ],
-    fillColor: '#6DAE1C',
-    borderColor: '#42750F'
-  },
-  // 4. East Highway Landscaped Verge Buffer (NH-765)
-  {
-    id: 'green-east',
-    name: 'Highway Landscaped Green Buffer',
-    polygon: [
-      [88, -90],
-      [125, -90],
-      [125, 95],
-      [88, 95]
-    ],
-    fillColor: '#5E9B14',
-    borderColor: '#39630B'
-  }
-];
+
 
 const Layout2DView = React.forwardRef(function Layout2DView({
   plots = [],
@@ -155,73 +101,19 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
-    // (A) Surrounding Greenery Buffer Belts Around Layout (Lush Grass-Type Green)
-    SURROUNDING_GREEN_BUFFERS.forEach(buff => {
-      const geoPoly = buff.polygon.map(([x, z]) => localToLatLng(x, z));
-      L.polygon(geoPoly, {
-        color: buff.borderColor,
-        weight: 1.5,
-        fillColor: buff.fillColor,
-        fillOpacity: 0.94,
-        interactive: false
-      }).addTo(staticGroup);
-    });
-
-    // North Green Buffer Corridor Label
-    const northLabelPos = localToLatLng(0, -68);
-    const northLabel = L.divIcon({
-      className: 'green-buffer-label',
-      html: `
-        <div style="
-          color: rgba(255, 255, 255, 0.92);
-          font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-          white-space: nowrap;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-        ">🌿 PROPOSED GREEN BUFFER CORRIDOR</div>
-      `,
-      iconSize: [0, 0]
-    });
-    L.marker(northLabelPos, { icon: northLabel, interactive: false }).addTo(staticGroup);
-
-    // West Green Buffer Label
-    const westLabelPos = localToLatLng(-120, 6);
-    const westLabel = L.divIcon({
-      className: 'green-buffer-label',
-      html: `
-        <div style="
-          color: rgba(255, 255, 255, 0.92);
-          font-size: 8px;
-          font-weight: 800;
-          letter-spacing: 0.8px;
-          text-transform: uppercase;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-          white-space: nowrap;
-          transform: translate(-50%, -50%) rotate(-90deg);
-          pointer-events: none;
-        ">🌿 AGRICULTURAL & PLANTATION ZONE</div>
-      `,
-      iconSize: [0, 0]
-    });
-    L.marker(westLabelPos, { icon: westLabel, interactive: false }).addTo(staticGroup);
-
-    // (B) DTCP Sanctioned Layout Boundary Polygon
+    // (A) DTCP Sanctioned Layout Boundary Polygon (Exact cuts matching brochure)
     L.polygon(SITE_BOUNDARY_GEO, {
       color: '#15803D',
-      weight: 3.0,
-      fillColor: '#D1FAE5',
-      fillOpacity: 0.22,
+      weight: 3.5,
+      fillColor: '#F0FDF4',
+      fillOpacity: 0.35,
       interactive: false
     }).addTo(staticGroup);
 
     // Boundary White Accent Outer Line
     L.polyline(SITE_BOUNDARY_GEO.concat([SITE_BOUNDARY_GEO[0]]), {
       color: '#FFFFFF',
-      weight: 1.5,
+      weight: 1.8,
       dashArray: '6, 4',
       interactive: false
     }).addTo(staticGroup);
@@ -297,11 +189,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
               font-weight: 800;
               letter-spacing: 0.6px;
               text-transform: uppercase;
-              text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+              text-shadow: 0 1px 3px rgba(0,0,0,0.9);
               white-space: nowrap;
               transform: translate(-50%, -50%);
               pointer-events: none;
-            ">60' ROAD (TO MAISIGANDI)</div>
+            ">PROP. 60'-0" WIDE ROAD &nbsp;&hArr;&nbsp; MASIGANDI TEMPLE</div>
           `,
           iconSize: [0, 0]
         });
@@ -342,6 +234,38 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     });
 
+    // 4th Phase road openings labels matching brochure
+    const phase4Positions = [
+      [-61.5, 66], // Road V0
+      [-32.5, 66], // Road V1
+      [-3.5, 66],  // Road V2
+      [25.5, 66],  // Road V3
+      [53.5, 66]   // Road V4
+    ];
+    phase4Positions.forEach(([px, pz]) => {
+      const p4Marker = L.divIcon({
+        className: 'phase4-stub-label',
+        html: `
+          <div style="
+            background: rgba(15, 23, 42, 0.88);
+            color: #E2E8F0;
+            border: 1px solid #64748B;
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-size: 7.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+          ">&darr; 4th Phase</div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(localToLatLng(px, pz), { icon: p4Marker, interactive: false }).addTo(staticGroup);
+    });
+
     // (D) Clean Ac. 0.758 Central Park (Jogging Track & Emerald Lawn, No Tree Dots)
     const parkOuterGeo = parkData.polygon.map(([x, z]) => localToLatLng(x, z));
     // Perimeter Walking / Jogging Track (Warm Sandstone Paver Border)
@@ -380,16 +304,16 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           pointer-events: none;
           user-select: none;
         ">
-          <div style="font-size: 11px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.6); letter-spacing: 0.5px;">
-            CENTRAL PARK
+          <div style="font-size: 10px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.7); letter-spacing: 0.5px;">
+            SITE RESERVED FOR OPEN SPACE (PARK)
           </div>
-          <div style="font-size: 8px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.6);">
-            Ac. 0.758 &bull; Jogging Track
+          <div style="font-size: 7.5px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
+            Ac. 0.758 cents &bull; 209'-9" x 169'-3" x 201'-6"
           </div>
         </div>
       `,
-      iconSize: [70, 26],
-      iconAnchor: [35, 13]
+      iconSize: [140, 26],
+      iconAnchor: [70, 13]
     });
     L.marker(parkCenterGeo, { icon: parkBadge, interactive: false }).addTo(staticGroup);
 
