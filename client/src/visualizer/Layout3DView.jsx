@@ -99,25 +99,33 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
-  const targetPos = useRef(new THREE.Vector3(-9, 200, 7.5));
+  const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
 
   // Expose smooth zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
     zoomIn: () => {
       if (controlsRef.current) {
-        controlsRef.current.dollyIn(1.38);
+        const factor = 0.75;
+        const target = controlsRef.current.target;
+        camera.position.x = target.x + (camera.position.x - target.x) * factor;
+        camera.position.y = target.y + (camera.position.y - target.y) * factor;
+        camera.position.z = target.z + (camera.position.z - target.z) * factor;
         controlsRef.current.update();
       }
     },
     zoomOut: () => {
       if (controlsRef.current) {
-        controlsRef.current.dollyOut(1.38);
+        const factor = 1.33;
+        const target = controlsRef.current.target;
+        camera.position.x = target.x + (camera.position.x - target.x) * factor;
+        camera.position.y = target.y + (camera.position.y - target.y) * factor;
+        camera.position.z = target.z + (camera.position.z - target.z) * factor;
         controlsRef.current.update();
       }
     },
     reset: () => {
-      targetPos.current.set(-9, 200, 7.5);
+      targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     }
@@ -203,27 +211,20 @@ function CameraController({
     };
   }, [gl, cameraPreset, onWalkProgressChange]);
 
-  // Preset Camera Transitions for Overview, Park, TopDown, and Selected Plots
+  // Preset Camera Transitions for Overview, Park, TopDown, and Highway
   useEffect(() => {
-    if (selectedPlot && selectedPlot.center) {
-      const [cx, cz] = selectedPlot.center;
-      targetPos.current.set(cx, 20, cz + 18);
-      targetLook.current.set(cx, 0.1, cz);
-      animatingRef.current = true;
-    } else if (cameraPreset === 'roadWalk') {
+    // NOTE: We deliberately do NOT animate/teleport camera when a plot is selected.
+    // Keeping the user's camera viewpoint intact prevents the disorienting dirt-clipping glitch (Image 3).
+    if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
-    } else if (cameraPreset === 'mapView') {
-      // High-angle 3D Geographic Regional Map View (Minimizes layout to small particle)
-      targetPos.current.set(0, 520, 560);
-      targetLook.current.set(0, 0, -50);
-      animatingRef.current = true;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
-      // Low eye-level ground perspective inside Ac. 0.758 park (exact match to Screenshots 3 & 4)
+      // Ground perspective inside Ac. 0.758 park
       targetPos.current.set(-73, 2.0, -14);
       targetLook.current.set(-71, 1.2, -34);
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
-      targetPos.current.set(-9, 200, 7.5);
+      // Top-Down orthographic/overhead view
+      targetPos.current.set(-9, 210, 6);
       targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
@@ -231,17 +232,12 @@ function CameraController({
       targetLook.current.set(50, 0, -4);
       animatingRef.current = true;
     } else {
-      // Overview preset (default: top-down, flat, upright, normally visible map view matching 2D)
-      targetPos.current.set(-9, 200, 7.5);
+      // Overview preset (default: ~37° isometric perspective matching Plots99 Image 2)
+      targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     }
-  }, [
-    selectedPlot?.plotNumber,
-    selectedPlot?.center?.[0],
-    selectedPlot?.center?.[1],
-    cameraPreset
-  ]);
+  }, [cameraPreset]);
 
   useFrame((_, delta) => {
     if (cameraPreset === 'roadWalk') {
@@ -291,21 +287,24 @@ function CameraController({
       target={[-9, 0, 6]}
       enabled={cameraPreset !== 'roadWalk'}
       enableRotate={true}
+      enableZoom={true}
+      enablePan={true}
       screenSpacePanning={true}
       mouseButtons={{
-        LEFT: THREE.MOUSE.PAN,
+        LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,
-        RIGHT: THREE.MOUSE.ROTATE
+        RIGHT: THREE.MOUSE.PAN
       }}
       touches={{
-        ONE: THREE.TOUCH.PAN,
-        TWO: THREE.TOUCH.DOLLY_ROTATE
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
       }}
-      maxPolarAngle={Math.PI / 2.05}
-      minDistance={10}
-      maxDistance={45000}
-      enableDamping
-      dampingFactor={0.08}
+      minPolarAngle={Math.PI / 10}
+      maxPolarAngle={Math.PI / 2.15}
+      minDistance={12}
+      maxDistance={650}
+      enableDamping={true}
+      dampingFactor={0.07}
     />
   );
 }
@@ -1524,17 +1523,8 @@ export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Module-level caches for pure 2D Canvas elements (Safe across WebGL context recreations)
-let cachedLocalCanvas = null;
-let cachedRegionalCanvas = null;
-
-// Dual-Resolution Full Geographic Map Terrain
-// Tier 1 (Zoom 18): High-Definition ~880m local layout ground
-// Tier 2 (Zoom 12): Full Regional ~65.5km panorama (Shadnagar, Keshampet, Amangal, Kadthal, Kandukur, Yacharam, NH-765)
-function GeographicMapTerrain() {
-  const [localTilesLoaded, setLocalTilesLoaded] = useState(0);
-  const [regionalTilesLoaded, setRegionalTilesLoaded] = useState(0);
-
+// Clean Master Plan 3D Ground matching Plots99 Image 2
+export function CleanMasterPlanTerrain() {
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
     const shape = new THREE.Shape();
@@ -1549,209 +1539,29 @@ function GeographicMapTerrain() {
 
   // Perimeter fencing points tracing the exact brochure cuts
   const fencePoints = useMemo(() => {
-    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.015, z));
-    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.015, SITE_BOUNDARY_LOCAL[0][1]));
+    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.02, z));
+    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.02, SITE_BOUNDARY_LOCAL[0][1]));
     return pts;
   }, []);
 
-  // 1. Regional Canvas (Zoom 12: 1792x1792 covering 65.5 km from Shadnagar to Yacharam and Shamshabad to Amangal)
-  const regionalCanvas = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 1792;
-    canvas.height = 1792;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 1792, 1792);
-    return canvas;
-  }, []);
-
-  const regionalTexture = useMemo(() => {
-    if (!regionalCanvas) return null;
-    const tex = new THREE.CanvasTexture(regionalCanvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.generateMipmaps = true;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
-    return tex;
-  }, [regionalCanvas]);
-
-  // 2. Local Canvas (Zoom 18: 1536x1536 covering 877.4m directly around layout)
-  const localCanvas = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 1536;
-    canvas.height = 1536;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 1536, 1536);
-    return canvas;
-  }, []);
-
-  const localTexture = useMemo(() => {
-    if (!localCanvas) return null;
-    const tex = new THREE.CanvasTexture(localCanvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.generateMipmaps = true;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
-    return tex;
-  }, [localCanvas]);
-
-  useEffect(() => {
-    return () => {
-      localTexture?.dispose();
-      regionalTexture?.dispose();
-    };
-  }, [localTexture, regionalTexture]);
-
-  // Stream Regional Zoom 12 tiles (Entire region matching 2D Zoom-out view in Image 1)
-  useEffect(() => {
-    if (!regionalCanvas) return;
-    const ctx = regionalCanvas.getContext('2d');
-    const zoom = 12;
-    const minTx = 2938;
-    const minTy = 1849;
-    const xCenter = 2941.2978;
-    const yCenter = 1852.2051;
-
-    for (let dy = 0; dy < 7; dy++) {
-      for (let dx = 0; dx < 7; dx++) {
-        const tx = minTx + dx;
-        const ty = minTy + dy;
-        const cx = Math.round(896 + (tx - xCenter) * 256);
-        const cy = Math.round(896 + (ty - yCenter) * 256);
-
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-          try {
-            ctx.drawImage(img, cx, cy, 256, 256);
-            if (regionalTexture) {
-              regionalTexture.needsUpdate = true;
-              setRegionalTilesLoaded(c => c + 1);
-            }
-          } catch (e) {
-            console.warn('Regional tile draw warning:', e);
-          }
-        };
-
-        img.onerror = () => {
-          const fallback = new Image();
-          fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => {
-            try {
-              ctx.drawImage(fallback, cx, cy, 256, 256);
-              if (regionalTexture) {
-                regionalTexture.needsUpdate = true;
-                setRegionalTilesLoaded(c => c + 1);
-              }
-            } catch (e) {}
-          };
-          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
-        };
-
-        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
-      }
-    }
-  }, [regionalCanvas, regionalTexture]);
-
-  // Stream Local Zoom 18 tiles (Venture grounds matching 2D Close-up view in Image 2)
-  useEffect(() => {
-    if (!localCanvas) return;
-    const ctx = localCanvas.getContext('2d');
-    const zoom = 18;
-    const minTx = 188240;
-    const minTy = 118538;
-    const xCenter = 188243.0578;
-    const yCenter = 118541.1257;
-
-    for (let dy = 0; dy < 7; dy++) {
-      for (let dx = 0; dx < 7; dx++) {
-        const tx = minTx + dx;
-        const ty = minTy + dy;
-        const cx = Math.round(768 + (tx - xCenter) * 256);
-        const cy = Math.round(768 + (ty - yCenter) * 256);
-
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-          try {
-            ctx.drawImage(img, cx, cy, 256, 256);
-            if (localTexture) {
-              localTexture.needsUpdate = true;
-              setLocalTilesLoaded(c => c + 1);
-            }
-          } catch (e) {
-            console.warn('Local tile draw warning:', e);
-          }
-        };
-
-        img.onerror = () => {
-          const fallback = new Image();
-          fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => {
-            try {
-              ctx.drawImage(fallback, cx, cy, 256, 256);
-              if (localTexture) {
-                localTexture.needsUpdate = true;
-                setLocalTilesLoaded(c => c + 1);
-              }
-            } catch (e) {}
-          };
-          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
-        };
-
-        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
-      }
-    }
-  }, [localCanvas, localTexture]);
-
   return (
     <group>
-      {/* 1. Full 65.5-Kilometer Regional Terrain Plane (Zoom 12: Shadnagar, Keshampet, Amangal, Kadthal, Kandukur, Yacharam, NH-765) */}
-      <mesh position={[0, -0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
-        <planeGeometry args={[65510, 65510]} />
-        <meshBasicMaterial
-          key={`reg-mat-${regionalTilesLoaded}`}
-          map={regionalTexture || undefined}
-          color={regionalTexture ? '#FFFFFF' : '#E5ECE3'}
-          depthWrite={false}
-        />
+      {/* 1. Natural Meadow Green Ground Plane matching Plots99 Image 2 (#C8DFC4) */}
+      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[3000, 3000]} />
+        <meshStandardMaterial color="#C8DFC4" roughness={0.92} metalness={0.05} />
       </mesh>
 
-      {/* 2. Crisp Local Google Maps Roadmap Tile Plane (Zoom 18: ~877m coverage centered directly under layout) */}
-      <mesh position={[0, -0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
-        <planeGeometry args={[877.4, 877.4]} />
-        <meshBasicMaterial
-          key={`loc-mat-${localTilesLoaded}`}
-          map={localTexture || undefined}
-          color={localTexture ? '#FFFFFF' : '#E5ECE3'}
-          depthWrite={false}
-        />
-      </mesh>
-
-      {/* DTCP Sanctioned Layout Compound Base Ground Tile (Exact brochure cuts polygon with matching 0.35 opacity) */}
-      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={3}>
+      {/* 2. DTCP Sanctioned Layout Compound Base Shape (#D7EBD4) */}
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[compoundShape]} />
-        <meshBasicMaterial
-          color="#F0FDF4"
-          opacity={0.35}
-          transparent
-          depthWrite={false}
-        />
+        <meshStandardMaterial color="#D7EBD4" roughness={0.85} metalness={0.05} />
       </mesh>
 
-      {/* DTCP Sanctioned Layout Boundary Perimeter Fencing following exact cuts */}
+      {/* 3. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
-      {/* 4th Phase road opening markers matching brochure */}
+      {/* 4. 4th Phase road opening markers matching brochure */}
       {[
         [-61.5, 53.5], // Road V0 opening to 4th Phase
         [-32.5, 65.5], // Road V1 opening to 4th Phase
@@ -1759,21 +1569,42 @@ function GeographicMapTerrain() {
         [25.5, 65.5],  // Road V3 opening to 4th Phase
         [53.5, 69.0]   // Road V4 opening to 4th Phase
       ].map(([px, pz], i) => (
-        <Text
-          key={`phase4-3d-${i}`}
-          position={[px, 0.035, pz]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          fontSize={1.2}
-          color="#94A3B8"
-          fontWeight="bold"
-          anchorX="center"
-          anchorY="middle"
-        >
-          &darr; 4th Phase
-        </Text>
+        <group key={`phase4-3d-${i}`} position={[px, 0.035, pz]} rotation={[-Math.PI / 2, 0, 0]}>
+          <Text
+            fontSize={1.2}
+            color="#64748B"
+            fontWeight="bold"
+            anchorX="center"
+            anchorY="middle"
+          >
+            &darr; 4th Phase
+          </Text>
+        </group>
       ))}
 
-      {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
+      {/* 5. Clean Highway Directional Landmarks (Orientation without messy 2D map tiles) */}
+      {/* Highway North to Hyderabad */}
+      <group position={[80, 0.04, -55]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
+        <Text fontSize={1.4} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
+          &uarr; TO HYDERABAD &bull; ORR EXIT 14 &bull; AIRPORT
+        </Text>
+      </group>
+
+      {/* Highway South to Maisigandi Temple & Srisailam */}
+      <group position={[80, 0.04, 65]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
+        <Text fontSize={1.4} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
+          &uarr; TO MAISIGANDI MAISAMMA TEMPLE &bull; KADTHAL &bull; SRISAILAM
+        </Text>
+      </group>
+
+      {/* 60ft Road West towards Temple */}
+      <group position={[-92, 0.04, -47]} rotation={[-Math.PI / 2, 0, 0]}>
+        <Text fontSize={1.3} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
+          &larr; 60' ROAD TO MAISIGANDI TEMPLE
+        </Text>
+      </group>
+
+      {/* 6. Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
     </group>
   );
@@ -1837,10 +1668,97 @@ export function MeasureOverlay({ points }) {
   );
 }
 
-import LayoutMasterView from './LayoutMasterView';
+const Layout3DView = React.forwardRef(function Layout3DView({
+  plots = [],
+  selectedPlot = null,
+  onSelectPlot = () => {},
+  cameraPreset = 'overview',
+  searchTerm = '',
+  filterStatus = 'all',
+  filterFacing = 'all',
+  walkRoadIndex = 0,
+  walkProgress = 0,
+  onWalkProgressChange,
+  animateVehicles = true,
+  isMeasureMode = false,
+  measurePoints = [],
+  onMeasurePoint,
+  onRoadClick,
+  onParkClick
+}, ref) {
+  const cleanSearch = (searchTerm || '').trim();
+  const bgColor = '#C8DFC4';
 
-const Layout3DView = React.forwardRef(function Layout3DView(props, ref) {
-  return <LayoutMasterView ref={ref} viewMode="3d" {...props} />;
+  return (
+    <div className={`w-full h-full relative bg-[#C8DFC4] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+      <Canvas
+        shadows={false}
+        className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
+        camera={{ position: [-9, 85, 120], fov: 42, near: 0.5, far: 5000 }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      >
+        <color attach="background" args={[bgColor]} />
+
+        {/* Clean, Bright, Natural Illumination */}
+        <ambientLight intensity={1.15} />
+        <directionalLight position={[40, 80, -30]} intensity={0.7} />
+
+        {/* Intuitive Hand-Gesture Camera Controller with Smooth Orbit, Pan & Zoom */}
+        <CameraController
+          selectedPlot={selectedPlot}
+          cameraPreset={cameraPreset}
+          walkRoadIndex={walkRoadIndex}
+          walkProgress={walkProgress}
+          onWalkProgressChange={onWalkProgressChange}
+          apiRef={ref}
+        />
+
+        {/* Clean Master Plan Terrain matching Image 2 */}
+        <CleanMasterPlanTerrain />
+
+        {/* Connected Asphalt Road Network with Sidewalks & Road Labels */}
+        <ConnectedRoadNetwork onRoadClick={onRoadClick} />
+
+        {/* Ac. 0.758 Central Park with Flowering Lawn & Cycad Shrubs */}
+        <ParkArea3D onParkClick={onParkClick} />
+
+        {/* Avenue Trees on Both Sides of Every Road */}
+        <BlockBordersAndAvenueTrees />
+
+        {/* Moving Vehicles across Highway & Venture Roads */}
+        <MovingVehicles3D animate={animateVehicles} />
+
+        {/* 3D Master Plots */}
+        <group>
+          {plots.map((plot) => {
+            const matchesSearch = !cleanSearch || String(plot.plotNumber).includes(cleanSearch);
+            const matchesStatus = !filterStatus || filterStatus === 'all' || plot.status === filterStatus;
+            const matchesFacing = !filterFacing || filterFacing === 'all' || (plot.facing && plot.facing.toLowerCase().includes(filterFacing.toLowerCase()));
+            const isMatch = matchesSearch && matchesStatus && matchesFacing;
+            const hasActiveFilter = Boolean(cleanSearch) || (filterStatus && filterStatus !== 'all') || (filterFacing && filterFacing !== 'all');
+            const isDimmed = hasActiveFilter && !isMatch;
+            const isSearchedMatch = Boolean(cleanSearch) && String(plot.plotNumber) === cleanSearch;
+
+            return (
+              <Plot3D
+                key={plot.plotNumber}
+                plot={plot}
+                isSelected={selectedPlot?.plotNumber === plot.plotNumber}
+                isDimmed={isDimmed}
+                isSearchedMatch={isSearchedMatch}
+                onSelect={onSelectPlot}
+                isMeasureMode={isMeasureMode}
+                onMeasurePoint={onMeasurePoint}
+              />
+            );
+          })}
+        </group>
+
+        {/* Interactive Measure Tool Line */}
+        {isMeasureMode && <MeasureOverlay points={measurePoints} />}
+      </Canvas>
+    </div>
+  );
 });
 
 export default Layout3DView;
