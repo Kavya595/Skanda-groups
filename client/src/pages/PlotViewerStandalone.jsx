@@ -681,42 +681,89 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </header>
 
-        {/* Top-Left Zoom Controls & Compass Rose (Plots99 Exact Match) */}
-        <div className={`absolute top-20 left-4 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
+        {/* Plots99 Authentic Compass Rose (#compass.svelte-1louf1n) */}
+        <button
+          id="compass"
+          type="button"
+          onClick={() => {
+            layoutRef.current?.reset();
+            setCameraPreset('overview');
+          }}
+          className={`pointer-events-auto transition-opacity duration-300 group ${
+            isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+          title="Reset to True North (Overview)"
+        >
+          <svg
+            viewBox="0 0 100 100"
+            className="w-full h-full select-none filter drop-shadow-md transition-transform duration-200 group-hover:scale-105 group-active:scale-95"
+            style={{
+              transform: `rotate(${cameraAzimuth}rad)`,
+              transformOrigin: '50% 50%'
+            }}
+          >
+            {/* Outer Rings */}
+            <circle cx="50" cy="50" r="46" fill="rgba(255,255,255,0.85)" stroke="#64748B" strokeWidth="1.2" />
+            <circle cx="50" cy="50" r="41" fill="none" stroke="#94A3B8" strokeWidth="0.8" strokeDasharray="2 2" />
+
+            {/* Diagonal Secondary Rays (NE, SE, SW, NW) */}
+            <polygon points="50,50 47,47 50,22" fill="#94A3B8" />
+            <polygon points="50,50 53,47 50,22" fill="#CBD5E1" />
+            <polygon points="50,50 53,53 78,50" fill="#94A3B8" />
+            <polygon points="50,50 53,47 78,50" fill="#CBD5E1" />
+            <polygon points="50,50 53,53 50,78" fill="#CBD5E1" />
+            <polygon points="50,50 47,53 50,78" fill="#94A3B8" />
+            <polygon points="50,50 47,47 22,50" fill="#CBD5E1" />
+            <polygon points="50,50 47,53 22,50" fill="#94A3B8" />
+
+            {/* Primary Rays (N, E, S, W) with Faceted Shading */}
+            {/* North Ray */}
+            <polygon points="50,50 46,50 50,11" fill="#0F172A" />
+            <polygon points="50,50 54,50 50,11" fill="#475569" />
+
+            {/* East Ray */}
+            <polygon points="50,50 50,46 89,50" fill="#0F172A" />
+            <polygon points="50,50 50,54 89,50" fill="#475569" />
+
+            {/* South Ray */}
+            <polygon points="50,50 54,50 50,89" fill="#0F172A" />
+            <polygon points="50,50 46,50 50,89" fill="#475569" />
+
+            {/* West Ray */}
+            <polygon points="50,50 50,54 11,50" fill="#0F172A" />
+            <polygon points="50,50 50,46 11,50" fill="#475569" />
+
+            {/* Center Pivot */}
+            <circle cx="50" cy="50" r="4.5" fill="#0F172A" stroke="#FFFFFF" strokeWidth="1" />
+            <circle cx="50" cy="50" r="1.5" fill="#FFFFFF" />
+
+            {/* Cardinal Letters */}
+            <text x="50" y="8" textAnchor="middle" dominantBaseline="central" fontSize="9" fontWeight="900" fill="#0F172A" fontFamily="sans-serif">N</text>
+            <text x="94" y="51" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#475569" fontFamily="sans-serif">E</text>
+            <text x="50" y="94" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#475569" fontFamily="sans-serif">S</text>
+            <text x="6" y="51" textAnchor="middle" dominantBaseline="central" fontSize="8" fontWeight="800" fill="#475569" fontFamily="sans-serif">W</text>
+          </svg>
+        </button>
+
+        {/* Plots99 Zoom Pill (.ol-zoom) */}
+        <div className={`ol-zoom pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* Vertical OpenLayers-style Zoom Pill (matching Plots99 .ol-zoom) */}
-          <div className="bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex flex-col items-center overflow-hidden">
-            <button
-              onClick={() => layoutRef.current?.zoomIn()}
-              className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
-              title="Zoom In (+)"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-            <div className="w-5 h-px bg-slate-200/80" />
-            <button
-              onClick={() => layoutRef.current?.zoomOut()}
-              className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
-              title="Zoom Out (−) Minimize Layout"
-            >
-              <Minus className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Compass Needle (matching Plots99 top-left compass) */}
           <button
-            onClick={() => {
-              layoutRef.current?.reset();
-              setCameraPreset('overview');
-            }}
-            className="w-10 h-10 bg-white/85 backdrop-blur-md rounded-full border border-slate-200/80 shadow-lg flex items-center justify-center group hover:bg-white transition-all"
-            title="Reset to True North (Overview)"
+            type="button"
+            onClick={() => layoutRef.current?.zoomIn()}
+            className="ol-zoom-in"
+            title="Zoom in"
           >
-            <Compass
-              className="w-5 h-5 text-emerald-600 transition-transform duration-200"
-              style={{ transform: `rotate(${cameraAzimuth}rad)` }}
-            />
+            +
+          </button>
+          <button
+            type="button"
+            onClick={() => layoutRef.current?.zoomOut()}
+            className="ol-zoom-out"
+            title="Zoom out"
+          >
+            –
           </button>
         </div>
 
@@ -794,82 +841,84 @@ export default function PlotViewerStandalone({ settings }) {
           )}
         </div>
 
-        {/* Floating Upper-Right Quick Plot Card (Exact Match to Screenshot 1 & 3) */}
+        {/* Plots99 Authentic Plot Popup Bubble (.ol-popup with #popup-content) */}
         {selectedPlot && selectedPlot.plotNumber && (
-          <div className="absolute top-16 right-3 sm:right-6 z-30 w-72 sm:w-84 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 sm:p-5 animate-fadeIn pointer-events-auto">
-            {/* Top Header matching Screenshot 1 & 3 */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className={`w-2.5 h-2.5 rounded-full ${
-                  selectedPlot.status === 'sold'
-                    ? 'bg-[#F89898]'
-                    : selectedPlot.status === 'reserved'
-                    ? 'bg-[#FBE38E]'
-                    : 'bg-[#68D391]'
-                }`} />
-                <span className="font-bold text-slate-900 text-base">
-                  {selectedPlot.plotNumber}
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                  {selectedPlot.status.toUpperCase()}
-                </span>
+          <div className="ol-popup pointer-events-auto animate-fadeIn w-80 max-w-[92vw] shadow-2xl z-40" style={{ bottom: '24px' }}>
+            <div id="popup-content" className="p-4 sm:p-5">
+              {/* Top Header matching Plots99 */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full ${
+                    selectedPlot.status === 'sold'
+                      ? 'bg-[#F89898]'
+                      : selectedPlot.status === 'reserved'
+                      ? 'bg-[#FBE38E]'
+                      : 'bg-[#68D391]'
+                  }`} />
+                  <span className="font-bold text-slate-900 text-base">
+                    Plot #{selectedPlot.plotNumber}
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    {selectedPlot.status.toUpperCase()}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedPlot(null)}
+                  className="text-slate-400 hover:text-slate-600 p-1 rounded-full transition-colors"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedPlot(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-full transition-colors"
-                title="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Key-Value Details matching Screenshot 1 & 3 */}
-            <div className="py-3.5 space-y-2 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Facing</span>
-                <strong className="text-slate-900 font-bold">{selectedPlot.facing}</strong>
+              {/* Key-Value Details matching Plots99 */}
+              <div className="py-3 space-y-2 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Facing</span>
+                  <strong className="text-slate-900 font-bold">{selectedPlot.facing}</strong>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Area</span>
+                  <strong className="text-slate-900 font-bold">{selectedPlot.areaSqYds}.00 yd²</strong>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">Dimensions</span>
+                  <strong className="text-slate-900 font-bold">{selectedPlot.dimensions}</strong>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Area</span>
-                <strong className="text-slate-900 font-bold">{selectedPlot.areaSqYds}.00 yd²</strong>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 font-medium">Dimensions</span>
-                <strong className="text-slate-900 font-bold">{selectedPlot.dimensions}</strong>
-              </div>
-            </div>
 
-            {/* 4 Action Buttons matching Screenshot 1 & 3 */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
-              <div className="p-2 rounded-xl bg-emerald-50 text-[11px] text-emerald-800 font-semibold text-center border border-emerald-200 flex items-center justify-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                <span>RFA Score 96%</span>
+              {/* 4 Action Buttons matching Plots99 */}
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                <div className="p-2 rounded-xl bg-emerald-50 text-[11px] text-emerald-800 font-semibold text-center border border-emerald-200 flex items-center justify-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>RFA Score 96%</span>
+                </div>
+                <button
+                  onClick={() => handleShareCurrentPlot(selectedPlot)}
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+                  <span>{copiedShare ? 'Copied' : 'Share'}</span>
+                </button>
               </div>
-              <button
-                onClick={() => handleShareCurrentPlot(selectedPlot)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
-              >
-                {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-                <span>{copiedShare ? 'Copied' : 'Share'}</span>
-              </button>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <a
-                href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Navigation className="w-3.5 h-3.5 text-brand-orange" />
-                <span>Directions</span>
-              </a>
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="p-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-[11px] text-white font-bold text-center transition-colors shadow-xs"
-              >
-                Enquire Plot
-              </button>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <a
+                  href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] text-slate-700 font-semibold text-center transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Navigation className="w-3.5 h-3.5 text-brand-orange" />
+                  <span>Directions</span>
+                </a>
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="p-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-[11px] text-white font-bold text-center transition-colors shadow-xs"
+                >
+                  Enquire Plot
+                </button>
+              </div>
             </div>
           </div>
         )}
