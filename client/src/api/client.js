@@ -25,8 +25,16 @@ async function handleResponse(res) {
 // ==========================================
 
 export async function fetchPublicSettings() {
-  const res = await fetch(`${API_BASE}/settings`);
-  return handleResponse(res);
+  try {
+    const res = await fetch(`${API_BASE}/settings`);
+    if (!res.ok) {
+      return { success: false, settings: null };
+    }
+    return handleResponse(res);
+  } catch (err) {
+    console.warn('fetchPublicSettings network error:', err.message);
+    return { success: false, settings: null };
+  }
 }
 
 export async function fetchGallery(category) {
