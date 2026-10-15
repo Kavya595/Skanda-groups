@@ -236,11 +236,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     // 4th Phase road openings labels matching brochure
     const phase4Positions = [
-      [-61.5, 66], // Road V0
-      [-32.5, 66], // Road V1
-      [-3.5, 66],  // Road V2
-      [25.5, 66],  // Road V3
-      [53.5, 66]   // Road V4
+      [-61.5, 53.5], // Road V0 opening to 4th Phase
+      [-32.5, 65.5], // Road V1 opening to 4th Phase
+      [-3.5, 65.5],  // Road V2 opening to 4th Phase
+      [25.5, 65.5],  // Road V3 opening to 4th Phase
+      [53.5, 69.0]   // Road V4 opening to 4th Phase
     ];
     phase4Positions.forEach(([px, pz]) => {
       const p4Marker = L.divIcon({

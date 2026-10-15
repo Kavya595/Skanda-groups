@@ -324,7 +324,7 @@ function Plot3D({
   };
 
   const customShape = useMemo(() => {
-    if (!plot.polygon) return null;
+    if (!plot.hasCustomPolygon || !plot.polygon) return null;
     const shape = new THREE.Shape();
     plot.polygon.forEach(([px, pz], idx) => {
       const lx = px - cx;
@@ -334,12 +334,22 @@ function Plot3D({
     });
     shape.closePath();
     return shape;
-  }, [plot.polygon, cx, cz]);
+  }, [plot.hasCustomPolygon, plot.polygon, cx, cz]);
+
+  const customExtrudeGeom = useMemo(() => {
+    if (!customShape) return null;
+    return new THREE.ExtrudeGeometry(customShape, { depth: tileHeight, bevelEnabled: false });
+  }, [customShape, tileHeight]);
+
+  const customEdgesGeom = useMemo(() => {
+    if (!customExtrudeGeom) return null;
+    return new THREE.EdgesGeometry(customExtrudeGeom);
+  }, [customExtrudeGeom]);
 
   return (
     <group position={[cx, posY, cz]}>
       {/* 3D Volumetric Foundation Plinth Box with Height, Width, and Depth */}
-      {customShape ? (
+      {customShape && customExtrudeGeom ? (
         <group
           onClick={handleClick}
           onPointerOver={(e) => {
@@ -351,19 +361,19 @@ function Plot3D({
             setHovered(false);
           }}
         >
-          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
-            <extrudeGeometry args={[customShape, { depth: tileHeight, bevelEnabled: false }]} />
+          <mesh geometry={customExtrudeGeom} rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
             <meshStandardMaterial color={color} roughness={0.5} opacity={isDimmed ? 0.25 : 1.0} transparent={isDimmed} />
           </mesh>
-          <lineSegments rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
-            <edgesGeometry args={[new THREE.ExtrudeGeometry(customShape, { depth: tileHeight, bevelEnabled: false })]} />
-            <lineBasicMaterial
-              color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
-              linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
-              opacity={isDimmed ? 0.3 : 1.0}
-              transparent={isDimmed}
-            />
-          </lineSegments>
+          {customEdgesGeom && (
+            <lineSegments geometry={customEdgesGeom} rotation={[-Math.PI / 2, 0, 0]} position={[0, -tileHeight / 2, 0]}>
+              <lineBasicMaterial
+                color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
+                linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
+                opacity={isDimmed ? 0.3 : 1.0}
+                transparent={isDimmed}
+              />
+            </lineSegments>
+          )}
         </group>
       ) : (
         <>
@@ -1079,15 +1089,15 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Road V0 (X = -63.8)
   {
-    x: -63.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-63.8, 14], [-63.8, 26], [-63.8, 38], [-63.8, 50]]
+    x: -63.8, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
+    trees: [[-63.8, 14], [-63.8, 26], [-63.8, 38]]
   },
 
   // BLOCK G (Plots 37-46, X: -58 to -36)
   // West Border facing Road V0 (X = -59.2)
   {
-    x: -59.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-59.2, 14], [-59.2, 26], [-59.2, 38], [-59.2, 50]]
+    x: -59.2, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
+    trees: [[-59.2, 14], [-59.2, 26], [-59.2, 38]]
   },
   // North Border facing Central Blvd (Z = 2.8)
   {
@@ -1096,20 +1106,15 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Road V1 (X = -34.8)
   {
-    x: -34.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-34.8, 14], [-34.8, 26], [-34.8, 38], [-34.8, 50]]
-  },
-  // South Border facing South Road (Z = 61.2)
-  {
-    x: -46.5, z: 61.2, w: 18.0, d: 0.8, isHorizontal: true,
-    trees: [[-54, 61.2], [-46.5, 61.2], [-39, 61.2]]
+    x: -34.8, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
+    trees: [[-34.8, 14], [-34.8, 26], [-34.8, 38]]
   },
 
   // BLOCK H (Plots 47-58, X: -29 to -7)
   // West Border facing Road V1 (X = -30.2)
   {
-    x: -30.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-30.2, 14], [-30.2, 26], [-30.2, 38], [-30.2, 50]]
+    x: -30.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[-30.2, 14], [-30.2, 26], [-30.2, 38], [-30.2, 48]]
   },
   // North Border facing Central Blvd (Z = 2.8)
   {
@@ -1118,20 +1123,15 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Road V2 (X = -5.8)
   {
-    x: -5.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-5.8, 14], [-5.8, 26], [-5.8, 38], [-5.8, 50]]
-  },
-  // South Border facing South Road (Z = 61.2)
-  {
-    x: -18.0, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[-25, 61.2], [-18, 61.2], [-11, 61.2]]
+    x: -5.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[-5.8, 14], [-5.8, 26], [-5.8, 38], [-5.8, 48]]
   },
 
   // BLOCK I (Plots 59-70, X: 0 to 22)
   // West Border facing Road V2 (X = -1.2)
   {
-    x: -1.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[-1.2, 14], [-1.2, 26], [-1.2, 38], [-1.2, 50]]
+    x: -1.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[-1.2, 14], [-1.2, 26], [-1.2, 38], [-1.2, 48]]
   },
   // North Border facing Central Blvd (Z = 2.8)
   {
@@ -1140,20 +1140,15 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Road V3 (X = 23.2)
   {
-    x: 23.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[23.2, 14], [23.2, 26], [23.2, 38], [23.2, 50]]
-  },
-  // South Border facing South Road (Z = 61.2)
-  {
-    x: 11.0, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[4, 61.2], [11, 61.2], [18, 61.2]]
+    x: 23.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[23.2, 14], [23.2, 26], [23.2, 38], [23.2, 48]]
   },
 
   // BLOCK J (Plots 71-82, X: 29 to 50)
   // West Border facing Road V3 (X = 27.8)
   {
-    x: 27.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[27.8, 14], [27.8, 26], [27.8, 38], [27.8, 50]]
+    x: 27.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[27.8, 14], [27.8, 26], [27.8, 38], [27.8, 48]]
   },
   // North Border facing Central Blvd (Z = 2.8)
   {
@@ -1162,20 +1157,15 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Road V4 (X = 51.2)
   {
-    x: 51.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[51.2, 14], [51.2, 26], [51.2, 38], [51.2, 50]]
-  },
-  // South Border facing South Road (Z = 61.2)
-  {
-    x: 39.5, z: 61.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[33, 61.2], [39.5, 61.2], [46, 61.2]]
+    x: 51.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[51.2, 14], [51.2, 26], [51.2, 38], [51.2, 48]]
   },
 
   // BLOCK K (Plots 83-96, X: 57 to 70)
   // West Border facing Road V4 (X = 55.8)
   {
-    x: 55.8, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[55.8, 14], [55.8, 26], [55.8, 38], [55.8, 50]]
+    x: 55.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[55.8, 14], [55.8, 26], [55.8, 38], [55.8, 48]]
   },
   // North Border facing Central Blvd (Z = 2.8)
   {
@@ -1184,13 +1174,8 @@ const BLOCK_AVENUE_BORDERS = [
   },
   // East Border facing Service Road (X = 71.2)
   {
-    x: 71.2, z: 32.0, w: 0.8, d: 44.0, isHorizontal: false,
-    trees: [[71.2, 14], [71.2, 26], [71.2, 38], [71.2, 50]]
-  },
-  // South Border facing South Road (Z = 61.2)
-  {
-    x: 63.5, z: 61.2, w: 10.0, d: 0.8, isHorizontal: true,
-    trees: [[63.5, 61.2]]
+    x: 71.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
+    trees: [[71.2, 14], [71.2, 26], [71.2, 38], [71.2, 48]]
   }
 ];
 
@@ -1812,11 +1797,11 @@ function GeographicMapTerrain() {
 
       {/* 4th Phase road opening markers matching brochure */}
       {[
-        [-61.5, 65], // Road V0
-        [-32.5, 65], // Road V1
-        [-3.5, 65],  // Road V2
-        [25.5, 65],  // Road V3
-        [53.5, 65]   // Road V4
+        [-61.5, 53.5], // Road V0 opening to 4th Phase
+        [-32.5, 65.5], // Road V1 opening to 4th Phase
+        [-3.5, 65.5],  // Road V2 opening to 4th Phase
+        [25.5, 65.5],  // Road V3 opening to 4th Phase
+        [53.5, 69.0]   // Road V4 opening to 4th Phase
       ].map(([px, pz], i) => (
         <Text
           key={`phase4-3d-${i}`}
