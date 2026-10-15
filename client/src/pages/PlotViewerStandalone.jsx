@@ -206,7 +206,6 @@ const nearbyLandmarks = [
 
 export default function PlotViewerStandalone({ settings }) {
   const [viewMode, setViewMode] = useState('3d');
-  const [mapTileType, setMapTileType] = useState('satellite');
   const [plots, setPlots] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -832,7 +831,6 @@ export default function PlotViewerStandalone({ settings }) {
               onMeasurePoint={handleMeasurePoint}
               onRoadClick={handleRoadClick}
               onParkClick={handleParkClick}
-              mapTileType={mapTileType}
             />
           ) : (
             <Layout2DView
@@ -1033,53 +1031,18 @@ export default function PlotViewerStandalone({ settings }) {
         </div>
 
         {/* Bottom Right Map Attribution (Single Clean Text) */}
-        <div className={`absolute bottom-4 right-72 z-20 pointer-events-auto hidden lg:block select-none transition-opacity duration-300 ${
+        <div className={`absolute bottom-4 right-28 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
-            {viewMode === '3d' && mapTileType === 'satellite' ? (
-              <span>Tiles &copy; <a href="https://www.esri.com" target="_blank" rel="noopener noreferrer" className="hover:underline hover:text-slate-700 font-medium">Esri, Maxar</a> &bull; Kadthal</span>
-            ) : (
-              <span>&copy; Google Maps &bull; Kadthal, Srisailam Highway (NH-765)</span>
-            )}
+            &copy; Google Maps &bull; Kadthal, Srisailam Highway (NH-765)
           </div>
         </div>
 
-        {/* Bottom Right Controls (Satellite/Map in 3D + 2D/3D Switcher) */}
-        <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto flex items-center gap-2 transition-opacity duration-300 ${
+        {/* Bottom Right 2D/3D Pill */}
+        <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* Map / Satellite Layer Toggle (In 3D View ONLY - hidden in 2D per user specification) */}
-          {viewMode === '3d' && (
-            <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
-              <button
-                onClick={() => setMapTileType('satellite')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  mapTileType === 'satellite'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Aerial Satellite Photography (Esri World Imagery)"
-              >
-                <span>🛰️</span>
-                <span className="hidden sm:inline">Satellite</span>
-              </button>
-              <button
-                onClick={() => setMapTileType('map')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  mapTileType === 'map'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-                title="Road & Street Map View (Kadthal & NH-765)"
-              >
-                <span>🗺️</span>
-                <span className="hidden sm:inline">Map</span>
-              </button>
-            </div>
-          )}
-
-          {/* 2D / 3D Mode Pill */}
           <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
             <button
               onClick={() => handleViewModeToggle('2d')}

@@ -623,7 +623,7 @@ function getGrassTurfTexture() {
 }
 
 // Lush Surrounding Greenery Around Layout (Buffer Belts, Meadows & Tree Clusters)
-function LayoutSurroundingGreenery({ isSat = false }) {
+function LayoutSurroundingGreenery() {
   const outerTrees = useMemo(() => [
     // West Boundary buffer tree line
     [-100, -48], [-100, -32], [-100, -16], [-100, 0], [-100, 16], [-100, 32], [-100, 48], [-100, 62],
@@ -646,11 +646,6 @@ function LayoutSurroundingGreenery({ isSat = false }) {
     return tex;
   }, []);
 
-  const lawnColorWest = isSat ? '#46682A' : '#72B31E';
-  const lawnColorNorth = isSat ? '#406026' : '#6BA81A';
-  const lawnColorSouth = isSat ? '#46682A' : '#72B31E';
-  const lawnColorEast = isSat ? '#3C5A22' : '#65A016';
-
   return (
     <group>
       {/* 1. Surrounding Perimeter Landscape Buffer Lawns / Green Belts with Rich Grass Turf */}
@@ -659,7 +654,7 @@ function LayoutSurroundingGreenery({ isSat = false }) {
         <boxGeometry args={[30, 0.04, 130]} />
         <meshStandardMaterial
           map={grassTexture || undefined}
-          color={lawnColorWest}
+          color="#72B31E"
           roughness={0.88}
         />
       </mesh>
@@ -668,7 +663,7 @@ function LayoutSurroundingGreenery({ isSat = false }) {
         <boxGeometry args={[190, 0.04, 28]} />
         <meshStandardMaterial
           map={grassTexture || undefined}
-          color={lawnColorNorth}
+          color="#6BA81A"
           roughness={0.88}
         />
       </mesh>
@@ -677,7 +672,7 @@ function LayoutSurroundingGreenery({ isSat = false }) {
         <boxGeometry args={[190, 0.04, 30]} />
         <meshStandardMaterial
           map={grassTexture || undefined}
-          color={lawnColorSouth}
+          color="#72B31E"
           roughness={0.88}
         />
       </mesh>
@@ -686,7 +681,7 @@ function LayoutSurroundingGreenery({ isSat = false }) {
         <boxGeometry args={[26, 0.04, 140]} />
         <meshStandardMaterial
           map={grassTexture || undefined}
-          color={lawnColorEast}
+          color="#65A016"
           roughness={0.88}
         />
       </mesh>
@@ -1704,19 +1699,18 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Module-level cache for terrain textures
-const terrainTextureCache = { satellite: null, map: null };
+// Module-level cache for terrain texture
+let mapTerrainTextureCache = null;
 
-// Real-World Kadthal / Srisailam Highway Geographic Map & Satellite Terrain Backdrop
-function GeographicMapTerrain({ mapTileType = 'satellite' }) {
-  const [terrainTexture, setTerrainTexture] = useState(() => terrainTextureCache[mapTileType] || null);
-  const isSat = mapTileType === 'satellite';
+// Real-World Kadthal / Srisailam Highway Geographic Map Terrain Backdrop
+function GeographicMapTerrain() {
+  const [terrainTexture, setTerrainTexture] = useState(() => mapTerrainTextureCache);
 
   useEffect(() => {
     if (typeof document === 'undefined') return;
 
-    if (terrainTextureCache[mapTileType]) {
-      setTerrainTexture(terrainTextureCache[mapTileType]);
+    if (mapTerrainTextureCache) {
+      setTerrainTexture(mapTerrainTextureCache);
       return;
     }
 
@@ -1725,40 +1719,43 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    // Base background tone while tiles load
-    ctx.fillStyle = isSat ? '#2A3A29' : '#E5ECE3';
+    // Clean Google Maps pastel land tone matching 2D View
+    ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 1024, 1024);
 
     // Subtle agricultural & open field parcels in light earthy greens
     const parcels = [
-      { x: 30, y: 40, w: 260, h: 220, col: isSat ? '#344534' : '#E0EAE0' },
-      { x: 320, y: 50, w: 340, h: 180, col: isSat ? '#2F3F2F' : '#DCE8DC' },
-      { x: 40, y: 310, w: 240, h: 280, col: isSat ? '#374737' : '#E2ECE1' },
-      { x: 40, y: 640, w: 260, h: 320, col: isSat ? '#334433' : '#DEE8DD' },
-      { x: 330, y: 720, w: 310, h: 260, col: isSat ? '#384838' : '#E0EAE0' },
-      { x: 720, y: 120, w: 270, h: 360, col: isSat ? '#304030' : '#DEEADE' },
-      { x: 720, y: 530, w: 260, h: 420, col: isSat ? '#354535' : '#E2EBE1' }
+      { x: 30, y: 40, w: 260, h: 220, col: '#E0EAE0' },
+      { x: 320, y: 50, w: 340, h: 180, col: '#DCE8DC' },
+      { x: 40, y: 310, w: 240, h: 280, col: '#E2ECE1' },
+      { x: 40, y: 640, w: 260, h: 320, col: '#DEE8DD' },
+      { x: 330, y: 720, w: 310, h: 260, col: '#E0EAE0' },
+      { x: 720, y: 120, w: 270, h: 360, col: '#DEEADE' },
+      { x: 720, y: 530, w: 260, h: 420, col: '#E2EBE1' }
     ];
     parcels.forEach(p => {
       ctx.fillStyle = p.col;
       ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.strokeStyle = isSat ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
       ctx.lineWidth = 1;
       ctx.strokeRect(p.x, p.y, p.w, p.h);
     });
 
-    if (!isSat) {
-      // Highway corridor preview on base map
-      ctx.fillStyle = '#FEF08A';
-      ctx.fillRect(720, 0, 40, 1024);
-      ctx.fillStyle = '#E2E8F0';
-      ctx.fillRect(0, 360, 720, 28);
-    }
+    // Srisailam Highway NH-765 corridor preview
+    ctx.fillStyle = '#FEF08A';
+    ctx.fillRect(720, 0, 40, 1024);
+    ctx.strokeStyle = '#FACC15';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(720, 0, 40, 1024);
+
+    // 60' Arterial Road connecting to Highway
+    ctx.fillStyle = '#E2E8F0';
+    ctx.fillRect(0, 360, 720, 28);
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
-    terrainTextureCache[mapTileType] = tex;
+    mapTerrainTextureCache = tex;
     setTerrainTexture(tex);
 
     // Zoom 17 tile coordinates for Kadthal [17.0985, 78.5085]
@@ -1779,34 +1776,20 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
           tex.needsUpdate = true;
         };
 
-        if (isSat) {
-          // Satellite: Esri World Imagery (high-resolution aerial photography, CORS-enabled)
-          img.onerror = () => {
-            const fallback = new Image();
-            fallback.crossOrigin = 'anonymous';
-            fallback.onload = () => {
-              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              tex.needsUpdate = true;
-            };
-            fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=satellite`;
+        // Load roadmap tiles via server proxy (with CORS headers), fallback to OSM
+        img.onerror = () => {
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
+            tex.needsUpdate = true;
           };
-          img.src = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${zoom}/${y}/${x}`;
-        } else {
-          // Map: Server proxy to Google Maps roadmap (with CORS headers), fallback to OSM
-          img.onerror = () => {
-            const fallback = new Image();
-            fallback.crossOrigin = 'anonymous';
-            fallback.onload = () => {
-              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              tex.needsUpdate = true;
-            };
-            fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-          };
-          img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
-        }
+          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+        };
+        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
       }
     }
-  }, [mapTileType, isSat]);
+  }, []);
 
   return (
     <group>
@@ -1816,7 +1799,7 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
         {terrainTexture ? (
           <meshBasicMaterial map={terrainTexture} />
         ) : (
-          <meshBasicMaterial color={isSat ? '#2A3A29' : '#E5ECE3'} />
+          <meshBasicMaterial color="#E5ECE3" />
         )}
       </mesh>
 
@@ -1824,8 +1807,8 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
       <mesh position={[0, 0.005, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[186, 126]} />
         <meshBasicMaterial
-          color={isSat ? '#203322' : '#D5E8CE'}
-          opacity={isSat ? 0.35 : 0.88}
+          color="#D5E8CE"
+          opacity={0.88}
           transparent
         />
       </mesh>
@@ -1833,7 +1816,7 @@ function GeographicMapTerrain({ mapTileType = 'satellite' }) {
       {/* DTCP Sanctioned Layout Boundary Perimeter Fencing */}
       <lineSegments position={[0, 0.012, 5]} rotation={[-Math.PI / 2, 0, 0]}>
         <edgesGeometry args={[new THREE.PlaneGeometry(186, 126)]} />
-        <lineBasicMaterial color={isSat ? '#4ADE80' : '#15803D'} linewidth={3} />
+        <lineBasicMaterial color="#15803D" linewidth={3} />
       </lineSegments>
 
       {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
@@ -1916,15 +1899,13 @@ export default function Layout3DView({
   measurePoints = [],
   onMeasurePoint,
   onRoadClick,
-  onParkClick,
-  mapTileType = 'satellite'
+  onParkClick
 }) {
   const cleanSearch = (searchTerm || '').trim();
-  const isSat = mapTileType === 'satellite';
-  const bgColor = isSat ? '#233023' : '#E5ECE3';
+  const bgColor = '#E5ECE3';
 
   return (
-    <div className={`w-full h-full relative ${isSat ? 'bg-[#233023]' : 'bg-[#E5ECE3]'} select-none transition-colors duration-500 ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+    <div className={`w-full h-full relative bg-[#E5ECE3] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
@@ -1934,8 +1915,8 @@ export default function Layout3DView({
         <color attach="background" args={[bgColor]} />
 
         {/* Clean, Bright, Shadowless Illumination */}
-        <ambientLight intensity={isSat ? 1.4 : 1.2} />
-        <directionalLight position={[30, 80, 40]} intensity={isSat ? 0.8 : 0.65} />
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[30, 80, 40]} intensity={0.65} />
 
         {/* Camera Controller supporting Street Walk & Park Ground views */}
         <CameraController
@@ -1946,11 +1927,11 @@ export default function Layout3DView({
           onWalkProgressChange={onWalkProgressChange}
         />
 
-        {/* Real-World Geographic Kadthal Map & Satellite Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
-        <GeographicMapTerrain mapTileType={mapTileType} />
+        {/* Real-World Geographic Kadthal Map Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
+        <GeographicMapTerrain />
 
         {/* Surrounding Perimeter Greenery Around Layout (Buffer Belts & Canopy Trees) */}
-        <LayoutSurroundingGreenery isSat={isSat} />
+        <LayoutSurroundingGreenery />
 
         {/* Connected Asphalt Road Network with Sidewalks */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />
