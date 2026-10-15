@@ -49,7 +49,7 @@ import {
   Pause
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent, submitLead } from '../api/client';
-import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
+import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors, REGIONAL_LANDMARKS } from '../visualizer/masterPlanData';
 import Layout3DView, { WALK_ROADS } from '../visualizer/Layout3DView';
 import Layout2DView from '../visualizer/Layout2DView';
 import EnquiryModal from '../components/EnquiryModal';
@@ -303,6 +303,9 @@ export default function PlotViewerStandalone({ settings }) {
   const [walkRoadIndex, setWalkRoadIndex] = useState(0);
   const [walkProgress, setWalkProgress] = useState(0.1);
   const [isAutoWalking, setIsAutoWalking] = useState(false);
+  const [isLocationMapOpen, setIsLocationMapOpen] = useState(false);
+  const [activeLandmarkTab, setActiveLandmarkTab] = useState('ALL');
+  const [selectedLandmark, setSelectedLandmark] = useState(null);
 
   // Dynamic facing distribution calculation for Property Insights (Photo 3)
   const facingCounts = React.useMemo(() => {
@@ -500,6 +503,20 @@ export default function PlotViewerStandalone({ settings }) {
   const handleToggleParkView = () => {
     if (viewMode !== '3d') setViewMode('3d');
     setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
+  };
+
+  const handleToggleLocationMap = () => {
+    const next = !isLocationMapOpen;
+    setIsLocationMapOpen(next);
+    if (viewMode === '3d') {
+      if (next) {
+        setCameraPreset('mapView');
+      } else {
+        setCameraPreset('overview');
+      }
+    } else {
+      layout2DRef.current?.showLocationMap(next);
+    }
   };
 
   // Insights Tab Switcher (matching Plots99 Features & Additional Info)
@@ -733,21 +750,15 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* 3D Map View (Regional Kadthal & Highway Location from Brochure / PDF) */}
+          {/* Location Map (Surrounding Locations & Connectivity around Layout) */}
           <button
-            onClick={() => {
-              if (viewMode === '2d') {
-                layout2DRef.current?.reset();
-              } else {
-                setCameraPreset(prev => prev === 'mapView' ? 'overview' : 'mapView');
-              }
-            }}
+            onClick={handleToggleLocationMap}
             className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              cameraPreset === 'mapView'
+              isLocationMapOpen || cameraPreset === 'mapView'
                 ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
                 : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:bg-white'
             }`}
-            title="3D Geographic Map View (Kadthal & Srisailam Highway Regional Location from Brochure)"
+            title="Location Map (Minimize layout to explore surrounding connectivity & landmarks)"
           >
             <MapPin className="w-4 h-4" />
           </button>
@@ -831,6 +842,10 @@ export default function PlotViewerStandalone({ settings }) {
               onMeasurePoint={handleMeasurePoint}
               onRoadClick={handleRoadClick}
               onParkClick={handleParkClick}
+              onLandmarkClick={(lm) => {
+                setSelectedLandmark(lm);
+                setIsLocationMapOpen(true);
+              }}
             />
           ) : (
             <Layout2DView
@@ -842,6 +857,11 @@ export default function PlotViewerStandalone({ settings }) {
               filterFacing={facingFilter}
               searchTerm={searchTerm}
               animateVehicles={animateVehicles}
+              isLocationMapMode={isLocationMapOpen}
+              onLandmarkSelect={(lm) => {
+                setSelectedLandmark(lm);
+                setIsLocationMapOpen(true);
+              }}
             />
           )}
         </div>
@@ -1030,8 +1050,132 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
+        {/* Interactive Surrounding Locations & Connectivity Drawer (USER REQUIREMENT) */}
+        {(isLocationMapOpen || (cameraPreset === 'mapView' && viewMode === '3d')) && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-4 space-y-3 pointer-events-auto animate-fadeIn">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-800">
+                  <MapPin className="w-4 h-4 text-emerald-700" />
+                </span>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900 leading-none">
+                    Surrounding Locations &amp; Regional Connectivity
+                  </h3>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                    Alekhya's Brundavan &bull; Kadthal &bull; Srisailam Highway (NH-765)
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsLocationMapOpen(false);
+                    if (viewMode === '3d') setCameraPreset('overview');
+                    else layout2DRef.current?.reset();
+                  }}
+                  className="px-3 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1"
+                  title="Zoom back into layout plots"
+                >
+                  <Search className="w-3 h-3" />
+                  <span>Focus Layout</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsLocationMapOpen(false);
+                    if (viewMode === '3d') setCameraPreset('overview');
+                    else layout2DRef.current?.reset();
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                  title="Close drawer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Category Filter Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
+              {['ALL', 'SPIRITUAL', 'HIGHWAY', 'ECONOMIC', 'TRANSIT'].map(cat => {
+                const labels = {
+                  ALL: 'All Locations (8)',
+                  SPIRITUAL: '🛕 Spiritual',
+                  HIGHWAY: '🛣️ Highways',
+                  ECONOMIC: '🏭 Economic Hubs',
+                  TRANSIT: '✈️ Airport & Transit'
+                };
+                const isActive = activeLandmarkTab === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveLandmarkTab(cat)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap transition-all ${
+                      isActive
+                        ? 'bg-emerald-600 text-white shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {labels[cat]}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Grid of Landmark Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+              {REGIONAL_LANDMARKS.filter(lm => lm.id !== 'LM-SITE' && (activeLandmarkTab === 'ALL' || lm.category === activeLandmarkTab)).map(lm => (
+                <div
+                  key={lm.id}
+                  className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className="text-base">{lm.icon}</span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border ${lm.badgeColor}`}>
+                        {lm.time}
+                      </span>
+                    </div>
+                    <div className="font-bold text-xs text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
+                      {lm.shortName}
+                    </div>
+                    <div className="text-[10px] text-slate-500 font-medium">
+                      📍 {lm.distance} &bull; {lm.direction}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-slate-200/60">
+                    <button
+                      onClick={() => {
+                        if (viewMode === '2d') {
+                          layout2DRef.current?.focusLandmark(lm.id);
+                        } else {
+                          setCameraPreset('mapView');
+                        }
+                      }}
+                      className="grow py-1 px-1.5 text-[10px] font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors text-center"
+                    >
+                      View on Map
+                    </button>
+                    <a
+                      href={lm.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-1 px-2 text-[10px] font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center gap-1"
+                      title="Open Google Maps Driving Directions"
+                    >
+                      <Navigation className="w-2.5 h-2.5" />
+                      <span>Route</span>
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Bottom Right Map Attribution (Single Clean Text) */}
-        <div className={`absolute bottom-4 right-28 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
+        <div className={`absolute bottom-4 right-48 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
@@ -1039,7 +1183,7 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
-        {/* Bottom Right 2D/3D Pill */}
+        {/* Bottom Right 2D/3D Pill & Location Map */}
         <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
@@ -1063,6 +1207,19 @@ export default function PlotViewerStandalone({ settings }) {
               }`}
             >
               3D
+            </button>
+            <div className="w-px h-4 bg-slate-200 mx-0.5" />
+            <button
+              onClick={handleToggleLocationMap}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                isLocationMapOpen || cameraPreset === 'mapView'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-700 hover:text-emerald-700 hover:bg-slate-100'
+              }`}
+              title="Explore surrounding locations and connectivity around the layout"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>Location Map</span>
             </button>
           </div>
         </div>

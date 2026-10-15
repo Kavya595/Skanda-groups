@@ -7,7 +7,8 @@ import {
   SITE_BOUNDARY_LOCAL,
   layoutRoads,
   parkData,
-  statusColors
+  statusColors,
+  REGIONAL_LANDMARKS
 } from './masterPlanData';
 
 // Road definitions for the interactive Street Walk / Road Travel mode
@@ -191,9 +192,9 @@ function CameraController({
     } else if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
     } else if (cameraPreset === 'mapView') {
-      // High-angle 3D Geographic Regional Map View (Kadthal & Srisailam Highway NH-765)
-      targetPos.current.set(0, 160, 180);
-      targetLook.current.set(0, 0, 0);
+      // High-angle 3D Geographic Regional Map View (Minimizes layout to reveal regional connectivity)
+      targetPos.current.set(0, 240, 260);
+      targetLook.current.set(0, 0, -40);
       animatingRef.current = true;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
       // Low eye-level ground perspective inside Ac. 0.758 park (exact match to Screenshots 3 & 4)
@@ -822,8 +823,8 @@ function MovingVehicles3D({ animate = true }) {
   );
 }
 
-// Regional Map Location Pin (Only shown in high-altitude Map View matching PDF / Brochure)
-function RegionalMapLocationPin({ isMapView }) {
+// Regional Map Location Pins and Surrounding Landmarks (Displayed when layout is minimized in Map View)
+function RegionalMapLocationPin({ isMapView, onLandmarkClick }) {
   const ringRef = useRef();
 
   useFrame(({ clock }) => {
@@ -837,9 +838,11 @@ function RegionalMapLocationPin({ isMapView }) {
 
   if (!isMapView) return null;
 
+  const surroundingLandmarks = REGIONAL_LANDMARKS.filter(lm => lm.id !== 'LM-SITE');
+
   return (
     <group position={[0, 0, 0]}>
-      {/* 1. Ground Pulsing Radar Target Rings on Regional Map */}
+      {/* 1. Ground Pulsing Radar Target Rings on Alekhya's Brundavan */}
       <group ref={ringRef} position={[0, 0.25, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <mesh>
           <ringGeometry args={[8, 12, 32]} />
@@ -855,13 +858,13 @@ function RegionalMapLocationPin({ isMapView }) {
         </mesh>
       </group>
 
-      {/* 2. Vertical Light Beacon Ray to Map Pin */}
+      {/* 2. Vertical Light Beacon Ray to Main Layout Pin */}
       <mesh position={[0, 14, 0]}>
         <cylinderGeometry args={[0.35, 1.2, 28, 16]} />
         <meshBasicMaterial color="#EF4444" transparent opacity={0.3} />
       </mesh>
 
-      {/* 3. Floating 3D Google Maps Location Pin Marker */}
+      {/* 3. Floating 3D Google Maps Location Pin Marker for Alekhya's Brundavan */}
       <group position={[0, 28, 0]}>
         {/* Red Pin Head Sphere */}
         <mesh position={[0, 0, 0]}>
@@ -879,14 +882,12 @@ function RegionalMapLocationPin({ isMapView }) {
           <meshStandardMaterial color="#C5221F" roughness={0.3} />
         </mesh>
 
-        {/* 4. High-Altitude Brochure Label Card */}
+        {/* High-Altitude Brochure Title Card */}
         <group position={[0, 8.5, 0]} rotation={[-Math.PI * 0.2, 0, 0]}>
-          {/* Card Backdrop */}
           <mesh position={[0, 0, -0.2]}>
             <planeGeometry args={[48, 12]} />
             <meshBasicMaterial color="#0F172A" opacity={0.92} transparent />
           </mesh>
-          {/* Cyan/Emerald Border */}
           <lineSegments position={[0, 0, -0.18]}>
             <edgesGeometry args={[new THREE.PlaneGeometry(48, 12)]} />
             <lineBasicMaterial color="#38BDF8" linewidth={2} />
@@ -924,6 +925,104 @@ function RegionalMapLocationPin({ isMapView }) {
           </Text>
         </group>
       </group>
+
+      {/* 4. Surrounding Regional Landmark Beacons & Connecting Rays */}
+      {surroundingLandmarks.map((lm) => {
+        const [lx, ly, lz] = lm.threePos;
+        return (
+          <group
+            key={lm.id}
+            position={[lx, ly, lz]}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onLandmarkClick) onLandmarkClick(lm);
+            }}
+          >
+            {/* Ground Radial Line connecting Layout to Landmark */}
+            <Line
+              points={[[-lx, 0.1, -lz], [0, 0.1, 0]]}
+              color={lm.color || '#38BDF8'}
+              lineWidth={2}
+              dashed
+              dashScale={1.2}
+              transparent
+              opacity={0.7}
+            />
+
+            {/* Ground Target Rings at Landmark Base */}
+            <group position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <mesh>
+                <ringGeometry args={[3, 5, 24]} />
+                <meshBasicMaterial color={lm.color || '#38BDF8'} transparent opacity={0.5} />
+              </mesh>
+              <mesh>
+                <circleGeometry args={[1.6, 16]} />
+                <meshBasicMaterial color={lm.color || '#38BDF8'} />
+              </mesh>
+            </group>
+
+            {/* Vertical Beacon Pillar Ray */}
+            <mesh position={[0, 10, 0]}>
+              <cylinderGeometry args={[0.2, 0.6, 20, 12]} />
+              <meshBasicMaterial color={lm.color || '#38BDF8'} transparent opacity={0.35} />
+            </mesh>
+
+            {/* Floating Landmark Pin Marker & Plaque */}
+            <group position={[0, 20, 0]} rotation={[-Math.PI * 0.2, 0, 0]}>
+              {/* Landmark Pin Head */}
+              <mesh position={[0, 4.5, 0]}>
+                <sphereGeometry args={[2.5, 16, 16]} />
+                <meshStandardMaterial color={lm.color || '#38BDF8'} roughness={0.3} />
+              </mesh>
+
+              {/* Plaque Background */}
+              <mesh position={[0, 0, -0.15]}>
+                <planeGeometry args={[38, 9.5]} />
+                <meshBasicMaterial color="#0B132B" opacity={0.92} transparent />
+              </mesh>
+              <lineSegments position={[0, 0, -0.12]}>
+                <edgesGeometry args={[new THREE.PlaneGeometry(38, 9.5)]} />
+                <lineBasicMaterial color={lm.color || '#38BDF8'} linewidth={2} />
+              </lineSegments>
+
+              {/* Landmark Title */}
+              <Text
+                position={[0, 2.3, 0]}
+                fontSize={2.1}
+                color="#FFFFFF"
+                fontWeight="bold"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {`${lm.icon} ${lm.shortName}`}
+              </Text>
+
+              {/* Distance & Travel Time Tag */}
+              <Text
+                position={[0, -0.3, 0]}
+                fontSize={1.7}
+                color="#FEF08A"
+                fontWeight="600"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {`⏱️ ${lm.time} (${lm.distance})`}
+              </Text>
+
+              {/* Direction Indicator */}
+              <Text
+                position={[0, -2.5, 0]}
+                fontSize={1.3}
+                color="#94A3B8"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {lm.direction}
+              </Text>
+            </group>
+          </group>
+        );
+      })}
     </group>
   );
 }
@@ -972,104 +1071,107 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
 }
 
 // Authoritative Block-by-Block Avenue Borders & Straight Trees
-// Placed strictly along internal streets in between blocks; zero trees at entrance or corners
+// Placed strictly along internal streets in between blocks all the way through; zero trees at entrance or corners
 const BLOCK_AVENUE_BORDERS = [
   // ==========================================
-  // NORTH STREETS (IN BETWEEN BLOCKS, Z: -36 to -10)
+  // NORTH STREETS (IN BETWEEN BLOCKS, Z: -40 to -5)
+  // Continuous avenue palm trees lining both curbs of each internal avenue
+  // Spaced at ~5m, keeping 60' road & 33' MID road intersections clear
   // ==========================================
 
   // Avenue V1 (Between Block A and Block B)
   {
-    x: -34.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[-34.8, -26], [-34.8, -18]]
+    x: -34.8, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[-34.8, -37], [-34.8, -32], [-34.8, -27], [-34.8, -22], [-34.8, -17], [-34.8, -12], [-34.8, -7]]
   },
   {
-    x: -30.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[-30.2, -26], [-30.2, -18]]
+    x: -30.2, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[-30.2, -37], [-30.2, -32], [-30.2, -27], [-30.2, -22], [-30.2, -17], [-30.2, -12], [-30.2, -7]]
   },
 
   // Avenue V2 (Between Block B and Block C)
   {
-    x: -5.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[-5.8, -26], [-5.8, -18]]
+    x: -5.8, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[-5.8, -37], [-5.8, -32], [-5.8, -27], [-5.8, -22], [-5.8, -17], [-5.8, -12], [-5.8, -7]]
   },
   {
-    x: -1.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[-1.2, -26], [-1.2, -18]]
+    x: -1.2, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[-1.2, -37], [-1.2, -32], [-1.2, -27], [-1.2, -22], [-1.2, -17], [-1.2, -12], [-1.2, -7]]
   },
 
   // Avenue V3 (Between Block C and Block D)
   {
-    x: 23.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[23.2, -26], [23.2, -18]]
+    x: 23.2, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[23.2, -37], [23.2, -32], [23.2, -27], [23.2, -22], [23.2, -17], [23.2, -12], [23.2, -7]]
   },
   {
-    x: 27.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[27.8, -26], [27.8, -18]]
+    x: 27.8, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[27.8, -37], [27.8, -32], [27.8, -27], [27.8, -22], [27.8, -17], [27.8, -12], [27.8, -7]]
   },
 
   // Avenue V4 (Between Block D and Block E)
   {
-    x: 51.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[51.2, -26], [51.2, -18]]
+    x: 51.2, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[51.2, -37], [51.2, -32], [51.2, -27], [51.2, -22], [51.2, -17], [51.2, -12], [51.2, -7]]
   },
   {
-    x: 55.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
-    trees: [[55.8, -26], [55.8, -18]]
+    x: 55.8, z: -22.5, w: 0.8, d: 33.0, isHorizontal: false,
+    trees: [[55.8, -37], [55.8, -32], [55.8, -27], [55.8, -22], [55.8, -17], [55.8, -12], [55.8, -7]]
   },
 
   // ==========================================
-  // SOUTH STREETS (IN BETWEEN BLOCKS, Z: 10 to 45)
+  // SOUTH STREETS (IN BETWEEN BLOCKS, Z: 6 to 65)
+  // Continuous avenue palm trees lining both curbs all the way along the street
   // ==========================================
 
   // Avenue V0 (Between Block F and Block G)
   {
-    x: -63.8, z: 26.0, w: 0.8, d: 24.0, isHorizontal: false,
-    trees: [[-63.8, 18], [-63.8, 30]]
+    x: -63.8, z: 27.0, w: 0.8, d: 40.0, isHorizontal: false,
+    trees: [[-63.8, 9], [-63.8, 15], [-63.8, 21], [-63.8, 27], [-63.8, 33], [-63.8, 39], [-63.8, 45]]
   },
   {
-    x: -59.2, z: 26.0, w: 0.8, d: 24.0, isHorizontal: false,
-    trees: [[-59.2, 18], [-59.2, 30]]
+    x: -59.2, z: 27.0, w: 0.8, d: 40.0, isHorizontal: false,
+    trees: [[-59.2, 9], [-59.2, 15], [-59.2, 21], [-59.2, 27], [-59.2, 33], [-59.2, 39], [-59.2, 45]]
   },
 
   // Avenue V1 (Between Block G and Block H)
   {
-    x: -34.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-34.8, 18], [-34.8, 28], [-34.8, 38]]
+    x: -34.8, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[-34.8, 9], [-34.8, 14], [-34.8, 19], [-34.8, 24], [-34.8, 29], [-34.8, 34], [-34.8, 39], [-34.8, 44], [-34.8, 49], [-34.8, 54], [-34.8, 58]]
   },
   {
-    x: -30.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-30.2, 18], [-30.2, 28], [-30.2, 38]]
+    x: -30.2, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[-30.2, 9], [-30.2, 14], [-30.2, 19], [-30.2, 24], [-30.2, 29], [-30.2, 34], [-30.2, 39], [-30.2, 44], [-30.2, 49], [-30.2, 54], [-30.2, 58]]
   },
 
   // Avenue V2 (Between Block H and Block I)
   {
-    x: -5.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-5.8, 18], [-5.8, 28], [-5.8, 38]]
+    x: -5.8, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[-5.8, 9], [-5.8, 14], [-5.8, 19], [-5.8, 24], [-5.8, 29], [-5.8, 34], [-5.8, 39], [-5.8, 44], [-5.8, 49], [-5.8, 54], [-5.8, 58]]
   },
   {
-    x: -1.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-1.2, 18], [-1.2, 28], [-1.2, 38]]
+    x: -1.2, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[-1.2, 9], [-1.2, 14], [-1.2, 19], [-1.2, 24], [-1.2, 29], [-1.2, 34], [-1.2, 39], [-1.2, 44], [-1.2, 49], [-1.2, 54], [-1.2, 58]]
   },
 
   // Avenue V3 (Between Block I and Block J)
   {
-    x: 23.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[23.2, 18], [23.2, 28], [23.2, 38]]
+    x: 23.2, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[23.2, 9], [23.2, 14], [23.2, 19], [23.2, 24], [23.2, 29], [23.2, 34], [23.2, 39], [23.2, 44], [23.2, 49], [23.2, 54], [23.2, 58]]
   },
   {
-    x: 27.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[27.8, 18], [27.8, 28], [27.8, 38]]
+    x: 27.8, z: 34.0, w: 0.8, d: 52.0, isHorizontal: false,
+    trees: [[27.8, 9], [27.8, 14], [27.8, 19], [27.8, 24], [27.8, 29], [27.8, 34], [27.8, 39], [27.8, 44], [27.8, 49], [27.8, 54], [27.8, 58]]
   },
 
   // Avenue V4 (Between Block J and Block K)
   {
-    x: 51.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[51.2, 18], [51.2, 28], [51.2, 38]]
+    x: 51.2, z: 35.5, w: 0.8, d: 55.0, isHorizontal: false,
+    trees: [[51.2, 9], [51.2, 14], [51.2, 19], [51.2, 24], [51.2, 29], [51.2, 34], [51.2, 39], [51.2, 44], [51.2, 49], [51.2, 54], [51.2, 59], [51.2, 63]]
   },
   {
-    x: 55.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[55.8, 18], [55.8, 28], [55.8, 38]]
+    x: 55.8, z: 35.5, w: 0.8, d: 55.0, isHorizontal: false,
+    trees: [[55.8, 9], [55.8, 14], [55.8, 19], [55.8, 24], [55.8, 29], [55.8, 34], [55.8, 39], [55.8, 44], [55.8, 49], [55.8, 54], [55.8, 59], [55.8, 63]]
   }
 ];
 
@@ -1808,7 +1910,8 @@ export default function Layout3DView({
   measurePoints = [],
   onMeasurePoint,
   onRoadClick,
-  onParkClick
+  onParkClick,
+  onLandmarkClick
 }) {
   const cleanSearch = (searchTerm || '').trim();
   const bgColor = '#E5ECE3';
@@ -1852,8 +1955,11 @@ export default function Layout3DView({
         {/* Moving Vehicles across Highway AND Venture Roads */}
         <MovingVehicles3D animate={animateVehicles} />
 
-        {/* Regional Map Location Pin (Only shown in high-altitude Map View matching PDF / Brochure) */}
-        <RegionalMapLocationPin isMapView={cameraPreset === 'mapView'} />
+        {/* Regional Map Location Pins and Surrounding Landmarks (Displayed when layout is minimized in Map View) */}
+        <RegionalMapLocationPin
+          isMapView={cameraPreset === 'mapView'}
+          onLandmarkClick={onLandmarkClick}
+        />
 
         {/* Master Plots (Flat tiles, zero gaps, all numbers visible) */}
         <group>
