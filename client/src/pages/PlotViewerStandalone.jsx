@@ -18,6 +18,7 @@ import {
   MapPin,
   Clock,
   Sparkles,
+  Download,
   PhoneCall,
   Share2,
   Navigation,
@@ -54,35 +55,35 @@ import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/mas
 import LayoutMasterView, { WALK_ROADS } from '../visualizer/LayoutMasterView';
 import EnquiryModal from '../components/EnquiryModal';
 
-// Authoritative Location Highlights matching Plots99 structure
+// Official Location Highlights matching Flyer Page 2 verbatim
 const locationHighlights = [
-  { icon: '🚗', text: 'Direct Frontage on Srisailam National Highway (NH 765)' },
-  { icon: '🛕', text: '1 min to Sri Maisigandi Maisamma Temple, Kadthal' },
-  { icon: '🌐', text: 'Inside the Regional Ring Road (RRR) Kadthal Junction Corridor (10 mins)' },
-  { icon: '🏭', text: '15 mins to Hyderabad Pharma City, Mucherla Future City & AI City' },
-  { icon: '🚀', text: '20 mins to Kandukur, FAB City & Maheshwaram Aerospace Park' },
-  { icon: '🛣️', text: '25 mins to Outer Ring Road (ORR Exit 14 Tukkuguda)' },
-  { icon: '✈️', text: '32 mins to Rajiv Gandhi International Airport (RGIA) Shamshabad' },
-  { icon: '🎢', text: '26 mins to Wonderla Amusement Park' },
-  { icon: '🏫', text: 'Surrounded by top international schools, colleges & multispeciality hospitals' },
-  { icon: '📈', text: 'Fastest appreciating growth corridor in South Hyderabad' }
+  { icon: '🛕', text: 'Just 1 min drive to Maisigandi Maisamma Temple' },
+  { icon: '🚗', text: 'Just 2 min drive to Srisailam Highway - NH 765' },
+  { icon: '🏛️', text: 'Near Kadthal Town & Municipality' },
+  { icon: '🌐', text: 'Close to Future City / Life Sciences Development Zone' },
+  { icon: '🏭', text: 'Good Connectivity to Kandukur - Maheshwaram Industrial Belt' },
+  { icon: '🧘', text: 'Close to Maheshwara Maha Pyramid Ashram' },
+  { icon: '💊', text: "Major Pharma Investments - Dr. Reddy's, Aurobindo, Hetero, Laurus Labs, MSN & Gland Pharma" },
+  { icon: '🛣️', text: 'Excellent Connectivity to Hyderabad via Srisailam Highway' },
+  { icon: '🏎️', text: '10 min drive from ORR Exit 14' },
+  { icon: '✈️', text: '20 min drive to Rajiv Gandhi International Airport (RGIA)' },
+  { icon: '⭕', text: '10 min drive from Regional Ring Road (RRR)' }
 ];
 
-// Authoritative Project Highlights matching Plots99 structure
+// Official Project Highlights matching Flyer Page 2 verbatim
 const projectHighlights = [
-  { icon: '📜', text: 'DTCP Sanctioned Layout (TLP NO. 87/2024/H) & TS RERA Registered (PO2400009081)' },
-  { icon: '✍️', text: 'Immediate Spot Registration with 100% Clear Title Guarantee' },
-  { icon: '✅', text: '100% Vasthu Compliant layout with East, West and Corner plots' },
-  { icon: '🏛️', text: 'Magnificent Grand Entrance Arch with 24/7 Security Gatehouse' },
-  { icon: '💧', text: 'Overhead Water Storage Tank & dedicated 24/7 water distribution lines' },
-  { icon: '🛣️', text: "60' Arterial Highway Approach with 33' Blacktop Internal Boulevards" },
-  { icon: '🕳️', text: 'Concealed Underground Drainage & Storm-Water Sewerage System' },
-  { icon: '💡', text: 'Electricity lines with designer LED street illumination' },
-  { icon: '🌳', text: 'Ac. 0.758 Landscaped Central Park with walking tracks & gazebos' },
-  { icon: '🌲', text: 'Lush Avenue Plantation on both sides of internal roads' },
-  { icon: '🚧', text: 'Comprehensive boundary fencing securing the entire layout' },
-  { icon: '🚌', text: 'Effortless access to public transport & TSRTC bus stations' },
-  { icon: '🍃', text: '100% Pollution-Free, peaceful serene green environment' }
+  { icon: '📜', text: 'DTCP Approved Layout (TLP NO. 87/2024/H) & TS RERA Registered (PO2400009081)' },
+  { icon: '✍️', text: 'Clear Title as per Vasthu with Instant Spot Registration' },
+  { icon: '🛣️', text: "40' & 33' B.T Roads with Kerb Stones & Footpaths" },
+  { icon: '🛡️', text: '24 Hrs. Gated Security with Entrance Arch & Boundary Fencing' },
+  { icon: '💡', text: 'Unique Street Lights with Concealed Underground Cabling' },
+  { icon: '🕳️', text: 'Concealed Underground Drainage & Storm-Water System' },
+  { icon: '🤝', text: 'Security & Layout Maintenance for 2 Years' },
+  { icon: '🏃', text: "Jogging Track & Safe Children's Play Area" },
+  { icon: '🌳', text: 'Landscape Parks (Ac. 0.758 Landscaped Greenery)' },
+  { icon: '💧', text: 'Overhead Water Tank with Distribution Lines to Every Plot' },
+  { icon: '🌲', text: 'Green Walkways & Avenue Plantation along all Roads' },
+  { icon: '🏛️', text: 'Magnificent Entrance Gate with Heavy-Duty Compound Fencing' }
 ];
 
 // 15 Master Layout Amenities matching Plots99
@@ -220,6 +221,8 @@ export default function PlotViewerStandalone({ settings }) {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [isRouteMapModalOpen, setIsRouteMapModalOpen] = useState(false);
+  const [routeMapZoom, setRouteMapZoom] = useState(1);
 
   const handleExecuteSearch = (query) => {
     const clean = (query !== undefined ? query : searchTerm).trim();
@@ -721,21 +724,6 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* Regional Map View Toggle (USER REQUIREMENT: Zoom out to see surrounding map & Kadthal corridor, minimize/maximize 3D view) */}
-          {viewMode === '3d' && (
-            <button
-              onClick={() => setCameraPreset(cameraPreset === 'mapView' ? 'overview' : 'mapView')}
-              className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-                cameraPreset === 'mapView'
-                  ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400/50'
-                  : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-blue-600 border-slate-200/90 hover:bg-white'
-              }`}
-              title={cameraPreset === 'mapView' ? 'Zoom to 3D Layout' : 'Regional Map View (Kadthal Corridor)'}
-            >
-              <Map className="w-4 h-4" />
-            </button>
-          )}
-
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -888,30 +876,6 @@ export default function PlotViewerStandalone({ settings }) {
 
 
 
-
-        {/* Floating Regional Map View Controller (USER REQUIREMENT matching Screenshot media_1792061116841_a13f2ed9.png) */}
-        {cameraPreset === 'mapView' && viewMode === '3d' && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-lg bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 space-y-2 pointer-events-auto animate-fadeIn">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900">
-                  Regional Map &bull; Srisailam Highway &bull; Kadthal Corridor
-                </span>
-              </div>
-              <button
-                onClick={() => setCameraPreset('overview')}
-                className="text-[11px] text-white font-bold px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
-              >
-                Zoom to 3D Layout
-              </button>
-            </div>
-            <div className="flex items-center justify-between text-xs text-slate-600">
-              <span>Kadthal &bull; Maisigandi Temple &bull; Mucherla Future City</span>
-              <span className="text-blue-700 font-bold">Zoom in or click layout to explore 3D plots</span>
-            </div>
-          </div>
-        )}
 
         {/* Floating Park View Controller (USER REQUIREMENT matching Screenshot 3 & 4) */}
         {(cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (
@@ -1284,18 +1248,69 @@ export default function PlotViewerStandalone({ settings }) {
               {/* Tab 1: Location Highlights */}
               {insightsTab === 'location' && (
                 <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xs space-y-6 animate-fadeIn">
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                     <div>
                       <h4 className="font-bold text-slate-900 text-base sm:text-lg">
                         Strategic Connectivity &amp; Regional Growth Corridors
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        High-speed arterial access along Srisailam Highway (NH 765) and future growth zones.
+                        Direct Srisailam Highway (NH 765) access &amp; official location highlights from project brochure.
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 hidden sm:inline-block">
-                      10 Growth Hubs
-                    </span>
+                    <button
+                      onClick={() => {
+                        setRouteMapZoom(1);
+                        setIsRouteMapModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-brand-orange border border-orange-200 text-xs font-bold transition-colors w-fit"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>View Official Route Map</span>
+                    </button>
+                  </div>
+
+                  {/* Flyer Schematic Route Map Banner */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/80 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        onClick={() => {
+                          setRouteMapZoom(1);
+                          setIsRouteMapModalOpen(true);
+                        }}
+                        className="w-20 h-20 rounded-xl overflow-hidden border-2 border-white shadow-xs cursor-pointer group shrink-0 relative bg-white"
+                        title="Click to view full schematic route map"
+                      >
+                        <img
+                          src="/assets/route_map_hd.png"
+                          alt="Route Map Preview"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">
+                          <Maximize2 className="w-4 h-4 text-white drop-shadow" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-brand-orange bg-white px-2 py-0.5 rounded-md border border-orange-200 mb-1">
+                          Official Flyer Roadmap
+                        </div>
+                        <h5 className="text-xs sm:text-sm font-bold text-slate-900">
+                          Srisailam Highway &bull; ORR Exit 14 &bull; Pharma City SEZ Corridor
+                        </h5>
+                        <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-1">
+                          Dr. Reddy's, Bharat Biotech, Hetero, MSN, Laurus Labs &amp; 100ft layout road access.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setRouteMapZoom(1);
+                        setIsRouteMapModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-brand-orange hover:bg-brand-orange-dark text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 flex items-center gap-1.5"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>Enlarge Schematic Map</span>
+                    </button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
@@ -1792,60 +1807,219 @@ export default function PlotViewerStandalone({ settings }) {
           </section>
 
           {/* ========================================================== */}
-          {/* 4. NEARBY LANDMARKS & CONNECTIVITY (MATCHING SCREENSHOT 5) */}
           {/* ========================================================== */}
-          <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* 4. NEARBY LANDMARKS & CONNECTIVITY (OFFICIAL FLYER MAP)    */}
+          {/* ========================================================== */}
+          <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
             <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
                     <MapPin className="w-4 h-4" />
-                    <span>Strategic Location</span>
+                    <span>Strategic Location &amp; Roadmap</span>
                   </div>
                   <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
-                    Nearby Landmarks &amp; Connectivity
+                    Official Location Roadmap &amp; Regional Corridors
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Key locations, drive times, and growth infrastructure surrounding Alekhya's Brundavan at Kadthal.
+                    Schematic connectivity map and surrounding growth hubs directly from the official Alekhya's Brundavan project brochure / flyer.
                   </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/assets/alekhyas_brundavan_flyer.pdf"
+                    download="Alekhyas_Brundavan_Flyer.pdf"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Flyer (PDF)</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      setRouteMapZoom(1);
+                      setIsRouteMapModalOpen(true);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold transition-all shadow-xs"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>View Full Schematic Map</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {nearbyLandmarks.map((item, idx) => {
-                  const IconComp = item.icon;
-                  return (
-                    <div
-                      key={idx}
-                      className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                          <IconComp className="w-5 h-5" />
-                        </div>
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
-                          {item.category}
-                        </span>
-                      </div>
+              {/* Official Flyer Schematic Route Map Showcase Card */}
+              <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+                {/* Route Map Image Container */}
+                <div
+                  onClick={() => {
+                    setRouteMapZoom(1);
+                    setIsRouteMapModalOpen(true);
+                  }}
+                  className="lg:col-span-6 bg-slate-950 p-4 sm:p-6 flex flex-col items-center justify-center relative group cursor-pointer border-b lg:border-b-0 lg:border-r border-slate-800"
+                >
+                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand-orange text-white shadow-xs">
+                      Official Brochure Map
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-700 hidden sm:inline-block">
+                      Click to Enlarge
+                    </span>
+                  </div>
 
-                      <div className="mt-3">
-                        <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
-                          {item.name}
-                        </h4>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
-                          <span className="flex items-center gap-1">
-                            <Navigation className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{item.distance}</span>
-                          </span>
-                          <span className="flex items-center gap-1 text-slate-700 font-semibold">
-                            <Clock className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{item.time}</span>
-                          </span>
+                  <div className="w-full max-w-md h-72 sm:h-96 relative flex items-center justify-center overflow-hidden rounded-2xl bg-slate-900/50">
+                    <img
+                      src="/assets/route_map_hd.png"
+                      alt="Alekhya's Brundavan Official Route Map"
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-xl text-slate-900 text-xs font-bold flex items-center gap-2 shadow-lg">
+                        <Maximize2 className="w-4 h-4 text-brand-orange" />
+                        <span>Click to Enlarge &amp; Zoom</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 text-center text-xs text-slate-400">
+                    Schematic Road Network showing NH-765, ORR Exit 14, 200ft Future City Rd &amp; Pharma City
+                  </div>
+                </div>
+
+                {/* Key Corridor Highlights Breakdown */}
+                <div className="lg:col-span-6 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1">
+                      <Navigation className="w-3.5 h-3.5" />
+                      <span>Direct Corridor Connectivity</span>
+                    </div>
+                    <h4 className="font-serif text-xl sm:text-2xl font-bold text-slate-900">
+                      Srisailam Highway &bull; Mucherla Future City Belt
+                    </h4>
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
+                      Alekhya's Brundavan is strategically located on the high-growth corridor between Hyderabad Outer Ring Road (Exit 14) and Kadthal, surrounded by national pharmaceutical leaders and future industrial zones.
+                    </p>
+                  </div>
+
+                  {/* 4 Strategic Corridors from the Flyer */}
+                  <div className="space-y-3">
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-orange-100 text-brand-orange font-bold text-xs flex items-center justify-center shrink-0">
+                        NH
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Srisailam Highway (NH 765) &bull; 100ft Road Access</div>
+                        <div className="text-[11px] text-slate-600 mt-0.5">
+                          Direct 4-lane arterial connection from ORR Exit 14 with a wide 100ft road connecting to the SITE entrance.
                         </div>
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0">
+                        200'
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">200ft Future City Road &bull; 330ft Arterial Road</div>
+                        <div className="text-[11px] text-slate-600 mt-0.5">
+                          Rapid upcoming arterial roads providing high-speed cross-connectivity to Telangana AI City &amp; Mucherla.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center shrink-0">
+                        SEZ
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Green Pharma City &bull; Global Pharma Campuses</div>
+                        <div className="text-[11px] text-slate-600 mt-0.5">
+                          Adjacent to Dr. Reddy's, Bharat Biotech, Hetero, MSN, Laurus Labs, Aurobindo Pharma, Biological E &amp; Gland Pharma.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
+                        RRR
+                      </span>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Regional Ring Road (RRR) &bull; Maisigandi Temple</div>
+                        <div className="text-[11px] text-slate-600 mt-0.5">
+                          10 mins to upcoming RRR Kadthal Interchange; 1 min to Sri Maisigandi Maisamma Temple.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Quick CTAs */}
+                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        setRouteMapZoom(1);
+                        setIsRouteMapModalOpen(true);
+                      }}
+                      className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-xs transition-all"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                      <span>Enlarge Schematic Map</span>
+                    </button>
+
+                    <a
+                      href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition-colors"
+                    >
+                      <Navigation className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Get Directions on Google Maps</span>
+                      <ExternalLink className="w-3 h-3 text-slate-400" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nearby Landmarks Grid */}
+              <div className="pt-4">
+                <h4 className="font-serif text-lg sm:text-xl font-bold text-slate-900 mb-4">
+                  Key Landmark Drive Times &amp; Distances
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {nearbyLandmarks.map((item, idx) => {
+                    const IconComp = item.icon;
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                            <IconComp className="w-5 h-5" />
+                          </div>
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
+                            {item.category}
+                          </span>
+                        </div>
+
+                        <div className="mt-3">
+                          <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
+                            {item.name}
+                          </h4>
+                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
+                            <span className="flex items-center gap-1">
+                              <Navigation className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{item.distance}</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-slate-700 font-semibold">
+                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                              <span>{item.time}</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </section>
@@ -2337,6 +2511,124 @@ export default function PlotViewerStandalone({ settings }) {
         onClose={() => setIsEnquiryOpen(false)}
         prefilledPlot={selectedPlot}
       />
+
+      {/* Official Flyer Schematic Route Map Modal (USER REQUIREMENT) */}
+      {isRouteMapModalOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+          onClick={() => setIsRouteMapModalOpen(false)}
+        >
+          <div
+            className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-2xl text-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3 bg-slate-900/90">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/20 text-brand-orange border border-orange-500/30 flex items-center justify-center shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-base sm:text-lg font-bold leading-tight">
+                    Official Schematic Location Roadmap
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+                    From Official Project Brochure &bull; Srisailam Highway (NH 765) &bull; Kadthal
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Zoom Controls */}
+                <div className="hidden sm:flex items-center bg-slate-800 rounded-xl border border-slate-700 p-0.5">
+                  <button
+                    onClick={() => setRouteMapZoom((z) => Math.max(0.7, z - 0.2))}
+                    className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
+                    title="Zoom Out"
+                  >
+                    <Minus className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[11px] font-mono px-2 text-slate-400">
+                    {Math.round(routeMapZoom * 100)}%
+                  </span>
+                  <button
+                    onClick={() => setRouteMapZoom((z) => Math.min(2.5, z + 0.2))}
+                    className="p-1.5 hover:bg-slate-700 rounded-lg text-slate-300 hover:text-white transition-colors"
+                    title="Zoom In"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                  {routeMapZoom !== 1 && (
+                    <button
+                      onClick={() => setRouteMapZoom(1)}
+                      className="text-[10px] px-2 py-1 text-amber-400 hover:text-amber-300 font-bold border-l border-slate-700"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+
+                <a
+                  href="/assets/alekhyas_brundavan_flyer.pdf"
+                  download="Alekhyas_Brundavan_Flyer.pdf"
+                  className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+                  title="Download Official Flyer PDF"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>PDF</span>
+                </a>
+
+                <button
+                  onClick={() => setIsRouteMapModalOpen(false)}
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+                  title="Close Map"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Image Viewport */}
+            <div className="flex-1 overflow-auto bg-slate-950 p-4 sm:p-6 flex items-center justify-center min-h-[350px]">
+              <div className="relative inline-block transition-transform duration-200 ease-out" style={{ transform: `scale(${routeMapZoom})` }}>
+                <img
+                  src="/assets/route_map_hd.png"
+                  alt="Alekhya's Brundavan Schematic Route Map"
+                  className="max-h-[62vh] max-w-full object-contain rounded-xl shadow-2xl border border-slate-800/80"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 sm:p-4 bg-slate-900 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-400 text-[11px]">
+                <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                  <CheckCircle className="w-3.5 h-3.5" /> 1 min to Maisigandi Temple
+                </span>
+                <span className="flex items-center gap-1 text-slate-300 font-medium">
+                  <CheckCircle className="w-3.5 h-3.5 text-blue-400" /> Srisailam Highway (NH 765)
+                </span>
+                <span className="flex items-center gap-1 text-slate-300 font-medium">
+                  <CheckCircle className="w-3.5 h-3.5 text-purple-400" /> Pharma City SEZ Corridor
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-xs"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Google Maps Directions</span>
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Close id="main" */}
       </div>

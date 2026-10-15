@@ -1698,29 +1698,7 @@ export function CleanMasterPlanTerrain() {
         </group>
       ))}
 
-      {/* 6. Clean Highway Directional Landmarks */}
-      {/* Highway North to Hyderabad */}
-      <group position={[80, 0.04, -55]} rotation={[-Math.PI / 2, 0, -Math.PI / 2]}>
-        <Text fontSize={1.4} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
-          &uarr; TO HYDERABAD &bull; ORR EXIT 14 &bull; AIRPORT
-        </Text>
-      </group>
-
-      {/* Highway South to Maisigandi Temple & Srisailam */}
-      <group position={[80, 0.04, 65]} rotation={[-Math.PI / 2, 0, Math.PI / 2]}>
-        <Text fontSize={1.4} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
-          &uarr; TO MAISIGANDI MAISAMMA TEMPLE &bull; KADTHAL &bull; SRISAILAM
-        </Text>
-      </group>
-
-      {/* 60ft Road West towards Temple */}
-      <group position={[-92, 0.04, -47]} rotation={[-Math.PI / 2, 0, 0]}>
-        <Text fontSize={1.3} color="#0F172A" fontWeight="bold" anchorX="center" anchorY="middle">
-          &larr; 60' ROAD TO MAISIGANDI TEMPLE
-        </Text>
-      </group>
-
-      {/* 7. Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
+      {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
       <GrandEntranceArch position={[63, 0, 0.5]} />
     </group>
   );
