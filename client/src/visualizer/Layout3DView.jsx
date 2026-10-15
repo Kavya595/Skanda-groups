@@ -303,7 +303,7 @@ function CameraController({
       }}
       maxPolarAngle={Math.PI / 2.05}
       minDistance={10}
-      maxDistance={12000}
+      maxDistance={45000}
       enableDamping
       dampingFactor={0.08}
     />
@@ -1526,9 +1526,12 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
 let cachedLocalCanvas = null;
 let cachedRegionalCanvas = null;
 
-// High-Definition Google Maps Roadmap Ground (Zoom 18: ~877m coverage centered directly under layout)
+// Dual-Resolution Full Geographic Map Terrain
+// Tier 1 (Zoom 18): High-Definition ~880m local layout ground
+// Tier 2 (Zoom 12): Full Regional ~65.5km panorama (Shadnagar, Keshampet, Amangal, Kadthal, Kandukur, Yacharam, NH-765)
 function GeographicMapTerrain() {
-  const [tilesLoaded, setTilesLoaded] = useState(0);
+  const [localTilesLoaded, setLocalTilesLoaded] = useState(0);
+  const [regionalTilesLoaded, setRegionalTilesLoaded] = useState(0);
 
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
@@ -1549,25 +1552,21 @@ function GeographicMapTerrain() {
     return pts;
   }, []);
 
-  // 1536x1536 Canvas (Zoom 18: 7x7 tiles covering 877.4m centered at SITE_GEO.center [16.9555, 78.5125])
-  const mapCanvas = useMemo(() => {
+  // 1. Regional Canvas (Zoom 12: 1792x1792 covering 65.5 km from Shadnagar to Yacharam and Shamshabad to Amangal)
+  const regionalCanvas = useMemo(() => {
     if (typeof document === 'undefined') return null;
-
     const canvas = document.createElement('canvas');
-    canvas.width = 1536;
-    canvas.height = 1536;
+    canvas.width = 1792;
+    canvas.height = 1792;
     const ctx = canvas.getContext('2d');
-
-    // Clean Google Maps land tone matching 2D View
     ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 1536, 1536);
-
+    ctx.fillRect(0, 0, 1792, 1792);
     return canvas;
   }, []);
 
-  const mapTexture = useMemo(() => {
-    if (!mapCanvas) return null;
-    const tex = new THREE.CanvasTexture(mapCanvas);
+  const regionalTexture = useMemo(() => {
+    if (!regionalCanvas) return null;
+    const tex = new THREE.CanvasTexture(regionalCanvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
     tex.generateMipmaps = true;
@@ -1575,18 +1574,95 @@ function GeographicMapTerrain() {
     tex.magFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
     return tex;
-  }, [mapCanvas]);
+  }, [regionalCanvas]);
+
+  // 2. Local Canvas (Zoom 18: 1536x1536 covering 877.4m directly around layout)
+  const localCanvas = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1536;
+    canvas.height = 1536;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#E5ECE3';
+    ctx.fillRect(0, 0, 1536, 1536);
+    return canvas;
+  }, []);
+
+  const localTexture = useMemo(() => {
+    if (!localCanvas) return null;
+    const tex = new THREE.CanvasTexture(localCanvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.needsUpdate = true;
+    return tex;
+  }, [localCanvas]);
 
   useEffect(() => {
     return () => {
-      mapTexture?.dispose();
+      localTexture?.dispose();
+      regionalTexture?.dispose();
     };
-  }, [mapTexture]);
+  }, [localTexture, regionalTexture]);
 
-  // Stream Zoom 18 Google Maps roadmap tiles (Exact match to 2D Leaflet view in Image 2)
+  // Stream Regional Zoom 12 tiles (Entire region matching 2D Zoom-out view in Image 1)
   useEffect(() => {
-    if (!mapCanvas) return;
-    const ctx = mapCanvas.getContext('2d');
+    if (!regionalCanvas) return;
+    const ctx = regionalCanvas.getContext('2d');
+    const zoom = 12;
+    const minTx = 2938;
+    const minTy = 1849;
+    const xCenter = 2941.2978;
+    const yCenter = 1852.2051;
+
+    for (let dy = 0; dy < 7; dy++) {
+      for (let dx = 0; dx < 7; dx++) {
+        const tx = minTx + dx;
+        const ty = minTy + dy;
+        const cx = Math.round(896 + (tx - xCenter) * 256);
+        const cy = Math.round(896 + (ty - yCenter) * 256);
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            ctx.drawImage(img, cx, cy, 256, 256);
+            if (regionalTexture) {
+              regionalTexture.needsUpdate = true;
+              setRegionalTilesLoaded(c => c + 1);
+            }
+          } catch (e) {
+            console.warn('Regional tile draw warning:', e);
+          }
+        };
+
+        img.onerror = () => {
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            try {
+              ctx.drawImage(fallback, cx, cy, 256, 256);
+              if (regionalTexture) {
+                regionalTexture.needsUpdate = true;
+                setRegionalTilesLoaded(c => c + 1);
+              }
+            } catch (e) {}
+          };
+          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
+        };
+
+        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
+      }
+    }
+  }, [regionalCanvas, regionalTexture]);
+
+  // Stream Local Zoom 18 tiles (Venture grounds matching 2D Close-up view in Image 2)
+  useEffect(() => {
+    if (!localCanvas) return;
+    const ctx = localCanvas.getContext('2d');
     const zoom = 18;
     const minTx = 188240;
     const minTy = 118538;
@@ -1606,12 +1682,12 @@ function GeographicMapTerrain() {
         img.onload = () => {
           try {
             ctx.drawImage(img, cx, cy, 256, 256);
-            if (mapTexture) {
-              mapTexture.needsUpdate = true;
-              setTilesLoaded(c => c + 1);
+            if (localTexture) {
+              localTexture.needsUpdate = true;
+              setLocalTilesLoaded(c => c + 1);
             }
           } catch (e) {
-            console.warn('Map tile draw warning:', e);
+            console.warn('Local tile draw warning:', e);
           }
         };
 
@@ -1621,9 +1697,9 @@ function GeographicMapTerrain() {
           fallback.onload = () => {
             try {
               ctx.drawImage(fallback, cx, cy, 256, 256);
-              if (mapTexture) {
-                mapTexture.needsUpdate = true;
-                setTilesLoaded(c => c + 1);
+              if (localTexture) {
+                localTexture.needsUpdate = true;
+                setLocalTilesLoaded(c => c + 1);
               }
             } catch (e) {}
           };
@@ -1633,23 +1709,28 @@ function GeographicMapTerrain() {
         img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
       }
     }
-  }, [mapCanvas, mapTexture]);
+  }, [localCanvas, localTexture]);
 
   return (
     <group>
-      {/* 1. Surrounding Vast Ground (matching Google Maps pastel tone #E5ECE3 with zero blurry pixelation) */}
+      {/* 1. Full 65.5-Kilometer Regional Terrain Plane (Zoom 12: Shadnagar, Keshampet, Amangal, Kadthal, Kandukur, Yacharam, NH-765) */}
       <mesh position={[0, -0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
-        <planeGeometry args={[10000, 10000]} />
-        <meshBasicMaterial color="#E5ECE3" depthWrite={false} />
+        <planeGeometry args={[65510, 65510]} />
+        <meshBasicMaterial
+          key={`reg-mat-${regionalTilesLoaded}`}
+          map={regionalTexture || undefined}
+          color={regionalTexture ? '#FFFFFF' : '#E5ECE3'}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* 2. Crisp Local Google Maps Roadmap Tile Plane (Zoom 18: ~877m coverage centered directly under layout) */}
       <mesh position={[0, -0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
         <planeGeometry args={[877.4, 877.4]} />
         <meshBasicMaterial
-          key={`map-mat-${tilesLoaded}`}
-          map={mapTexture || undefined}
-          color={mapTexture ? '#FFFFFF' : '#E5ECE3'}
+          key={`loc-mat-${localTilesLoaded}`}
+          map={localTexture || undefined}
+          color={localTexture ? '#FFFFFF' : '#E5ECE3'}
           depthWrite={false}
         />
       </mesh>
@@ -1780,7 +1861,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [-9, 200, 7.5], fov: 42, near: 0.5, far: 20000 }}
+        camera={{ position: [-9, 200, 7.5], fov: 42, near: 0.5, far: 90000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
