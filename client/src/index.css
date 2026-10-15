@@ -184,24 +184,13 @@
    PLOTS99 AUTHENTIC UI COMPONENT STYLES (MATCHING EXACT PLOTS99 CSS)
    ========================================================================== */
 
-#compass {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  width: 75px;
-  height: 75px;
-  text-align: center;
-  cursor: pointer;
-  z-index: 40;
-}
-
 .ol-viewport {
   touch-action: none;
 }
 
 .ol-zoom {
-  top: 95px !important;
-  left: 24px !important;
+  top: 80px !important;
+  left: 16px !important;
   background-color: rgba(255, 255, 255, 0.85) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
@@ -215,7 +204,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   overflow: hidden !important;
   margin: 0 !important;
-  z-index: 40 !important;
+  z-index: 30 !important;
 }
 
 .ol-zoom button {
@@ -260,8 +249,8 @@
 
 @media (max-width: 640px) {
   .ol-zoom {
-    top: 90px !important;
-    left: 18px !important;
+    top: 116px !important;
+    left: 12px !important;
   }
 }
 
