@@ -99,8 +99,8 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
-  const targetPos = useRef(new THREE.Vector3(0, 115, 1.2));
-  const targetLook = useRef(new THREE.Vector3(0, 0, 0));
+  const targetPos = useRef(new THREE.Vector3(-9, 200, 7.5));
+  const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
 
   // Expose smooth zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -117,8 +117,8 @@ function CameraController({
       }
     },
     reset: () => {
-      targetPos.current.set(0, 115, 1.2);
-      targetLook.current.set(0, 0, 0);
+      targetPos.current.set(-9, 200, 7.5);
+      targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     }
   }));
@@ -223,17 +223,17 @@ function CameraController({
       targetLook.current.set(-71, 1.2, -34);
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
-      targetPos.current.set(0, 115, 1.2);
-      targetLook.current.set(0, 0, 0);
+      targetPos.current.set(-9, 200, 7.5);
+      targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
       targetPos.current.set(78, 22, 22);
       targetLook.current.set(50, 0, -4);
       animatingRef.current = true;
     } else {
-      // Overview preset (default: top-down, flat, upright, normally visible map view)
-      targetPos.current.set(0, 115, 1.2);
-      targetLook.current.set(0, 0, 0);
+      // Overview preset (default: top-down, flat, upright, normally visible map view matching 2D)
+      targetPos.current.set(-9, 200, 7.5);
+      targetLook.current.set(-9, 0, 6);
       animatingRef.current = true;
     }
   }, [
@@ -288,6 +288,7 @@ function CameraController({
   return (
     <OrbitControls
       ref={controlsRef}
+      target={[-9, 0, 6]}
       enabled={cameraPreset !== 'roadWalk'}
       enableRotate={true}
       screenSpacePanning={true}
@@ -301,8 +302,8 @@ function CameraController({
         TWO: THREE.TOUCH.DOLLY_ROTATE
       }}
       maxPolarAngle={Math.PI / 2.05}
-      minDistance={4}
-      maxDistance={35000}
+      minDistance={10}
+      maxDistance={12000}
       enableDamping
       dampingFactor={0.08}
     />
@@ -1525,10 +1526,9 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
 let cachedLocalCanvas = null;
 let cachedRegionalCanvas = null;
 
-// Dual-Tier Geographic Map Terrain (1.2 km Local Kadthal Layout + 38 km Regional South Hyderabad/Srisailam Highway)
+// High-Definition Google Maps Roadmap Ground (Zoom 18: ~877m coverage centered directly under layout)
 function GeographicMapTerrain() {
-  const [localTilesLoaded, setLocalTilesLoaded] = useState(0);
-  const [regionalTilesLoaded, setRegionalTilesLoaded] = useState(0);
+  const [tilesLoaded, setTilesLoaded] = useState(0);
 
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
@@ -1549,142 +1549,69 @@ function GeographicMapTerrain() {
     return pts;
   }, []);
 
-  // 1. Local Canvas (Zoom 17: Kadthal & Srisailam Highway frontage)
-  const localCanvas = useMemo(() => {
-    if (cachedLocalCanvas) return cachedLocalCanvas;
+  // 1536x1536 Canvas (Zoom 18: 7x7 tiles covering 877.4m centered at SITE_GEO.center [16.9555, 78.5125])
+  const mapCanvas = useMemo(() => {
     if (typeof document === 'undefined') return null;
 
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
+    canvas.width = 1536;
+    canvas.height = 1536;
     const ctx = canvas.getContext('2d');
 
-    // Clean Google Maps pastel land tone matching 2D View
+    // Clean Google Maps land tone matching 2D View
     ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 1024, 1024);
+    ctx.fillRect(0, 0, 1536, 1536);
 
-    cachedLocalCanvas = canvas;
     return canvas;
   }, []);
 
-  // 2. Regional Canvas (Zoom 12: 38 km panorama covering Kadthal, Maisigandi, RRR, Pharma City, Airport)
-  const regionalCanvas = useMemo(() => {
-    if (cachedRegionalCanvas) return cachedRegionalCanvas;
-    if (typeof document === 'undefined') return null;
-
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
-    const ctx = canvas.getContext('2d');
-
-    // Regional earth tone matching Google Maps
-    ctx.fillStyle = '#E5ECE3';
-    ctx.fillRect(0, 0, 1024, 1024);
-
-    cachedRegionalCanvas = canvas;
-    return canvas;
-  }, []);
-
-  // Three.js Textures created fresh for current WebGL context
-  const localTexture = useMemo(() => {
-    if (!localCanvas) return null;
-    const tex = new THREE.CanvasTexture(localCanvas);
+  const mapTexture = useMemo(() => {
+    if (!mapCanvas) return null;
+    const tex = new THREE.CanvasTexture(mapCanvas);
     tex.wrapS = THREE.ClampToEdgeWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
     tex.needsUpdate = true;
     return tex;
-  }, [localCanvas]);
+  }, [mapCanvas]);
 
-  const regionalTexture = useMemo(() => {
-    if (!regionalCanvas) return null;
-    const tex = new THREE.CanvasTexture(regionalCanvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.needsUpdate = true;
-    return tex;
-  }, [regionalCanvas]);
-
-  // Clean up textures on unmount so WebGL context stays clean
   useEffect(() => {
     return () => {
-      localTexture?.dispose();
-      regionalTexture?.dispose();
+      mapTexture?.dispose();
     };
-  }, [localTexture, regionalTexture]);
+  }, [mapTexture]);
 
-  // Stream local Google Maps roadmap tiles (Zoom 17: exact match to 2D Leaflet view)
+  // Stream Zoom 18 Google Maps roadmap tiles (Exact match to 2D Leaflet view in Image 2)
   useEffect(() => {
-    if (!localCanvas) return;
-    const ctx = localCanvas.getContext('2d');
-    const zoom = 17;
-    const startX = 94118;
-    const startY = 59268;
+    if (!mapCanvas) return;
+    const ctx = mapCanvas.getContext('2d');
+    const zoom = 18;
+    const minTx = 188240;
+    const minTy = 118538;
+    const xCenter = 188243.0578;
+    const yCenter = 118541.1257;
 
-    for (let dy = 0; dy < 4; dy++) {
-      for (let dx = 0; dx < 4; dx++) {
-        const x = startX + dx;
-        const y = startY + dy;
+    for (let dy = 0; dy < 7; dy++) {
+      for (let dx = 0; dx < 7; dx++) {
+        const tx = minTx + dx;
+        const ty = minTy + dy;
+        const cx = Math.round(768 + (tx - xCenter) * 256);
+        const cy = Math.round(768 + (ty - yCenter) * 256);
+
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
         img.onload = () => {
           try {
-            ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-            if (localTexture) {
-              localTexture.needsUpdate = true;
-              setLocalTilesLoaded(c => c + 1);
+            ctx.drawImage(img, cx, cy, 256, 256);
+            if (mapTexture) {
+              mapTexture.needsUpdate = true;
+              setTilesLoaded(c => c + 1);
             }
           } catch (e) {
-            console.warn('Local map tile draw warning:', e);
-          }
-        };
-
-        img.onerror = () => {
-          // Fallback to OSM tile proxy which supports CORS
-          const fallback = new Image();
-          fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => {
-            try {
-              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              if (localTexture) {
-                localTexture.needsUpdate = true;
-                setLocalTilesLoaded(c => c + 1);
-              }
-            } catch (e) {}
-          };
-          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=osm`;
-        };
-
-        // Primary: Load Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
-        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
-      }
-    }
-  }, [localCanvas, localTexture]);
-
-  // Stream regional Google Maps roadmap tiles (Zoom 12: 38-kilometer panoramic coverage)
-  useEffect(() => {
-    if (!regionalCanvas) return;
-    const ctx = regionalCanvas.getContext('2d');
-    const zoom = 12;
-    const startX = 2939;
-    const startY = 1850;
-
-    for (let dy = 0; dy < 4; dy++) {
-      for (let dx = 0; dx < 4; dx++) {
-        const x = startX + dx;
-        const y = startY + dy;
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-          try {
-            ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-            if (regionalTexture) {
-              regionalTexture.needsUpdate = true;
-              setRegionalTilesLoaded(c => c + 1);
-            }
-          } catch (e) {
-            console.warn('Regional map tile draw warning:', e);
+            console.warn('Map tile draw warning:', e);
           }
         };
 
@@ -1693,42 +1620,36 @@ function GeographicMapTerrain() {
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
             try {
-              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-              if (regionalTexture) {
-                regionalTexture.needsUpdate = true;
-                setRegionalTilesLoaded(c => c + 1);
+              ctx.drawImage(fallback, cx, cy, 256, 256);
+              if (mapTexture) {
+                mapTexture.needsUpdate = true;
+                setTilesLoaded(c => c + 1);
               }
             } catch (e) {}
           };
-          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=osm`;
+          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
         };
 
-        // Primary: Load Regional Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
-        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
+        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
       }
     }
-  }, [regionalCanvas, regionalTexture]);
+  }, [mapCanvas, mapTexture]);
 
   return (
     <group>
-      {/* 1. Vast 38-Kilometer Regional Terrain Plane (Zoom 12: South Hyderabad, Kadthal, Airport, ORR, RRR, Pharma City) */}
-      <mesh position={[-2152, -0.08, -1778]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
-        <planeGeometry args={[37500, 37500]} />
-        <meshBasicMaterial
-          key={`reg-mat-${regionalTilesLoaded}`}
-          map={regionalTexture || undefined}
-          color={regionalTexture ? '#FFFFFF' : '#E5ECE3'}
-          depthWrite={false}
-        />
+      {/* 1. Surrounding Vast Ground (matching Google Maps pastel tone #E5ECE3 with zero blurry pixelation) */}
+      <mesh position={[0, -0.025, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
+        <planeGeometry args={[10000, 10000]} />
+        <meshBasicMaterial color="#E5ECE3" depthWrite={false} />
       </mesh>
 
-      {/* 2. Crisp Local Kadthal Layout Terrain Plane (Zoom 17: ~1.2 km around Alekhya's Brundavan) */}
-      <mesh position={[169.6, -0.04, -17.5]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
-        <planeGeometry args={[1170, 1170]} />
+      {/* 2. Crisp Local Google Maps Roadmap Tile Plane (Zoom 18: ~877m coverage centered directly under layout) */}
+      <mesh position={[0, -0.015, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <planeGeometry args={[877.4, 877.4]} />
         <meshBasicMaterial
-          key={`loc-mat-${localTilesLoaded}`}
-          map={localTexture || undefined}
-          color={localTexture ? '#FFFFFF' : '#E5ECE3'}
+          key={`map-mat-${tilesLoaded}`}
+          map={mapTexture || undefined}
+          color={mapTexture ? '#FFFFFF' : '#E5ECE3'}
           depthWrite={false}
         />
       </mesh>
@@ -1859,7 +1780,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [0, 115, 1.2], fov: 42, near: 0.5, far: 50000 }}
+        camera={{ position: [-9, 200, 7.5], fov: 42, near: 0.5, far: 20000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
