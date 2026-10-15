@@ -94,13 +94,35 @@ function CameraController({
   walkRoadIndex = 0,
   walkProgress = 0,
   onWalkProgressChange,
-  onResetComplete
+  onResetComplete,
+  apiRef
 }) {
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
   const targetPos = useRef(new THREE.Vector3(0, 68, 76));
   const targetLook = useRef(new THREE.Vector3(0, 0, 4));
+
+  // Expose smooth zoomIn / zoomOut / reset to external toolbars
+  React.useImperativeHandle(apiRef, () => ({
+    zoomIn: () => {
+      if (controlsRef.current) {
+        controlsRef.current.dollyIn(1.38);
+        controlsRef.current.update();
+      }
+    },
+    zoomOut: () => {
+      if (controlsRef.current) {
+        controlsRef.current.dollyOut(1.38);
+        controlsRef.current.update();
+      }
+    },
+    reset: () => {
+      targetPos.current.set(0, 68, 76);
+      targetLook.current.set(0, 0, 4);
+      animatingRef.current = true;
+    }
+  }));
 
   // Road Walk Gesture State
   const isDragging = useRef(false);
@@ -192,9 +214,9 @@ function CameraController({
     } else if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
     } else if (cameraPreset === 'mapView') {
-      // High-angle 3D Geographic Regional Map View (Minimizes layout to reveal regional connectivity)
-      targetPos.current.set(0, 240, 260);
-      targetLook.current.set(0, 0, -40);
+      // High-angle 3D Geographic Regional Map View (Minimizes layout to small particle)
+      targetPos.current.set(0, 520, 560);
+      targetLook.current.set(0, 0, -50);
       animatingRef.current = true;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
       // Low eye-level ground perspective inside Ac. 0.758 park (exact match to Screenshots 3 & 4)
@@ -271,8 +293,8 @@ function CameraController({
       enableRotate={false}
       screenSpacePanning={true}
       maxPolarAngle={Math.PI / 2.1}
-      minDistance={4}
-      maxDistance={220}
+      minDistance={2}
+      maxDistance={4500}
       enableDamping
       dampingFactor={0.08}
     />
@@ -1654,14 +1676,12 @@ function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
-// Module-level cache for terrain texture
-let mapTerrainTextureCache = null;
+// Module-level caches for pure 2D Canvas elements (Safe across WebGL context recreations)
+let cachedLocalCanvas = null;
+let cachedRegionalCanvas = null;
 
-// Real-World Kadthal / Srisailam Highway Geographic Map Terrain Backdrop
-// Real-World Kadthal / Srisailam Highway Geographic Map Terrain Backdrop
+// Dual-Tier Geographic Map Terrain (1.2 km Local Kadthal Layout + 38 km Regional South Hyderabad/Srisailam Highway)
 function GeographicMapTerrain() {
-  const [terrainTexture, setTerrainTexture] = useState(() => mapTerrainTextureCache);
-
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
     const shape = new THREE.Shape();
@@ -1681,13 +1701,10 @@ function GeographicMapTerrain() {
     return pts;
   }, []);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    if (mapTerrainTextureCache) {
-      setTerrainTexture(mapTerrainTextureCache);
-      return;
-    }
+  // 1. Local Canvas (Zoom 17: Kadthal & Srisailam Highway frontage)
+  const localCanvas = useMemo(() => {
+    if (cachedLocalCanvas) return cachedLocalCanvas;
+    if (typeof document === 'undefined') return null;
 
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
@@ -1727,69 +1744,164 @@ function GeographicMapTerrain() {
     ctx.fillStyle = '#E2E8F0';
     ctx.fillRect(0, 360, 720, 28);
 
-    const initialTex = new THREE.CanvasTexture(canvas);
-    initialTex.wrapS = THREE.ClampToEdgeWrapping;
-    initialTex.wrapT = THREE.ClampToEdgeWrapping;
-    setTerrainTexture(initialTex);
+    cachedLocalCanvas = canvas;
+    return canvas;
+  }, []);
 
-    // Zoom 17 tile coordinates for Kadthal [16.9555, 78.5125]
-    // Kadthal center tile: 94121.53, 59270.56. Covers ~1.17 km x 1.17 km around venture
+  // 2. Regional Canvas (Zoom 12: 38 km panorama covering Kadthal, Maisigandi, RRR, Pharma City, Airport)
+  const regionalCanvas = useMemo(() => {
+    if (cachedRegionalCanvas) return cachedRegionalCanvas;
+    if (typeof document === 'undefined') return null;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+
+    // Regional earth tone matching Google Maps
+    ctx.fillStyle = '#E5ECE3';
+    ctx.fillRect(0, 0, 1024, 1024);
+
+    // Major Srisailam Highway NH-765 route through canvas
+    ctx.fillStyle = '#FBBF24';
+    ctx.fillRect(580, 0, 24, 1024);
+
+    cachedRegionalCanvas = canvas;
+    return canvas;
+  }, []);
+
+  // Three.js Textures created fresh for current WebGL context
+  const localTexture = useMemo(() => {
+    if (!localCanvas) return null;
+    const tex = new THREE.CanvasTexture(localCanvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+    return tex;
+  }, [localCanvas]);
+
+  const regionalTexture = useMemo(() => {
+    if (!regionalCanvas) return null;
+    const tex = new THREE.CanvasTexture(regionalCanvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+    return tex;
+  }, [regionalCanvas]);
+
+  // Clean up textures on unmount so WebGL context stays clean
+  useEffect(() => {
+    return () => {
+      localTexture?.dispose();
+      regionalTexture?.dispose();
+    };
+  }, [localTexture, regionalTexture]);
+
+  // Stream local tiles (Zoom 17) with verified CORS support
+  useEffect(() => {
+    if (!localCanvas) return;
+    const ctx = localCanvas.getContext('2d');
     const zoom = 17;
     const startX = 94120;
     const startY = 59269;
-    let loadedCount = 0;
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = (x + y) % 4;
+        const sub = ['a', 'b', 'c', 'd'][(dx + dy) % 4];
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
-        const handleTileSuccess = (sourceImg) => {
+        img.onload = () => {
           try {
-            ctx.drawImage(sourceImg, dx * 256, dy * 256, 256, 256);
-            loadedCount++;
-            initialTex.needsUpdate = true;
-            if (loadedCount === 4 || loadedCount === 8 || loadedCount === 16) {
-              const freshTex = new THREE.CanvasTexture(canvas);
-              freshTex.wrapS = THREE.ClampToEdgeWrapping;
-              freshTex.wrapT = THREE.ClampToEdgeWrapping;
-              freshTex.needsUpdate = true;
-              if (loadedCount === 16) {
-                mapTerrainTextureCache = freshTex;
-              }
-              setTerrainTexture(freshTex);
-            }
-          } catch (err) {
-            console.warn('Map tile draw warning:', err);
+            ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
+            if (localTexture) localTexture.needsUpdate = true;
+          } catch (e) {
+            console.warn('Local map tile draw warning:', e);
           }
         };
 
-        img.onload = () => handleTileSuccess(img);
-
-        // Fallback: server proxy endpoint
         img.onerror = () => {
+          // Fallback to Google roadmap
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => handleTileSuccess(fallback);
-          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
+          fallback.onload = () => {
+            try {
+              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
+              if (localTexture) localTexture.needsUpdate = true;
+            } catch (e) {}
+          };
+          fallback.src = `https://mt${(dx + dy) % 4}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
         };
 
-        // Primary: Direct Google Maps Roadmap (CORS: *)
-        img.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
+        // CartoDB Voyager with verified CORS '*'
+        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
       }
     }
-  }, []);
+  }, [localCanvas, localTexture]);
+
+  // Stream regional tiles (Zoom 12) for 38-kilometer panoramic coverage
+  useEffect(() => {
+    if (!regionalCanvas) return;
+    const ctx = regionalCanvas.getContext('2d');
+    const zoom = 12;
+    const startX = 2939;
+    const startY = 1850;
+
+    for (let dy = 0; dy < 4; dy++) {
+      for (let dx = 0; dx < 4; dx++) {
+        const x = startX + dx;
+        const y = startY + dy;
+        const sub = ['a', 'b', 'c', 'd'][(dx + dy) % 4];
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+
+        img.onload = () => {
+          try {
+            ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
+            if (regionalTexture) regionalTexture.needsUpdate = true;
+          } catch (e) {
+            console.warn('Regional map tile draw warning:', e);
+          }
+        };
+
+        img.onerror = () => {
+          // OpenStreetMap fallback
+          const fallback = new Image();
+          fallback.crossOrigin = 'anonymous';
+          fallback.onload = () => {
+            try {
+              ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
+              if (regionalTexture) regionalTexture.needsUpdate = true;
+            } catch (e) {}
+          };
+          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+        };
+
+        // CartoDB Voyager (CORS: *)
+        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
+      }
+    }
+  }, [regionalCanvas, regionalTexture]);
 
   return (
     <group>
-      {/* Real-World Geographic Terrain Plane (Kadthal, Srisailam Highway, Hyderabad) */}
-      <mesh position={[138, -0.025, 128]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 1. Vast 38-Kilometer Regional Terrain Plane (Zoom 12: South Hyderabad, Kadthal, Airport, ORR, RRR, Pharma City) */}
+      <mesh position={[-2789, -0.06, -1919]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[37500, 37500]} />
+        {regionalTexture ? (
+          <meshBasicMaterial map={regionalTexture} />
+        ) : (
+          <meshBasicMaterial color="#E5ECE3" />
+        )}
+      </mesh>
+
+      {/* 2. Crisp Local Kadthal Layout Terrain Plane (Zoom 17: ~1.2 km around Alekhya's Brundavan) */}
+      <mesh position={[137.8, -0.025, 127.9]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[1170, 1170]} />
-        {terrainTexture ? (
-          <meshBasicMaterial map={terrainTexture} />
+        {localTexture ? (
+          <meshBasicMaterial map={localTexture} />
         ) : (
           <meshBasicMaterial color="#E5ECE3" />
         )}
@@ -1894,7 +2006,7 @@ function MeasureOverlay({ points }) {
   );
 }
 
-export default function Layout3DView({
+const Layout3DView = React.forwardRef(function Layout3DView({
   plots,
   selectedPlot,
   onSelectPlot,
@@ -1912,7 +2024,7 @@ export default function Layout3DView({
   onRoadClick,
   onParkClick,
   onLandmarkClick
-}) {
+}, ref) {
   const cleanSearch = (searchTerm || '').trim();
   const bgColor = '#E5ECE3';
 
@@ -1921,7 +2033,7 @@ export default function Layout3DView({
       <Canvas
         shadows={false} // NO SHADOWS per user directive
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 1600 }}
+        camera={{ position: [0, 68, 76], fov: 42, near: 0.5, far: 15000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       >
         <color attach="background" args={[bgColor]} />
@@ -1937,6 +2049,7 @@ export default function Layout3DView({
           walkRoadIndex={walkRoadIndex}
           walkProgress={walkProgress}
           onWalkProgressChange={onWalkProgressChange}
+          apiRef={ref}
         />
 
         {/* Real-World Geographic Kadthal Map Terrain with DTCP Sanctioned Layout Boundary & Landmarks */}
@@ -1992,4 +2105,6 @@ export default function Layout3DView({
       </Canvas>
     </div>
   );
-}
+});
+
+export default Layout3DView;

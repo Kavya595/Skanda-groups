@@ -349,6 +349,7 @@ export default function PlotViewerStandalone({ settings }) {
   const containerRef = useRef(null);
   const mapSectionRef = useRef(null);
   const layout2DRef = useRef(null);
+  const layout3DRef = useRef(null);
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { viewMode, standalone: true });
@@ -705,8 +706,7 @@ export default function PlotViewerStandalone({ settings }) {
                 if (viewMode === '2d') {
                   layout2DRef.current?.zoomIn();
                 } else {
-                  if (cameraPreset === 'overview') setCameraPreset('topDown');
-                  else if (cameraPreset === 'topDown') setCameraPreset('park');
+                  layout3DRef.current?.zoomIn();
                 }
               }}
               className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
@@ -720,11 +720,11 @@ export default function PlotViewerStandalone({ settings }) {
                 if (viewMode === '2d') {
                   layout2DRef.current?.zoomOut();
                 } else {
-                  setCameraPreset('overview');
+                  layout3DRef.current?.zoomOut();
                 }
               }}
               className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-700 hover:bg-slate-100/70 transition-colors"
-              title="Zoom Out (−)"
+              title="Zoom Out (−) Minimize Layout"
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -736,6 +736,7 @@ export default function PlotViewerStandalone({ settings }) {
               if (viewMode === '2d') {
                 layout2DRef.current?.reset();
               } else {
+                layout3DRef.current?.reset();
                 setCameraPreset('overview');
               }
             }}
@@ -826,6 +827,7 @@ export default function PlotViewerStandalone({ settings }) {
             </div>
           ) : viewMode === '3d' ? (
             <Layout3DView
+              ref={layout3DRef}
               plots={plots}
               selectedPlot={selectedPlot}
               onSelectPlot={handleSelectPlot}
