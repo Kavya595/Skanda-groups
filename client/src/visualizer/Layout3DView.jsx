@@ -1511,35 +1511,6 @@ function GeographicMapTerrain() {
     ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle agricultural & open field parcels in light earthy greens
-    const parcels = [
-      { x: 30, y: 40, w: 260, h: 220, col: '#E0EAE0' },
-      { x: 320, y: 50, w: 340, h: 180, col: '#DCE8DC' },
-      { x: 40, y: 310, w: 240, h: 280, col: '#E2ECE1' },
-      { x: 40, y: 640, w: 260, h: 320, col: '#DEE8DD' },
-      { x: 330, y: 720, w: 310, h: 260, col: '#E0EAE0' },
-      { x: 720, y: 120, w: 270, h: 360, col: '#DEEADE' },
-      { x: 720, y: 530, w: 260, h: 420, col: '#E2EBE1' }
-    ];
-    parcels.forEach(p => {
-      ctx.fillStyle = p.col;
-      ctx.fillRect(p.x, p.y, p.w, p.h);
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.04)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(p.x, p.y, p.w, p.h);
-    });
-
-    // Srisailam Highway NH-765 corridor preview
-    ctx.fillStyle = '#FEF08A';
-    ctx.fillRect(720, 0, 40, 1024);
-    ctx.strokeStyle = '#FACC15';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(720, 0, 40, 1024);
-
-    // 60' Arterial Road connecting to Highway
-    ctx.fillStyle = '#E2E8F0';
-    ctx.fillRect(0, 360, 720, 28);
-
     cachedLocalCanvas = canvas;
     return canvas;
   }, []);
@@ -1557,10 +1528,6 @@ function GeographicMapTerrain() {
     // Regional earth tone matching Google Maps
     ctx.fillStyle = '#E5ECE3';
     ctx.fillRect(0, 0, 1024, 1024);
-
-    // Major Srisailam Highway NH-765 route through canvas
-    ctx.fillStyle = '#FBBF24';
-    ctx.fillRect(580, 0, 24, 1024);
 
     cachedRegionalCanvas = canvas;
     return canvas;
@@ -1593,7 +1560,7 @@ function GeographicMapTerrain() {
     };
   }, [localTexture, regionalTexture]);
 
-  // Stream local tiles (Zoom 17) with verified CORS support
+  // Stream local Google Maps roadmap tiles (Zoom 17: exact match to 2D Leaflet view)
   useEffect(() => {
     if (!localCanvas) return;
     const ctx = localCanvas.getContext('2d');
@@ -1605,7 +1572,7 @@ function GeographicMapTerrain() {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = ['a', 'b', 'c', 'd'][(dx + dy) % 4];
+        const sub = (dx + dy) % 4;
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
@@ -1619,7 +1586,7 @@ function GeographicMapTerrain() {
         };
 
         img.onerror = () => {
-          // Fallback to Google roadmap
+          // Direct Google Maps fallback
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
@@ -1628,16 +1595,16 @@ function GeographicMapTerrain() {
               if (localTexture) localTexture.needsUpdate = true;
             } catch (e) {}
           };
-          fallback.src = `https://mt${(dx + dy) % 4}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
+          fallback.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
         };
 
-        // CartoDB Voyager with verified CORS '*'
-        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
+        // Primary: Load Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
+        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
       }
     }
   }, [localCanvas, localTexture]);
 
-  // Stream regional tiles (Zoom 12) for 38-kilometer panoramic coverage
+  // Stream regional Google Maps roadmap tiles (Zoom 12: 38-kilometer panoramic coverage)
   useEffect(() => {
     if (!regionalCanvas) return;
     const ctx = regionalCanvas.getContext('2d');
@@ -1649,7 +1616,7 @@ function GeographicMapTerrain() {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
-        const sub = ['a', 'b', 'c', 'd'][(dx + dy) % 4];
+        const sub = (dx + dy) % 4;
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
@@ -1663,7 +1630,6 @@ function GeographicMapTerrain() {
         };
 
         img.onerror = () => {
-          // OpenStreetMap fallback
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
@@ -1672,11 +1638,11 @@ function GeographicMapTerrain() {
               if (regionalTexture) regionalTexture.needsUpdate = true;
             } catch (e) {}
           };
-          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+          fallback.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
         };
 
-        // CartoDB Voyager (CORS: *)
-        img.src = `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${x}/${y}.png`;
+        // Primary: Load Regional Google Maps roadmap tiles via server proxy (HTTP 200, CORS: *)
+        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
       }
     }
   }, [regionalCanvas, regionalTexture]);
@@ -1703,12 +1669,12 @@ function GeographicMapTerrain() {
         )}
       </mesh>
 
-      {/* DTCP Sanctioned Layout Compound Base Ground Tile (Exact brochure cuts polygon) */}
+      {/* DTCP Sanctioned Layout Compound Base Ground Tile (Exact brochure cuts polygon with matching 0.35 opacity) */}
       <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[compoundShape]} />
         <meshBasicMaterial
-          color="#D5E8CE"
-          opacity={0.88}
+          color="#F0FDF4"
+          opacity={0.35}
           transparent
         />
       </mesh>

@@ -303,7 +303,6 @@ export default function PlotViewerStandalone({ settings }) {
   const [walkRoadIndex, setWalkRoadIndex] = useState(0);
   const [walkProgress, setWalkProgress] = useState(0.1);
   const [isAutoWalking, setIsAutoWalking] = useState(false);
-  const [isLocationMapOpen, setIsLocationMapOpen] = useState(false);
 
   // Dynamic facing distribution calculation for Property Insights (Photo 3)
   const facingCounts = React.useMemo(() => {
@@ -502,20 +501,6 @@ export default function PlotViewerStandalone({ settings }) {
   const handleToggleParkView = () => {
     if (viewMode !== '3d') setViewMode('3d');
     setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
-  };
-
-  const handleToggleLocationMap = () => {
-    const next = !isLocationMapOpen;
-    setIsLocationMapOpen(next);
-    if (viewMode === '3d') {
-      if (next) {
-        setCameraPreset('mapView');
-      } else {
-        setCameraPreset('overview');
-      }
-    } else {
-      layout2DRef.current?.showLocationMap(next);
-    }
   };
 
   // Insights Tab Switcher (matching Plots99 Features & Additional Info)
@@ -749,19 +734,6 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* Location Map (Surrounding Locations & Connectivity around Layout) */}
-          <button
-            onClick={handleToggleLocationMap}
-            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
-              isLocationMapOpen || cameraPreset === 'mapView'
-                ? 'bg-emerald-600 text-white border-emerald-700 ring-2 ring-emerald-400/50'
-                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-emerald-700 border-slate-200/90 hover:bg-white'
-            }`}
-            title="Location Map (Minimize layout to explore surrounding map)"
-          >
-            <MapPin className="w-4 h-4" />
-          </button>
-
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -1060,19 +1032,6 @@ export default function PlotViewerStandalone({ settings }) {
               }`}
             >
               3D
-            </button>
-            <div className="w-px h-4 bg-slate-200 mx-0.5" />
-            <button
-              onClick={handleToggleLocationMap}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                isLocationMapOpen || cameraPreset === 'mapView'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-700 hover:text-emerald-700 hover:bg-slate-100'
-              }`}
-              title="Explore surrounding map around the layout"
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Location Map</span>
             </button>
           </div>
         </div>

@@ -50,15 +50,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
     reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
-    showLocationMap: (show = true) => {
-      if (!mapInstanceRef.current) return;
-      if (show) {
-        // Zoom out smoothly to regional map level (Z12: Kadthal, Maisigandi, Srisailam Highway corridor)
-        mapInstanceRef.current.setView(SITE_GEO.center, 12, { animate: true });
-      } else {
-        mapInstanceRef.current.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true });
-      }
-    },
     setMapType: () => {}
   }));
 
