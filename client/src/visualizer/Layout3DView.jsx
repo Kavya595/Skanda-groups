@@ -971,211 +971,105 @@ function FlowerPatch({ position = [0, 0, 0], isOrange = false }) {
   );
 }
 
-// Authoritative Block-by-Block Avenue Borders & Straight Trees (Zero Encroachment on Plots)
+// Authoritative Block-by-Block Avenue Borders & Straight Trees
+// Placed strictly along internal streets in between blocks; zero trees at entrance or corners
 const BLOCK_AVENUE_BORDERS = [
   // ==========================================
-  // NORTH BLOCKS: A, B, C, D, E (Z: -42 to -3)
+  // NORTH STREETS (IN BETWEEN BLOCKS, Z: -36 to -10)
   // ==========================================
 
-  // BLOCK A (Plots 25-30, X: -58 to -36)
-  // North Border facing 60ft Road (Z = -43.2)
+  // Avenue V1 (Between Block A and Block B)
   {
-    x: -46.5, z: -43.2, w: 18.0, d: 0.8, isHorizontal: true,
-    trees: [[-54, -43.2], [-46.5, -43.2], [-39, -43.2]]
+    x: -34.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[-34.8, -26], [-34.8, -18]]
   },
-  // East Border facing Road V1 (X = -34.8)
   {
-    x: -34.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-34.8, -35], [-34.8, -23], [-34.8, -11]]
-  },
-  // South Border facing Central Blvd (Z = -1.8)
-  {
-    x: -46.5, z: -1.8, w: 18.0, d: 0.8, isHorizontal: true,
-    trees: [[-54, -1.8], [-46.5, -1.8], [-39, -1.8]]
+    x: -30.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[-30.2, -26], [-30.2, -18]]
   },
 
-  // BLOCK B (Plots 17-24, X: -29 to -7)
-  // West Border facing Road V1 (X = -30.2)
+  // Avenue V2 (Between Block B and Block C)
   {
-    x: -30.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-30.2, -35], [-30.2, -23], [-30.2, -11]]
+    x: -5.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[-5.8, -26], [-5.8, -18]]
   },
-  // North Border facing 60ft Road (Z = -43.2)
   {
-    x: -18.0, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[-25, -43.2], [-18, -43.2], [-11, -43.2]]
-  },
-  // East Border facing Road V2 (X = -5.8)
-  {
-    x: -5.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-5.8, -35], [-5.8, -23], [-5.8, -11]]
-  },
-  // South Border facing Central Blvd (Z = -1.8)
-  {
-    x: -18.0, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[-25, -1.8], [-18, -1.8], [-11, -1.8]]
+    x: -1.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[-1.2, -26], [-1.2, -18]]
   },
 
-  // BLOCK C (Plots 13-16, X: 0 to 22)
-  // West Border facing Road V2 (X = -1.2)
+  // Avenue V3 (Between Block C and Block D)
   {
-    x: -1.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[-1.2, -35], [-1.2, -23], [-1.2, -11]]
+    x: 23.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[23.2, -26], [23.2, -18]]
   },
-  // North Border facing 60ft Road (Z = -43.2)
   {
-    x: 11.0, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[4, -43.2], [11, -43.2], [18, -43.2]]
-  },
-  // East Border facing Road V3 (X = 23.2)
-  {
-    x: 23.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[23.2, -35], [23.2, -23], [23.2, -11]]
-  },
-  // South Border facing Central Blvd (Z = -1.8)
-  {
-    x: 11.0, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[4, -1.8], [11, -1.8], [18, -1.8]]
+    x: 27.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[27.8, -26], [27.8, -18]]
   },
 
-  // BLOCK D (Plots 7-12, X: 29 to 50)
-  // West Border facing Road V3 (X = 27.8)
+  // Avenue V4 (Between Block D and Block E)
   {
-    x: 27.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[27.8, -35], [27.8, -23], [27.8, -11]]
+    x: 51.2, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[51.2, -26], [51.2, -18]]
   },
-  // North Border facing 60ft Road (Z = -43.2)
   {
-    x: 39.5, z: -43.2, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[33, -43.2], [39.5, -43.2], [46, -43.2]]
-  },
-  // East Border facing Road V4 (X = 51.2)
-  {
-    x: 51.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[51.2, -35], [51.2, -23], [51.2, -11]]
-  },
-  // South Border facing Central Blvd (Z = -1.8)
-  {
-    x: 39.5, z: -1.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[33, -1.8], [39.5, -1.8], [46, -1.8]]
-  },
-
-  // BLOCK E (Plots 1-6, X: 57 to 63)
-  // West Border facing Road V4 (X = 55.8)
-  {
-    x: 55.8, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[55.8, -35], [55.8, -23], [55.8, -11]]
-  },
-  // East Border facing Service Road (X = 64.2)
-  {
-    x: 64.2, z: -23.0, w: 0.8, d: 28.0, isHorizontal: false,
-    trees: [[64.2, -35], [64.2, -23], [64.2, -11]]
-  },
-  // South Border facing Central Blvd (Z = -1.8)
-  {
-    x: 60.0, z: -1.8, w: 4.5, d: 0.8, isHorizontal: true,
-    trees: [[60, -1.8]]
+    x: 55.8, z: -22.5, w: 0.8, d: 20.0, isHorizontal: false,
+    trees: [[55.8, -26], [55.8, -18]]
   },
 
   // ==========================================
-  // SOUTH BLOCKS: F, G, H, I, J, K (Z: 4 to 60)
+  // SOUTH STREETS (IN BETWEEN BLOCKS, Z: 10 to 45)
   // ==========================================
 
-  // BLOCK F (Plots 31-36, X: -78 to -65)
-  // North Border facing Central Blvd (Z = 2.8)
+  // Avenue V0 (Between Block F and Block G)
   {
-    x: -71.5, z: 2.8, w: 10.0, d: 0.8, isHorizontal: true,
-    trees: [[-71.5, 2.8]]
+    x: -63.8, z: 26.0, w: 0.8, d: 24.0, isHorizontal: false,
+    trees: [[-63.8, 18], [-63.8, 30]]
   },
-  // East Border facing Road V0 (X = -63.8)
   {
-    x: -63.8, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
-    trees: [[-63.8, 14], [-63.8, 26], [-63.8, 38]]
+    x: -59.2, z: 26.0, w: 0.8, d: 24.0, isHorizontal: false,
+    trees: [[-59.2, 18], [-59.2, 30]]
   },
 
-  // BLOCK G (Plots 37-46, X: -58 to -36)
-  // West Border facing Road V0 (X = -59.2)
+  // Avenue V1 (Between Block G and Block H)
   {
-    x: -59.2, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
-    trees: [[-59.2, 14], [-59.2, 26], [-59.2, 38]]
+    x: -34.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-34.8, 18], [-34.8, 28], [-34.8, 38]]
   },
-  // North Border facing Central Blvd (Z = 2.8)
   {
-    x: -46.5, z: 2.8, w: 18.0, d: 0.8, isHorizontal: true,
-    trees: [[-54, 2.8], [-46.5, 2.8], [-39, 2.8]]
-  },
-  // East Border facing Road V1 (X = -34.8)
-  {
-    x: -34.8, z: 26.0, w: 0.8, d: 38.0, isHorizontal: false,
-    trees: [[-34.8, 14], [-34.8, 26], [-34.8, 38]]
+    x: -30.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-30.2, 18], [-30.2, 28], [-30.2, 38]]
   },
 
-  // BLOCK H (Plots 47-58, X: -29 to -7)
-  // West Border facing Road V1 (X = -30.2)
+  // Avenue V2 (Between Block H and Block I)
   {
-    x: -30.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[-30.2, 14], [-30.2, 26], [-30.2, 38], [-30.2, 48]]
+    x: -5.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-5.8, 18], [-5.8, 28], [-5.8, 38]]
   },
-  // North Border facing Central Blvd (Z = 2.8)
   {
-    x: -18.0, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[-25, 2.8], [-18, 2.8], [-11, 2.8]]
-  },
-  // East Border facing Road V2 (X = -5.8)
-  {
-    x: -5.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[-5.8, 14], [-5.8, 26], [-5.8, 38], [-5.8, 48]]
+    x: -1.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[-1.2, 18], [-1.2, 28], [-1.2, 38]]
   },
 
-  // BLOCK I (Plots 59-70, X: 0 to 22)
-  // West Border facing Road V2 (X = -1.2)
+  // Avenue V3 (Between Block I and Block J)
   {
-    x: -1.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[-1.2, 14], [-1.2, 26], [-1.2, 38], [-1.2, 48]]
+    x: 23.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[23.2, 18], [23.2, 28], [23.2, 38]]
   },
-  // North Border facing Central Blvd (Z = 2.8)
   {
-    x: 11.0, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[4, 2.8], [11, 2.8], [18, 2.8]]
-  },
-  // East Border facing Road V3 (X = 23.2)
-  {
-    x: 23.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[23.2, 14], [23.2, 26], [23.2, 38], [23.2, 48]]
+    x: 27.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[27.8, 18], [27.8, 28], [27.8, 38]]
   },
 
-  // BLOCK J (Plots 71-82, X: 29 to 50)
-  // West Border facing Road V3 (X = 27.8)
+  // Avenue V4 (Between Block J and Block K)
   {
-    x: 27.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[27.8, 14], [27.8, 26], [27.8, 38], [27.8, 48]]
+    x: 51.2, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[51.2, 18], [51.2, 28], [51.2, 38]]
   },
-  // North Border facing Central Blvd (Z = 2.8)
   {
-    x: 39.5, z: 2.8, w: 16.0, d: 0.8, isHorizontal: true,
-    trees: [[33, 2.8], [39.5, 2.8], [46, 2.8]]
-  },
-  // East Border facing Road V4 (X = 51.2)
-  {
-    x: 51.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[51.2, 14], [51.2, 26], [51.2, 38], [51.2, 48]]
-  },
-
-  // BLOCK K (Plots 83-96, X: 57 to 70)
-  // West Border facing Road V4 (X = 55.8)
-  {
-    x: 55.8, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[55.8, 14], [55.8, 26], [55.8, 38], [55.8, 48]]
-  },
-  // North Border facing Central Blvd (Z = 2.8)
-  {
-    x: 63.5, z: 2.8, w: 10.0, d: 0.8, isHorizontal: true,
-    trees: [[63.5, 2.8]]
-  },
-  // East Border facing Service Road (X = 71.2)
-  {
-    x: 71.2, z: 28.0, w: 0.8, d: 42.0, isHorizontal: false,
-    trees: [[71.2, 14], [71.2, 26], [71.2, 38], [71.2, 48]]
+    x: 55.8, z: 28.0, w: 0.8, d: 28.0, isHorizontal: false,
+    trees: [[55.8, 18], [55.8, 28], [55.8, 38]]
   }
 ];
 
@@ -1731,41 +1625,58 @@ function GeographicMapTerrain() {
     ctx.fillStyle = '#E2E8F0';
     ctx.fillRect(0, 360, 720, 28);
 
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    mapTerrainTextureCache = tex;
-    setTerrainTexture(tex);
+    const initialTex = new THREE.CanvasTexture(canvas);
+    initialTex.wrapS = THREE.ClampToEdgeWrapping;
+    initialTex.wrapT = THREE.ClampToEdgeWrapping;
+    setTerrainTexture(initialTex);
 
     // Zoom 17 tile coordinates for Kadthal [16.9555, 78.5125]
     // Kadthal center tile: 94121.53, 59270.56. Covers ~1.17 km x 1.17 km around venture
     const zoom = 17;
     const startX = 94120;
     const startY = 59269;
+    let loadedCount = 0;
 
     for (let dy = 0; dy < 4; dy++) {
       for (let dx = 0; dx < 4; dx++) {
         const x = startX + dx;
         const y = startY + dy;
+        const sub = (x + y) % 4;
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
-        img.onload = () => {
-          ctx.drawImage(img, dx * 256, dy * 256, 256, 256);
-          tex.needsUpdate = true;
+        const handleTileSuccess = (sourceImg) => {
+          try {
+            ctx.drawImage(sourceImg, dx * 256, dy * 256, 256, 256);
+            loadedCount++;
+            initialTex.needsUpdate = true;
+            if (loadedCount === 4 || loadedCount === 8 || loadedCount === 16) {
+              const freshTex = new THREE.CanvasTexture(canvas);
+              freshTex.wrapS = THREE.ClampToEdgeWrapping;
+              freshTex.wrapT = THREE.ClampToEdgeWrapping;
+              freshTex.needsUpdate = true;
+              if (loadedCount === 16) {
+                mapTerrainTextureCache = freshTex;
+              }
+              setTerrainTexture(freshTex);
+            }
+          } catch (err) {
+            console.warn('Map tile draw warning:', err);
+          }
         };
 
-        // Load roadmap tiles via server proxy (with CORS headers), fallback to OSM
+        img.onload = () => handleTileSuccess(img);
+
+        // Fallback: server proxy endpoint
         img.onerror = () => {
           const fallback = new Image();
           fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => {
-            ctx.drawImage(fallback, dx * 256, dy * 256, 256, 256);
-            tex.needsUpdate = true;
-          };
-          fallback.src = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
+          fallback.onload = () => handleTileSuccess(fallback);
+          fallback.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
         };
-        img.src = `/api/tiles/${zoom}/${x}/${y}.png?type=google`;
+
+        // Primary: Direct Google Maps Roadmap (CORS: *)
+        img.src = `https://mt${sub}.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${zoom}`;
       }
     }
   }, []);
