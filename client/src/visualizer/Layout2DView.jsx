@@ -344,6 +344,111 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     });
     L.marker(entranceGeo, { icon: archIcon, interactive: false }).addTo(staticGroup);
 
+    // (F) Dedicated Surrounding Green Estate Buffer (Matching Plots99 Image 1)
+    const estateBufferLocal = [
+      [-132, -72], [-120, -84], [-60, -86], [0, -82], [55, -78], [88, -66],
+      [98, -20], [104, 18], [96, 70], [68, 86], [18, 92], [-35, 90],
+      [-88, 88], [-118, 76], [-134, 20], [-134, -35]
+    ];
+    const estateBufferGeo = estateBufferLocal.map(([x, z]) => localToLatLng(x, z));
+    L.polygon(estateBufferGeo, {
+      color: '#16A34A',
+      weight: 1.8,
+      fillColor: '#86EFAC',
+      fillOpacity: 0.22,
+      dashArray: '4, 4',
+      interactive: false
+    }).addTo(staticGroup);
+
+    // (G) 100 Feet Road Corridor connecting Srisailam Highway directly to Site (from Official Flyer)
+    const road100FtHwyPoint = localToLatLng(80, 0.5);
+    L.polyline([entranceGeo, road100FtHwyPoint], {
+      color: '#F59E0B',
+      weight: 4,
+      opacity: 0.85,
+      interactive: false
+    }).addTo(staticGroup);
+
+    const road100FtLabel = L.divIcon({
+      className: 'r100-label',
+      html: `
+        <div style="
+          background: #1E293B;
+          color: #FEF08A;
+          border: 1px solid #F59E0B;
+          border-radius: 4px;
+          padding: 1.5px 4.5px;
+          font-size: 7px;
+          font-weight: 800;
+          letter-spacing: 0.5px;
+          white-space: nowrap;
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        ">100' CONNECTING ROAD</div>
+      `,
+      iconSize: [0, 0]
+    });
+    L.marker(localToLatLng(71, 0.5), { icon: road100FtLabel, interactive: false }).addTo(staticGroup);
+
+    // (H) Authentic Flyer Regional Landmarks situated on map (Zero API Key Required)
+    const flyerLandmarks = [
+      {
+        pos: [16.9538, 78.5170],
+        title: "Maisigandi Ramalingeswara Temple",
+        badge: "🛕 Maisigandi Temple (1 min)",
+        style: "background: #78350F; color: #FEF08A; border: 1.5px solid #F59E0B;"
+      },
+      {
+        pos: [16.9850, 78.4900],
+        title: "Kadthal Town & Mandal Hq",
+        badge: "🏛️ Kadthal Municipality",
+        style: "background: #0F172A; color: #E2E8F0; border: 1.5px solid #64748B;"
+      },
+      {
+        pos: [16.9720, 78.5300],
+        title: "Green Pharma City Corridor",
+        badge: "🏭 Pharma City SEZ (Hetero • Bharat Biotech)",
+        style: "background: #064E3B; color: #A7F3D0; border: 1.5px solid #10B981;"
+      },
+      {
+        pos: [16.9380, 78.5080],
+        title: "Bangalore to Shadnagar Highway Connector",
+        badge: "🛣️ Bangalore to Shadnagar Road",
+        style: "background: #1E293B; color: #CBD5E1; border: 1px solid #475569;"
+      },
+      {
+        pos: [16.9780, 78.5135],
+        title: "To Hyderabad & ORR Exit 14",
+        badge: "⬆ Srisailam Highway &bull; To ORR Exit 14 & RGIA Airport",
+        style: "background: #B45309; color: #FFFFFF; border: 1px solid #FDE68A;"
+      }
+    ];
+
+    flyerLandmarks.forEach((lm) => {
+      const lmIcon = L.divIcon({
+        className: 'flyer-landmark-icon',
+        html: `
+          <div style="
+            ${lm.style}
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 8px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+          ">
+            ${lm.badge}
+          </div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(lm.pos, { icon: lmIcon, interactive: false }).addTo(staticGroup);
+    });
+
     // Invalidate size after layout settles
     const timer = setTimeout(() => {
       map.invalidateSize();

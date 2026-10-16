@@ -220,7 +220,7 @@ function CameraController({
       // If user is zooming out (scrolling wheel down/backward or pinch out)
       if (e.deltaY > 0) {
         wheelOutAccum.current += e.deltaY;
-        if (wheelOutAccum.current > 140 || progRef.current <= 0.01) {
+        if (wheelOutAccum.current > 120 || progRef.current <= 0.01) {
           wheelOutAccum.current = 0;
           if (onExitWalk) {
             onExitWalk();
@@ -239,16 +239,65 @@ function CameraController({
       }
     };
 
+    // Keyboard ESC key to instantly exit walk view and return to overview
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        if (onExitWalk) {
+          onExitWalk();
+        }
+      }
+    };
+
+    // Double-click on ground to return to 3D layout overview
+    const handleDblClick = () => {
+      if (onExitWalk) {
+        onExitWalk();
+      }
+    };
+
+    // Touch gesture pinch-out or swipe-down to exit walk view
+    let touchStartDist = 0;
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        touchStartDist = Math.hypot(dx, dy);
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2 && touchStartDist > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.hypot(dx, dy);
+        // User pinching inward to zoom out/minimize
+        if (touchStartDist - dist > 50) {
+          touchStartDist = 0;
+          if (onExitWalk) {
+            onExitWalk();
+          }
+        }
+      }
+    };
+
     dom.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
     dom.addEventListener('wheel', handleWheel, { passive: false });
+    dom.addEventListener('dblclick', handleDblClick);
+    window.addEventListener('keydown', handleKeyDown);
+    dom.addEventListener('touchstart', handleTouchStart, { passive: true });
+    dom.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       dom.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       dom.removeEventListener('wheel', handleWheel);
+      dom.removeEventListener('dblclick', handleDblClick);
+      window.removeEventListener('keydown', handleKeyDown);
+      dom.removeEventListener('touchstart', handleTouchStart);
+      dom.removeEventListener('touchmove', handleTouchMove);
     };
   }, [gl, cameraPreset, onWalkProgressChange, onExitWalk]);
 
@@ -1579,6 +1628,198 @@ export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
   );
 }
 
+// Authoritative Regional Kadthal & Srisailam Highway Map Renderer
+// Pre-paints authentic topography matching official flyer (NH-765, 100' road, Maisigandi Temple, Kadthal, Pharma City)
+function paintRegionalKadthalMap(ctx, width, height) {
+  // 1. Natural Land Base
+  ctx.fillStyle = '#E5EAE0';
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Agricultural Farmland Patchwork (Natural cadastral patterns)
+  const farmTones = ['#DFE6D6', '#E2E9D8', '#D8E2CE', '#E8EFE2', '#D3DFC8'];
+  for (let r = 0; r < 16; r++) {
+    for (let c = 0; c < 16; c++) {
+      const x = (c / 16) * width;
+      const y = (r / 16) * height;
+      const w = width / 16;
+      const h = height / 16;
+      ctx.fillStyle = farmTones[(r * 5 + c * 3) % farmTones.length];
+      ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    }
+  }
+
+  // 3. Green Reserve Forests & Agro Green Tracts
+  ctx.fillStyle = '#B4CCA4';
+  ctx.beginPath();
+  ctx.ellipse(520, 480, 260, 160, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(1560, 1420, 320, 200, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(1480, 780, 180, 220, 0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Natural Water Bodies (Cheruvu / Lakes)
+  ctx.fillStyle = '#9AC3E6';
+  ctx.strokeStyle = '#6E9EC9';
+  ctx.lineWidth = 3;
+
+  // Maisigandi Cheruvu (Lake)
+  ctx.beginPath();
+  ctx.ellipse(1440, 980, 115, 70, -0.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Kadthal Cheruvu (Lake)
+  ctx.beginPath();
+  ctx.ellipse(780, 640, 95, 55, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#2B5784';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Maisigandi Cheruvu', 1370, 985);
+  ctx.fillText('Kadthal Lake', 735, 645);
+
+  // 5. Connecting Arterial & Regional Roads
+  // Bangalore to Shadnagar Road (Crossing East-West south of site)
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(0, 1260);
+  ctx.lineTo(2048, 1260);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FCD34D';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // 60' Maisigandi Temple Road (East-West through Site)
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(850, 840);
+  ctx.lineTo(1600, 840);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 6. Srisailam Highway (NH-765 - Major 4-Lane National Highway Corridor)
+  ctx.strokeStyle = '#1E293B';
+  ctx.lineWidth = 22;
+  ctx.beginPath();
+  ctx.moveTo(1280, 0);
+  ctx.quadraticCurveTo(1275, 840, 1265, 2048);
+  ctx.stroke();
+
+  // Double Yellow Median Divider
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(1278, 0);
+  ctx.quadraticCurveTo(1273, 840, 1263, 2048);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1282, 0);
+  ctx.quadraticCurveTo(1277, 840, 1267, 2048);
+  ctx.stroke();
+
+  // 7. 100 Feet Road Corridor (Official Flyer: connecting Srisailam Highway to SITE)
+  ctx.strokeStyle = '#0F172A';
+  ctx.lineWidth = 16;
+  ctx.beginPath();
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FEF08A';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 8. Highway Typography along road
+  ctx.save();
+  ctx.translate(1300, 580);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('SRISAILAM HIGHWAY (NH-765) ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(1300, 1520);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('SRISAILAM HIGHWAY (NH-765) ⬇ TO SRISAILAM', 0, 0);
+  ctx.restore();
+
+  // 9. Flyer Location Landmark Badges
+  // (A) Maisigandi Ramalingeswara Temple
+  ctx.fillStyle = '#78350F';
+  ctx.fillRect(1370, 805, 235, 36);
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1370, 805, 235, 36);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🛕 Maisigandi Temple (1 min)', 1380, 829);
+
+  // (B) Kadthal Municipality & Mandal Hq
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(660, 460, 260, 36);
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(660, 460, 260, 36);
+  ctx.fillStyle = '#E2E8F0';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏛️ Kadthal Town & Municipality', 670, 484);
+
+  // (C) Green Pharma City Corridor
+  ctx.fillStyle = '#064E3B';
+  ctx.fillRect(1420, 360, 310, 48);
+  ctx.strokeStyle = '#10B981';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1420, 360, 310, 48);
+  ctx.fillStyle = '#A7F3D0';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏭 Green Pharma City Corridor', 1430, 382);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#D1FAE5';
+  ctx.fillText('Bharat Biotech • Hetero • MSN • Dr. Reddy\'s', 1430, 400);
+
+  // (D) Bangalore to Shadnagar Highway Connector
+  ctx.fillStyle = '#1E293B';
+  ctx.fillRect(80, 1238, 280, 32);
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(80, 1238, 280, 32);
+  ctx.fillStyle = '#CBD5E1';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('🛣️ Bangalore to Shadnagar Road', 90, 1260);
+
+  // (E) 100' Road Badge
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(1150, 795, 120, 26);
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(1150, 795, 120, 26);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText("100' Road to Site", 1156, 812);
+}
+
 // Module-level caches for 3D Regional Ground Canvas and Texture
 let regionalCanvasCache = null;
 let regionalTextureCache = null;
@@ -1587,18 +1828,28 @@ let regionalTextureCache = null;
 export function CleanMasterPlanTerrain({ cameraPreset }) {
   const [tilesLoaded, setTilesLoaded] = useState(0);
 
-  // Initialize 1024x1024 canvas covering ~4.68 km at zoom 15 (~4.57 meters/pixel)
+  // Dedicated procedural Bermuda grass turf texture for the venture parcel
+  const parcelGrassTexture = useMemo(() => {
+    const base = getGrassTurfTexture();
+    if (!base) return null;
+    const tex = base.clone();
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(12, 12);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
+
+  // Initialize 2048x2048 canvas covering ~4.68 km at zoom 15 (~2.28 meters/pixel)
   const canvas = useMemo(() => {
     if (typeof document === 'undefined') return null;
     if (regionalCanvasCache) return regionalCanvasCache;
 
     const cvs = document.createElement('canvas');
-    cvs.width = 1024;
-    cvs.height = 1024;
+    cvs.width = 2048;
+    cvs.height = 2048;
     const ctx = cvs.getContext('2d');
-    // Pre-fill with natural map background color matching Carto Voyager
-    ctx.fillStyle = '#E8ECE1';
-    ctx.fillRect(0, 0, 1024, 1024);
+    paintRegionalKadthalMap(ctx, 2048, 2048);
     regionalCanvasCache = cvs;
     return cvs;
   }, []);
@@ -1630,15 +1881,15 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       for (let dx = 0; dx < 4; dx++) {
         const tx = minTx + dx;
         const ty = minTy + dy;
-        const cx = dx * 256;
-        const cy = dy * 256;
+        const cx = dx * 512;
+        const cy = dy * 512;
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
 
         img.onload = () => {
           try {
-            ctx.drawImage(img, cx, cy, 256, 256);
+            ctx.drawImage(img, cx, cy, 512, 512);
             texture.needsUpdate = true;
             setTilesLoaded((c) => c + 1);
           } catch (e) {
@@ -1651,7 +1902,7 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
           fallback.crossOrigin = 'anonymous';
           fallback.onload = () => {
             try {
-              ctx.drawImage(fallback, cx, cy, 256, 256);
+              ctx.drawImage(fallback, cx, cy, 512, 512);
               texture.needsUpdate = true;
               setTilesLoaded((c) => c + 1);
             } catch (e) {}
@@ -1659,7 +1910,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
           fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
         };
 
-        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=voyager`;
+        // Try direct Google Maps tiles with sub-second response, fallback to proxy
+        img.src = `https://mt1.google.com/vt/lyrs=m&x=${tx}&y=${ty}&z=${zoom}`;
       }
     }
   }, [canvas, texture]);
@@ -1745,7 +1997,7 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return pts;
   }, []);
 
-  // Geographic plane size: 1024px * 4.5706m/px = 4680m
+  // Geographic plane size: 2048px * 2.285m/px = 4680m
   const groundSize = 4680;
   // Geographic offset aligning Brundavan local (0,0) with its real coordinate on map tiles
   const shiftX = -447;
@@ -1756,7 +2008,7 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 4.7km) */}
       <mesh position={[0, -0.08, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[35000, 35000]} />
-        <meshBasicMaterial color="#E8ECE1" />
+        <meshBasicMaterial color="#E5EAE0" />
       </mesh>
 
       {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Zoom 15: Srisailam Highway NH-765, Kadthal, Maisigandi) */}
@@ -1769,10 +2021,15 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         />
       </mesh>
 
-      {/* 3. Dedicated Venture Green Parcel (User requirement: clean area grass around it like that highlight in map) */}
+      {/* 3. Dedicated Venture Green Parcel with Bermuda Turf Texture (User requirement: clean area grass around it) */}
       <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[ventureParcelShape]} />
-        <meshStandardMaterial color="#8FCB77" roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial
+          map={parcelGrassTexture || undefined}
+          color="#8FCB77"
+          roughness={0.82}
+          metalness={0.04}
+        />
       </mesh>
       <Line points={parcelBorderPoints} color="#1E7B34" lineWidth={3.2} />
 
@@ -1790,47 +2047,27 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       {/* 5. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
-      {/* 6. 3D Venture Landmark Beacon (Visible prominently in Map View to highlight project) */}
+      {/* 6. 100 Feet Road 3D Connector connecting Entrance Arch eastward to Srisailam Highway */}
+      <mesh position={[71.5, 0.021, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[17, 10]} />
+        <meshStandardMaterial color="#1E293B" roughness={0.9} />
+      </mesh>
+      {/* 100' Road Center Dashed Line */}
+      <mesh position={[71.5, 0.022, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[17, 0.28]} />
+        <meshBasicMaterial color="#FEF08A" />
+      </mesh>
+
+      {/* 7. Subtle Ground Landmark Rings for Venture Location */}
       <group position={[-9, 0.04, 6]}>
-        {/* Ground Pulse Rings */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
           <ringGeometry args={[14, 18, 32]} />
-          <meshBasicMaterial color="#16A34A" transparent opacity={0.35} />
+          <meshBasicMaterial color="#16A34A" transparent opacity={0.3} />
         </mesh>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
           <ringGeometry args={[26, 30, 32]} />
-          <meshBasicMaterial color="#22C55E" transparent opacity={0.2} />
+          <meshBasicMaterial color="#22C55E" transparent opacity={0.15} />
         </mesh>
-
-        {/* Floating 3D Title Billboard in Map View */}
-        {(cameraPreset === 'mapView' || !cameraPreset) && (
-          <group position={[0, 24, 0]}>
-            <mesh position={[0, 0, -0.2]}>
-              <planeGeometry args={[70, 16]} />
-              <meshBasicMaterial color="#0F172A" transparent opacity={0.9} />
-            </mesh>
-            <Text
-              position={[0, 3.2, 0]}
-              fontSize={4.2}
-              color="#FFFFFF"
-              fontWeight="bold"
-              anchorX="center"
-              anchorY="middle"
-            >
-              ALEKHYA'S BRUNDAVAN
-            </Text>
-            <Text
-              position={[0, -2.8, 0]}
-              fontSize={2.5}
-              color="#F59E0B"
-              fontWeight="bold"
-              anchorX="center"
-              anchorY="middle"
-            >
-              DTCP APPROVED &bull; 96 PLOTS &bull; KADTHAL
-            </Text>
-          </group>
-        )}
       </group>
 
       {/* 7. 4th Phase road opening markers matching brochure */}

@@ -869,65 +869,6 @@ export default function PlotViewerStandalone({ settings }) {
 
 
 
-        {/* Floating Walk View Controller with Manual Minimize Button (USER REQUIREMENT) */}
-        {(cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (
-          <aside
-            aria-label="Walk View Navigation Controller"
-            className="absolute bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-5 py-3 rounded-2xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3.5 max-w-[94vw] pointer-events-auto animate-fadeIn"
-          >
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="font-bold text-xs sm:text-sm whitespace-nowrap">
-                {cameraPreset === 'roadWalk'
-                  ? (WALK_ROADS[walkRoadIndex]?.name || "33' Avenue Road")
-                  : "Ac. 0.758 Central Park Lawn Walk"}
-              </span>
-            </div>
-
-            {cameraPreset === 'roadWalk' && (
-              <div className="flex items-center gap-2">
-                <select
-                  value={walkRoadIndex}
-                  onChange={(e) => {
-                    setWalkRoadIndex(Number(e.target.value));
-                    setWalkProgress(0.12);
-                  }}
-                  className="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-2 py-1 outline-none font-semibold cursor-pointer"
-                >
-                  {WALK_ROADS.map((r, i) => (
-                    <option key={r.id} value={i}>{r.shortName || r.name}</option>
-                  ))}
-                </select>
-
-                <button
-                  type="button"
-                  onClick={() => setIsAutoWalking(w => !w)}
-                  className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    isAutoWalking
-                      ? 'bg-emerald-600 text-white border-emerald-500'
-                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-                  }`}
-                >
-                  {isAutoWalking ? 'Pause' : 'Auto Walk'}
-                </button>
-              </div>
-            )}
-
-            {/* Dedicated Minimize to Layout Button (User requirement: "can come out from walk view manually just minimizing") */}
-            <button
-              type="button"
-              onClick={() => {
-                setCameraPreset('overview');
-                setIsAutoWalking(false);
-              }}
-              className="px-3.5 py-1.5 bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0"
-              title="Minimize and exit walk view to return to 3D layout overview"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>Minimize to Layout</span>
-            </button>
-          </aside>
-        )}
 
         {/* Bottom Left Floating Legend (Plots99 Exact Structure - Vertical) */}
         <div className={`absolute bottom-4 left-4 z-30 pointer-events-auto transition-opacity duration-300 ${
@@ -1090,6 +1031,15 @@ export default function PlotViewerStandalone({ settings }) {
 
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
+                  onClick={() => setIsRouteMapModalOpen(true)}
+                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
+                  type="button"
+                  title="View Official Flyer Route Map"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-brand-orange" />
+                  <span className="hidden sm:inline">Location Map</span>
+                </button>
+                <button
                   onClick={() => setIsAIAssistantOpen(true)}
                   className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
                   type="button"
@@ -1099,7 +1049,7 @@ export default function PlotViewerStandalone({ settings }) {
                   <span className="hidden sm:inline">Ask AI</span>
                 </button>
                 <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=17.0985,78.5085"
+                  href="https://www.google.com/maps/dir/?api=1&destination=16.9555,78.5125"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
@@ -1152,16 +1102,14 @@ export default function PlotViewerStandalone({ settings }) {
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-slate-500">
-                    <a
-                      href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 font-medium text-slate-600 hover:text-emerald-700 transition-colors text-left"
-                      title="View on Google Maps"
+                    <button
+                      onClick={() => setIsRouteMapModalOpen(true)}
+                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-800 hover:underline transition-colors text-left"
+                      title="View Official Flyer Location Route Map"
                     >
                       <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Kadthal, Srisailam Highway, Telangana</span>
-                    </a>
+                      <span>Kadthal, Srisailam Highway (View Official Flyer Map)</span>
+                    </button>
                     <span className="opacity-40">•</span>
                     <a
                       href="/"
