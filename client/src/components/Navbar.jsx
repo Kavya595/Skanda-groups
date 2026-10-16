@@ -92,18 +92,18 @@ export default function Navbar({ settings }) {
             }`}
           >
             {/* Brand Mark with Regal Architecture */}
-            <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <Link to="/" className="flex items-center gap-3 group shrink-0" title="Skandha Group">
               <img
                 src="/assets/skandha_logo.svg"
-                alt="Skandha Group Official Logo"
+                alt="Skandha Group"
                 className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="border-l border-slate-200 pl-3">
-                <div className="font-serif font-extrabold text-base sm:text-lg leading-tight text-slate-900 group-hover:text-brand-orange transition-colors">
-                  Skandha Group
+              <div className="border-l border-slate-200 pl-3 hidden sm:block">
+                <div className="text-xs font-bold tracking-wide text-slate-800">
+                  Kadthal Venture
                 </div>
-                <div className="text-[10px] font-semibold tracking-wider uppercase text-slate-500">
-                  Kadthal &bull; Srisailam Highway
+                <div className="text-[10px] font-medium tracking-wider uppercase text-slate-500">
+                  Srisailam Highway
                 </div>
               </div>
             </Link>

@@ -447,10 +447,10 @@ export function Plot3D({
   // Realistic Physical 3D Tile Dimensions: Height (0.22m plinth slab), Width and Depth
   const tileHeight = 0.22;
   const liftY = isSelected ? 0.32 : isSearchedMatch ? 0.22 : activeHover ? 0.12 : 0;
-  const posY = (tileHeight / 2) + 0.02 + liftY;
+  const posY = (tileHeight / 2) + 0.03 + liftY;
   const tileW = Math.max(w - 0.08, 0.5);
   const tileD = Math.max(d - 0.08, 0.5);
-  const topSurfaceY = (tileHeight / 2) + 0.005;
+  const topSurfaceY = (tileHeight / 2) + 0.01;
 
   const handleClick = (e) => {
     e.stopPropagation();
@@ -929,31 +929,31 @@ export function MovingVehicles3D({ animate = true }) {
   return (
     <group>
       {/* 1. Srisailam Highway: White SUV (Southbound) */}
-      <group ref={hwySouthRef} position={[77, 0, -25]}>
+      <group ref={hwySouthRef} position={[77, 0.05, -25]}>
         <Vehicle3D color="#F8FAFC" />
       </group>
       {/* 2. Srisailam Highway: Emerald Green Sedan (Northbound) */}
-      <group ref={hwyNorthRef} position={[83, 0, 35]} rotation={[0, Math.PI, 0]}>
+      <group ref={hwyNorthRef} position={[83, 0.05, 35]} rotation={[0, Math.PI, 0]}>
         <Vehicle3D color="#059669" />
       </group>
       {/* 3. 60ft Arterial Road: Silver Sedan (Eastbound towards Highway) */}
-      <group ref={road60EastRef} position={[-40, 0, -44.5]} rotation={[0, Math.PI / 2, 0]}>
+      <group ref={road60EastRef} position={[-40, 0.05, -44.5]} rotation={[0, Math.PI / 2, 0]}>
         <Vehicle3D color="#E2E8F0" />
       </group>
       {/* 4. 60ft Arterial Road: Royal Blue Sedan (Westbound) */}
-      <group ref={road60WestRef} position={[30, 0, -49.5]} rotation={[0, -Math.PI / 2, 0]}>
+      <group ref={road60WestRef} position={[30, 0.05, -49.5]} rotation={[0, -Math.PI / 2, 0]}>
         <Vehicle3D color="#2563EB" />
       </group>
       {/* 5. 33ft Central Boulevard: Ruby Red Sedan (Eastbound, matching Plots99 photo!) */}
-      <group ref={roadMidEastRef} position={[-20, 0, 1.8]} rotation={[0, Math.PI / 2, 0]}>
+      <group ref={roadMidEastRef} position={[-20, 0.05, 1.8]} rotation={[0, Math.PI / 2, 0]}>
         <Vehicle3D color="#DC2626" />
       </group>
       {/* 6. 33ft Central Boulevard: Warm Amber Compact (Westbound) */}
-      <group ref={roadMidWestRef} position={[40, 0, -1.0]} rotation={[0, -Math.PI / 2, 0]}>
+      <group ref={roadMidWestRef} position={[40, 0.05, -1.0]} rotation={[0, -Math.PI / 2, 0]}>
         <Vehicle3D color="#D97706" />
       </group>
       {/* 7. Internal Cross Street Road V2: Violet Crossover (Southbound) */}
-      <group ref={roadV2Ref} position={[-3.5, 0, 15]}>
+      <group ref={roadV2Ref} position={[-3.5, 0.05, 15]}>
         <Vehicle3D color="#7C3AED" />
       </group>
     </group>
@@ -1328,7 +1328,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
         return (
           <group
             key={road.id}
-            position={[cx, 0.02, cz]}
+            position={[cx, 0.05, cz]}
             onClick={(e) => {
               e.stopPropagation();
               if (onRoadClick) onRoadClick(road);
@@ -1342,28 +1342,31 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
                 color="#FFFFFF"
                 roughness={0.92}
                 metalness={0.08}
+                polygonOffset
+                polygonOffsetFactor={-1}
+                polygonOffsetUnits={-1}
               />
             </mesh>
 
             {/* Highway Centerline: Yellow Double Median Divider (NH-765) */}
             {isHighway && (
-              <group position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <group position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <mesh position={[-0.18, 0, 0]}>
                   <planeGeometry args={[0.18, d]} />
-                  <meshBasicMaterial color="#FBBF24" />
+                  <meshBasicMaterial color="#FBBF24" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
                 </mesh>
                 <mesh position={[0.18, 0, 0]}>
                   <planeGeometry args={[0.18, d]} />
-                  <meshBasicMaterial color="#FBBF24" />
+                  <meshBasicMaterial color="#FBBF24" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
                 </mesh>
               </group>
             )}
 
             {/* Arterial 60ft Road: White Dashed Centerline */}
             {isArterial && (
-              <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+              <mesh position={[0, 0.008, 0]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[w, 0.28]} />
-                <meshBasicMaterial color="#FFFFFF" opacity={0.92} transparent />
+                <meshBasicMaterial color="#FFFFFF" opacity={0.92} transparent polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
               </mesh>
             )}
           </group>
@@ -1372,7 +1375,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
 
       {/* Street Name Typography printed directly on asphalt (Matching Image 5) */}
       <Text
-        position={[0, 0.035, -47]}
+        position={[0, 0.065, -47]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={1.75}
         color="#F8FAFC"
@@ -1384,7 +1387,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[80, 0.035, 5]}
+        position={[80, 0.065, 5]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.8}
         color="#FEF08A"
@@ -1396,7 +1399,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[0, 0.035, 0.5]}
+        position={[0, 0.065, 0.5]}
         rotation={[-Math.PI / 2, 0, 0]}
         fontSize={1.4}
         color="#CBD5E1"
@@ -1408,7 +1411,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[-32.5, 0.035, 20]}
+        position={[-32.5, 0.065, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -1419,7 +1422,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[-3.5, 0.035, 20]}
+        position={[-3.5, 0.065, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -1430,7 +1433,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[25.5, 0.035, 20]}
+        position={[25.5, 0.065, 20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#94A3B8"
@@ -1964,8 +1967,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       [-118, 76],
       [-134, 20],
       [-134, -35]
-    ].map(([x, z]) => new THREE.Vector3(x, 0.022, z));
-    pts.push(new THREE.Vector3(-132, 0.022, -72));
+    ].map(([x, z]) => new THREE.Vector3(x, 0.012, z));
+    pts.push(new THREE.Vector3(-132, 0.012, -72));
     return pts;
   }, []);
 
@@ -2006,23 +2009,22 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
   return (
     <group>
       {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 4.7km) */}
-      <mesh position={[0, -0.08, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+      <mesh position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[35000, 35000]} />
         <meshBasicMaterial color="#E5EAE0" />
       </mesh>
 
       {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Zoom 15: Srisailam Highway NH-765, Kadthal, Maisigandi) */}
-      <mesh position={[shiftX, -0.05, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+      <mesh position={[shiftX, -0.08, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[groundSize, groundSize]} />
         <meshBasicMaterial
-          key={`map-texture-${tilesLoaded}`}
           map={texture || undefined}
           color="#FFFFFF"
         />
       </mesh>
 
       {/* 3. Dedicated Venture Green Parcel with Bermuda Turf Texture (User requirement: clean area grass around it) */}
-      <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[ventureParcelShape]} />
         <meshStandardMaterial
           map={parcelGrassTexture || undefined}
@@ -2035,11 +2037,11 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
 
       {/* Perimeter trees along the venture parcel boundary */}
       {parcelTrees.map(([tx, tz], i) => (
-        <PerimeterCanopyTree key={`ptree-${i}`} position={[tx, 0.02, tz]} scale={1.15} />
+        <PerimeterCanopyTree key={`ptree-${i}`} position={[tx, 0.015, tz]} scale={1.15} />
       ))}
 
       {/* 4. DTCP Sanctioned Layout Compound Base Shape (#A2DC8F) */}
-      <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[compoundShape]} />
         <meshStandardMaterial color="#A2DC8F" roughness={0.8} metalness={0.05} />
       </mesh>
@@ -2048,23 +2050,23 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
       {/* 6. 100 Feet Road 3D Connector connecting Entrance Arch eastward to Srisailam Highway */}
-      <mesh position={[71.5, 0.021, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[71.5, 0.05, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[17, 10]} />
-        <meshStandardMaterial color="#1E293B" roughness={0.9} />
+        <meshStandardMaterial color="#1E293B" roughness={0.9} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
       </mesh>
       {/* 100' Road Center Dashed Line */}
-      <mesh position={[71.5, 0.022, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[71.5, 0.058, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[17, 0.28]} />
-        <meshBasicMaterial color="#FEF08A" />
+        <meshBasicMaterial color="#FEF08A" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
       </mesh>
 
       {/* 7. Subtle Ground Landmark Rings for Venture Location */}
-      <group position={[-9, 0.04, 6]}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+      <group position={[-9, 0.025, 6]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
           <ringGeometry args={[14, 18, 32]} />
           <meshBasicMaterial color="#16A34A" transparent opacity={0.3} />
         </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.007, 0]}>
           <ringGeometry args={[26, 30, 32]} />
           <meshBasicMaterial color="#22C55E" transparent opacity={0.15} />
         </mesh>
@@ -2185,8 +2187,8 @@ const Layout3DView = React.forwardRef(function Layout3DView({
       <Canvas
         shadows={false}
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
-        camera={{ position: [-9, 85, 120], fov: 42, near: 0.5, far: 90000 }}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+        camera={{ position: [-9, 85, 120], fov: 42, near: 0.8, far: 45000 }}
+        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
       >
         <color attach="background" args={[bgColor]} />
 
