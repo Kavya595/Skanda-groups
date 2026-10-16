@@ -14,11 +14,8 @@ import {
   Building,
   Sparkles,
   ExternalLink,
-  Map as MapIcon,
-  Maximize2,
   PhoneCall,
   Calendar,
-  X,
   ChevronDown
 } from 'lucide-react';
 import { submitLead, trackActivityEvent } from '../api/client';
@@ -37,8 +34,6 @@ export default function ContactPage({ settings }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState(null);
-  const [activeMapView, setActiveMapView] = useState('google'); // 'google' or 'flyer'
-  const [isFlyerZoomed, setIsFlyerZoomed] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeFaqCategory, setActiveFaqCategory] = useState('All');
 
@@ -208,7 +203,7 @@ export default function ContactPage({ settings }) {
       </div>
 
       {/* ========================================================== */}
-      {/* 3. LOCATION MAP & APPROACH ROUTES                          */}
+      {/* 3. INTERACTIVE PROJECT LOCATION MAP                        */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
@@ -220,87 +215,34 @@ export default function ContactPage({ settings }) {
                 OFFICIAL CONNECTIVITY
               </div>
               <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">
-                Project Location &amp; Approach Routes
+                Project Location &amp; Driving Directions
               </h2>
               <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Switch between the live interactive Google Map and the official approach plan showing proximity to ORR Exit 14 and Maisigandi Temple.
+                Adjoining 4-lane Srisailam Highway (NH 765), Kadthal, Telangana &mdash; Just 1 minute drive from Maisigandi Temple.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* View Switcher Tabs */}
-              <div className="bg-[#121622] p-1 rounded-xl flex items-center border border-slate-700">
-                <button
-                  onClick={() => setActiveMapView('google')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeMapView === 'google'
-                      ? 'bg-brand-orange text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Compass className="w-3.5 h-3.5" />
-                  <span>Google Map</span>
-                </button>
-                <button
-                  onClick={() => setActiveMapView('flyer')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                    activeMapView === 'flyer'
-                      ? 'bg-brand-orange text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <MapIcon className="w-3.5 h-3.5" />
-                  <span>Official Route Map</span>
-                </button>
-              </div>
-
-              {activeMapView === 'flyer' && (
-                <button
-                  onClick={() => setIsFlyerZoomed(true)}
-                  className="inline-flex items-center gap-1.5 bg-[#141824] hover:bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors border border-slate-700"
-                >
-                  <Maximize2 className="w-3.5 h-3.5 text-brand-orange" />
-                  <span>Zoom Map</span>
-                </button>
-              )}
-
+            <div className="flex items-center gap-3">
               <a
                 href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal+Telangana"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-lg shadow-sm transition-all"
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-xl shadow-md transition-all active:scale-95"
               >
-                <Navigation className="w-3.5 h-3.5" />
-                <span>Driving Directions</span>
+                <Navigation className="w-4 h-4" />
+                <span>Open in Google Maps / Directions</span>
               </a>
             </div>
           </div>
 
-          {/* Map Viewer Container */}
-          <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] min-h-[420px]">
-            {activeMapView === 'google' ? (
-              <iframe
-                title="Google Maps Location"
-                src="https://maps.google.com/maps?q=Kadthal%20Maisigandi%20Temple%20Telangana&t=m&z=12&output=embed&iwloc=near"
-                className="w-full h-[450px] border-0"
-                loading="lazy"
-              />
-            ) : (
-              <div
-                onClick={() => setIsFlyerZoomed(true)}
-                className="cursor-zoom-in relative group p-4 flex items-center justify-center bg-[#07090e]"
-              >
-                <img
-                  src="/assets/flyer_page_2_location_map.png"
-                  alt="Official Flyer Location Route Map"
-                  className="w-full max-h-[500px] object-contain rounded-xl transition-transform duration-300 group-hover:scale-[1.01]"
-                />
-                <div className="absolute bottom-4 right-4 bg-[#0c0f17]/90 text-white backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-700 text-xs font-bold shadow flex items-center gap-1.5 pointer-events-none">
-                  <Maximize2 className="w-3.5 h-3.5 text-brand-orange" />
-                  <span>Click to enlarge map</span>
-                </div>
-              </div>
-            )}
+          {/* Clean Interactive Google Map Viewer */}
+          <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] min-h-[440px]">
+            <iframe
+              title="Google Maps Location"
+              src="https://maps.google.com/maps?q=Kadthal%20Maisigandi%20Temple%20Telangana&t=m&z=12&output=embed&iwloc=near"
+              className="w-full h-[480px] border-0"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
@@ -619,31 +561,6 @@ export default function ContactPage({ settings }) {
           })}
         </div>
       </section>
-
-      {/* Route Map Zoom Modal */}
-      {isFlyerZoomed && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setIsFlyerZoomed(false)}
-        >
-          <div
-            className="relative max-w-5xl max-h-[92vh] bg-[#0c0f17] border border-slate-800 rounded-3xl p-4 shadow-2xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setIsFlyerZoomed(false)}
-              className="absolute top-4 right-4 z-10 bg-slate-800/80 hover:bg-slate-700 text-white p-2 rounded-full shadow transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <img
-              src="/assets/flyer_page_2_location_map.png"
-              alt="Official Location Map Full View"
-              className="max-h-[85vh] w-auto object-contain rounded-2xl mx-auto"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

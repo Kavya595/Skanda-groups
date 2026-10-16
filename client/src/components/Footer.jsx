@@ -47,7 +47,7 @@ export default function Footer({ settings }) {
               <img
                 src="/assets/skandha_logo_white.svg"
                 alt="Skandha Group Logo"
-                className="h-12 w-auto object-contain"
+                className="h-16 w-auto object-contain"
               />
             </Link>
             <p className="text-xs text-slate-300 leading-relaxed max-w-sm">

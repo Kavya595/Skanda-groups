@@ -234,7 +234,7 @@ export default function AboutPage({ settings }) {
               <img
                 src="/assets/skandha_logo_white.svg"
                 alt="Skandha Group"
-                className="h-10 w-auto object-contain"
+                className="h-16 w-auto object-contain"
               />
             </div>
             <h3 className="font-serif text-xl font-bold text-white">

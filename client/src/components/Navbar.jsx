@@ -104,12 +104,12 @@ export default function Navbar({ settings }) {
         {/* JB Infra Reference Main Header: Solid Pure Black Background */}
         <div className="bg-[#000000] border-b border-black py-3.5">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-            {/* Logo on Left */}
-            <Link to="/" className="flex items-center gap-3 shrink-0" title="Skandha Group">
+            {/* Logo on Left (Enlarged & High-Contrast Brand Colors) */}
+            <Link to="/" className="flex items-center gap-3 shrink-0 py-1" title="Skandha Group">
               <img
                 src="/assets/skandha_logo_white.svg"
                 alt="Skandha Group"
-                className="h-10 sm:h-12 w-auto object-contain"
+                className="h-14 sm:h-16 lg:h-20 w-auto object-contain transition-transform hover:scale-105"
               />
             </Link>
 
