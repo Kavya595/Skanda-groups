@@ -39,7 +39,7 @@ async function seedDatabase() {
       projectLocation: 'Kadthal, Srisailam Highway, Telangana',
       officeAddress: '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079',
       contactEmail: 'contact@skandhagroup.com',
-      whatsappNumber: process.env.DEFAULT_WHATSAPP_NUMBER || '919876543210',
+      whatsappNumber: process.env.DEFAULT_WHATSAPP_NUMBER || '919100031199',
       dtcpNumber: 'TLP NO. 87/2024/H',
       reraNumber: 'PO2400009081',
       heroVideoUrl: '',

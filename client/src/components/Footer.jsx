@@ -25,7 +25,7 @@ export default function Footer({ settings }) {
     { name: 'YouTube', icon: Youtube, href: 'https://youtube.com', hoverColor: 'hover:text-[#FF0000]' },
     { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com', hoverColor: 'hover:text-[#0A66C2]' },
     { name: 'X / Twitter', icon: Twitter, href: 'https://twitter.com', hoverColor: 'hover:text-white' },
-    { name: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/919949501513', hoverColor: 'hover:text-[#25D366]' }
+    { name: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/919100031199', hoverColor: 'hover:text-[#25D366]' }
   ];
 
   return (

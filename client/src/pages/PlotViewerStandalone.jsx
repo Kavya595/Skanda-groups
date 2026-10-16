@@ -516,6 +516,7 @@ export default function PlotViewerStandalone({ settings }) {
   });
   const [contactSubmitting, setContactSubmitting] = useState(false);
   const [contactSuccess, setContactSuccess] = useState(false);
+  const [contactSuccessResult, setContactSuccessResult] = useState(null);
   const [isScrolledPastMap, setIsScrolledPastMap] = useState(false);
 
   useEffect(() => {
@@ -549,7 +550,7 @@ export default function PlotViewerStandalone({ settings }) {
     if (!contactForm.phone.trim()) return;
     setContactSubmitting(true);
     try {
-      await submitLead({
+      const res = await submitLead({
         name: contactForm.name || 'Site Visit Guest',
         phone: contactForm.phone,
         email: contactForm.email || undefined,
@@ -557,6 +558,14 @@ export default function PlotViewerStandalone({ settings }) {
         message: `Inquiry from Master Plan Viewer. Preferred Facing: ${contactForm.facing}. Preferred Date: ${contactForm.visitDate || 'Flexible'}. Notes: ${contactForm.message || 'Booked guided site visit'}`
       });
       setContactSuccess(true);
+      if (res?.whatsappUrl) {
+        setContactSuccessResult(res);
+        try {
+          window.open(res.whatsappUrl, '_blank', 'noopener,noreferrer');
+        } catch {
+          // Fallback if popup blocker intervenes
+        }
+      }
       setContactForm({
         name: '',
         phone: '',
@@ -565,7 +574,7 @@ export default function PlotViewerStandalone({ settings }) {
         visitDate: '',
         message: ''
       });
-      setTimeout(() => setContactSuccess(false), 6000);
+      setTimeout(() => setContactSuccess(false), 15000);
     } catch (err) {
       console.error('Failed to submit contact enquiry:', err);
     } finally {
@@ -1708,14 +1717,25 @@ export default function PlotViewerStandalone({ settings }) {
                   </div>
 
                   {contactSuccess ? (
-                    <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 space-y-2 animate-fadeIn">
+                    <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 space-y-3 animate-fadeIn">
                       <div className="flex items-center gap-2 font-bold text-sm">
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
-                        <span>Site Visit Request Received!</span>
+                        <CheckCircle className="w-5 h-5 text-emerald-600" />
+                        <span>Site Visit Request Logged &amp; Confirmed!</span>
                       </div>
                       <p className="text-xs text-emerald-700 leading-relaxed">
-                        Thank you! Our dedicated site coordinator from Skandha Group will contact you promptly to confirm your visit and provide route assistance.
+                        Thank you! Your verified enquiry has been logged dynamically into our developer portal. Our site coordinator from Skandha Group will contact you promptly.
                       </p>
+                      {contactSuccessResult?.whatsappUrl && (
+                        <a
+                          href={contactSuccessResult.whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs shadow-xs transition-all w-full sm:w-auto"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Send Details Directly on WhatsApp</span>
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <form onSubmit={handleContactSubmit} className="space-y-3.5">

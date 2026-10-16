@@ -10,7 +10,7 @@ const siteSettingsSchema = new mongoose.Schema({
   },
   contactEmail: { type: String, default: 'contact@skandhagroup.com' },
   // Private backend destination for wa.me link generation (never exposed as raw text on marketing pages)
-  whatsappNumber: { type: String, default: '919876543210' },
+  whatsappNumber: { type: String, default: '919100031199' },
   dtcpNumber: { type: String, default: 'TLP NO. 87/2024/H' },
   reraNumber: { type: String, default: 'PO2400009081' },
   heroVideoUrl: { type: String, default: '' },

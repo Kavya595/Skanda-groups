@@ -60,6 +60,13 @@ export default function ContactPage({ settings }) {
       if (res.success) {
         setResult(res);
         trackActivityEvent('enquiry_submitted', null, { source: 'contact_page' });
+        if (res.whatsappUrl) {
+          try {
+            window.open(res.whatsappUrl, '_blank', 'noopener,noreferrer');
+          } catch {
+            // Fallback if browser blocks automatic popups
+          }
+        }
       } else {
         setError(res.error || 'Failed to submit enquiry');
       }

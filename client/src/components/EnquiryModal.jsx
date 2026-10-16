@@ -36,6 +36,13 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
         trackActivityEvent('enquiry_submitted', prefilledPlot?.plotNumber, {
           preferredMethod: formData.preferredContactMethod
         });
+        if (res.whatsappUrl) {
+          try {
+            window.open(res.whatsappUrl, '_blank', 'noopener,noreferrer');
+          } catch {
+            // Fallback if browser blocks automatic popups
+          }
+        }
       } else {
         setError(res.error || 'Failed to submit enquiry');
       }
