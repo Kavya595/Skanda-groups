@@ -95,6 +95,9 @@ function CameraController({
   onWalkProgressChange,
   onAzimuthChange,
   onResetComplete,
+  onExitWalk,
+  onSwitchToMapView,
+  onSwitchToOverview,
   apiRef
 }) {
   const { camera, gl } = useThree();
@@ -103,12 +106,19 @@ function CameraController({
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
   const lastAzimuthRef = useRef(0);
+  const wheelOutAccum = useRef(0);
 
   // Expose smooth zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
     zoomIn: () => {
+      if (cameraPreset === 'mapView') {
+        if (onSwitchToOverview) {
+          onSwitchToOverview();
+          return;
+        }
+      }
       if (controlsRef.current) {
-        const factor = 0.75;
+        const factor = 0.72;
         const target = controlsRef.current.target;
         camera.position.x = target.x + (camera.position.x - target.x) * factor;
         camera.position.y = target.y + (camera.position.y - target.y) * factor;
@@ -117,8 +127,22 @@ function CameraController({
       }
     },
     zoomOut: () => {
+      // User requirement: "can come out from walk view manually just minimizing"
+      if (cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') {
+        if (onExitWalk) {
+          onExitWalk();
+          return;
+        }
+      }
       if (controlsRef.current) {
-        const factor = 1.33;
+        const dist = camera.position.distanceTo(controlsRef.current.target);
+        if (dist > 260 && cameraPreset !== 'mapView') {
+          if (onSwitchToMapView) {
+            onSwitchToMapView();
+            return;
+          }
+        }
+        const factor = 1.35;
         const target = controlsRef.current.target;
         camera.position.x = target.x + (camera.position.x - target.x) * factor;
         camera.position.y = target.y + (camera.position.y - target.y) * factor;
@@ -156,7 +180,7 @@ function CameraController({
 
   // Hand Gesture Drag Navigation on the Canvas for Road View (USER REQUIREMENT)
   useEffect(() => {
-    if (cameraPreset !== 'roadWalk') return;
+    if (cameraPreset !== 'roadWalk' && cameraPreset !== 'park' && cameraPreset !== 'parkGround') return;
 
     const dom = gl.domElement;
 
@@ -190,8 +214,23 @@ function CameraController({
       isDragging.current = false;
     };
 
+    // User requirement: "can come out from walk view manually just minimizing"
     const handleWheel = (e) => {
       e.preventDefault();
+      // If user is zooming out (scrolling wheel down/backward or pinch out)
+      if (e.deltaY > 0) {
+        wheelOutAccum.current += e.deltaY;
+        if (wheelOutAccum.current > 140 || progRef.current <= 0.01) {
+          wheelOutAccum.current = 0;
+          if (onExitWalk) {
+            onExitWalk();
+          }
+          return;
+        }
+      } else {
+        wheelOutAccum.current = 0;
+      }
+
       const moveStep = -Math.sign(e.deltaY) * 0.035;
       const nextProg = Math.max(0, Math.min(1, progRef.current + moveStep));
       progRef.current = nextProg;
@@ -211,12 +250,10 @@ function CameraController({
       window.removeEventListener('pointerup', handlePointerUp);
       dom.removeEventListener('wheel', handleWheel);
     };
-  }, [gl, cameraPreset, onWalkProgressChange]);
+  }, [gl, cameraPreset, onWalkProgressChange, onExitWalk]);
 
   // Preset Camera Transitions for Overview, Park, TopDown, and Highway
   useEffect(() => {
-    // NOTE: We deliberately do NOT animate/teleport camera when a plot is selected.
-    // Keeping the user's camera viewpoint intact prevents the disorienting dirt-clipping glitch (Image 3).
     if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
@@ -231,8 +268,8 @@ function CameraController({
       animatingRef.current = true;
     } else if (cameraPreset === 'mapView') {
       // 3D Regional Map View matching Plots99 Image (media_1792061116841_a13f2ed9.png)
-      targetPos.current.set(0, 520, 640);
-      targetLook.current.set(0, 0, -20);
+      targetPos.current.set(0, 360, 460);
+      targetLook.current.set(0, 0, 0);
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
       targetPos.current.set(78, 22, 22);
@@ -1546,22 +1583,22 @@ export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
 let regionalCanvasCache = null;
 let regionalTextureCache = null;
 
-// Clean Master Plan 3D Ground with Real Regional Kadthal Map matching Plots99 Image (media_1792061116841_a13f2ed9.png)
-export function CleanMasterPlanTerrain() {
+// Clean Master Plan 3D Ground with Real Regional Kadthal Map matching Plots99 Image (media_1792062220917_c559dd0d.png)
+export function CleanMasterPlanTerrain({ cameraPreset }) {
   const [tilesLoaded, setTilesLoaded] = useState(0);
 
-  // Initialize 1280x1280 canvas covering ~23.4 km at zoom 13
+  // Initialize 1024x1024 canvas covering ~4.68 km at zoom 15 (~4.57 meters/pixel)
   const canvas = useMemo(() => {
     if (typeof document === 'undefined') return null;
     if (regionalCanvasCache) return regionalCanvasCache;
 
     const cvs = document.createElement('canvas');
-    cvs.width = 1280;
-    cvs.height = 1280;
+    cvs.width = 1024;
+    cvs.height = 1024;
     const ctx = cvs.getContext('2d');
-    // Pre-fill with natural map background color matching OSM/Carto
+    // Pre-fill with natural map background color matching Carto Voyager
     ctx.fillStyle = '#E8ECE1';
-    ctx.fillRect(0, 0, 1280, 1280);
+    ctx.fillRect(0, 0, 1024, 1024);
     regionalCanvasCache = cvs;
     return cvs;
   }, []);
@@ -1581,22 +1618,20 @@ export function CleanMasterPlanTerrain() {
     return tex;
   }, [canvas]);
 
-  // Stream 5x5 Zoom 13 tiles centered on Kadthal (lat: 16.9555, lng: 78.5125)
+  // Load 4x4 Zoom 15 tiles centered on Kadthal & Brundavan (lat: 16.9555, lng: 78.5125)
   useEffect(() => {
     if (!canvas || !texture) return;
     const ctx = canvas.getContext('2d');
-    const zoom = 13;
-    const minTx = 5880;
-    const minTy = 3702;
-    const xCenter = 5882.59555;
-    const yCenter = 3704.4101;
+    const zoom = 15;
+    const minTx = 23528;
+    const minTy = 14816;
 
-    for (let dy = 0; dy < 5; dy++) {
-      for (let dx = 0; dx < 5; dx++) {
+    for (let dy = 0; dy < 4; dy++) {
+      for (let dx = 0; dx < 4; dx++) {
         const tx = minTx + dx;
         const ty = minTy + dy;
-        const cx = Math.round(640 + (tx - xCenter) * 256);
-        const cy = Math.round(640 + (ty - yCenter) * 256);
+        const cx = dx * 256;
+        const cy = dy * 256;
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -1629,6 +1664,68 @@ export function CleanMasterPlanTerrain() {
     }
   }, [canvas, texture]);
 
+  // Dedicated Venture Green Parcel Shape (User requirement: "put it in a place where some clean area grass around it like that highlight in map only")
+  const ventureParcelShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    const pts = [
+      [-132, -72],
+      [-120, -84],
+      [-60, -86],
+      [0, -82],
+      [55, -78],
+      [88, -66],
+      [98, -20],
+      [104, 18],
+      [96, 70],
+      [68, 86],
+      [18, 92],
+      [-35, 90],
+      [-88, 88],
+      [-118, 76],
+      [-134, 20],
+      [-134, -35]
+    ];
+    pts.forEach(([x, z], idx) => {
+      if (idx === 0) shape.moveTo(x, -z);
+      else shape.lineTo(x, -z);
+    });
+    shape.closePath();
+    return shape;
+  }, []);
+
+  // Perimeter border line for the dedicated venture parcel
+  const parcelBorderPoints = useMemo(() => {
+    const pts = [
+      [-132, -72],
+      [-120, -84],
+      [-60, -86],
+      [0, -82],
+      [55, -78],
+      [88, -66],
+      [98, -20],
+      [104, 18],
+      [96, 70],
+      [68, 86],
+      [18, 92],
+      [-35, 90],
+      [-88, 88],
+      [-118, 76],
+      [-134, 20],
+      [-134, -35]
+    ].map(([x, z]) => new THREE.Vector3(x, 0.022, z));
+    pts.push(new THREE.Vector3(-132, 0.022, -72));
+    return pts;
+  }, []);
+
+  // Perimeter shade trees around the estate parcel
+  const parcelTrees = useMemo(() => {
+    return [
+      [-130, -50], [-116, -80], [-70, -84], [-10, -80], [45, -76], [80, -64],
+      [96, -20], [102, 10], [94, 62], [65, 82], [15, 88], [-35, 86],
+      [-80, 84], [-112, 72], [-130, 20], [-130, -25]
+    ];
+  }, []);
+
   // Exact DTCP layout compound base shape matching brochure cuts
   const compoundShape = useMemo(() => {
     const shape = new THREE.Shape();
@@ -1643,23 +1740,27 @@ export function CleanMasterPlanTerrain() {
 
   // Perimeter fencing points tracing the exact brochure cuts
   const fencePoints = useMemo(() => {
-    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.02, z));
-    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.02, SITE_BOUNDARY_LOCAL[0][1]));
+    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.035, z));
+    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.035, SITE_BOUNDARY_LOCAL[0][1]));
     return pts;
   }, []);
 
-  const groundSize = 23393; // 1280px * 18.276m/px
+  // Geographic plane size: 1024px * 4.5706m/px = 4680m
+  const groundSize = 4680;
+  // Geographic offset aligning Brundavan local (0,0) with its real coordinate on map tiles
+  const shiftX = -447;
+  const shiftZ = 420;
 
   return (
     <group>
-      {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 23km) */}
-      <mesh position={[0, -0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[65000, 65000]} />
+      {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 4.7km) */}
+      <mesh position={[0, -0.08, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[35000, 35000]} />
         <meshBasicMaterial color="#E8ECE1" />
       </mesh>
 
-      {/* 2. Full 23.4-Kilometer 3D Regional Map Plane (Zoom 13: Kadthal, Maisigandi, Srisailam Highway, Mucherla) */}
-      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Zoom 15: Srisailam Highway NH-765, Kadthal, Maisigandi) */}
+      <mesh position={[shiftX, -0.05, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[groundSize, groundSize]} />
         <meshBasicMaterial
           key={`map-texture-${tilesLoaded}`}
@@ -1668,16 +1769,71 @@ export function CleanMasterPlanTerrain() {
         />
       </mesh>
 
-      {/* 3. DTCP Sanctioned Layout Compound Base Shape (#D7EBD4) */}
-      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 3. Dedicated Venture Green Parcel (User requirement: clean area grass around it like that highlight in map) */}
+      <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <shapeGeometry args={[ventureParcelShape]} />
+        <meshStandardMaterial color="#8FCB77" roughness={0.85} metalness={0.05} />
+      </mesh>
+      <Line points={parcelBorderPoints} color="#1E7B34" lineWidth={3.2} />
+
+      {/* Perimeter trees along the venture parcel boundary */}
+      {parcelTrees.map(([tx, tz], i) => (
+        <PerimeterCanopyTree key={`ptree-${i}`} position={[tx, 0.02, tz]} scale={1.15} />
+      ))}
+
+      {/* 4. DTCP Sanctioned Layout Compound Base Shape (#A2DC8F) */}
+      <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[compoundShape]} />
-        <meshStandardMaterial color="#D7EBD4" roughness={0.85} metalness={0.05} />
+        <meshStandardMaterial color="#A2DC8F" roughness={0.8} metalness={0.05} />
       </mesh>
 
-      {/* 4. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
+      {/* 5. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
-      {/* 5. 4th Phase road opening markers matching brochure */}
+      {/* 6. 3D Venture Landmark Beacon (Visible prominently in Map View to highlight project) */}
+      <group position={[-9, 0.04, 6]}>
+        {/* Ground Pulse Rings */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+          <ringGeometry args={[14, 18, 32]} />
+          <meshBasicMaterial color="#16A34A" transparent opacity={0.35} />
+        </mesh>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.012, 0]}>
+          <ringGeometry args={[26, 30, 32]} />
+          <meshBasicMaterial color="#22C55E" transparent opacity={0.2} />
+        </mesh>
+
+        {/* Floating 3D Title Billboard in Map View */}
+        {(cameraPreset === 'mapView' || !cameraPreset) && (
+          <group position={[0, 24, 0]}>
+            <mesh position={[0, 0, -0.2]}>
+              <planeGeometry args={[70, 16]} />
+              <meshBasicMaterial color="#0F172A" transparent opacity={0.9} />
+            </mesh>
+            <Text
+              position={[0, 3.2, 0]}
+              fontSize={4.2}
+              color="#FFFFFF"
+              fontWeight="bold"
+              anchorX="center"
+              anchorY="middle"
+            >
+              ALEKHYA'S BRUNDAVAN
+            </Text>
+            <Text
+              position={[0, -2.8, 0]}
+              fontSize={2.5}
+              color="#F59E0B"
+              fontWeight="bold"
+              anchorX="center"
+              anchorY="middle"
+            >
+              DTCP APPROVED &bull; 96 PLOTS &bull; KADTHAL
+            </Text>
+          </group>
+        )}
+      </group>
+
+      {/* 7. 4th Phase road opening markers matching brochure */}
       {[
         [-61.5, 53.5], // Road V0 opening to 4th Phase
         [-32.5, 65.5], // Road V1 opening to 4th Phase
@@ -1685,7 +1841,7 @@ export function CleanMasterPlanTerrain() {
         [25.5, 65.5],  // Road V3 opening to 4th Phase
         [53.5, 69.0]   // Road V4 opening to 4th Phase
       ].map(([px, pz], i) => (
-        <group key={`phase4-3d-${i}`} position={[px, 0.035, pz]} rotation={[-Math.PI / 2, 0, 0]}>
+        <group key={`phase4-3d-${i}`} position={[px, 0.038, pz]} rotation={[-Math.PI / 2, 0, 0]}>
           <Text
             fontSize={1.2}
             color="#475569"
@@ -1774,6 +1930,9 @@ const Layout3DView = React.forwardRef(function Layout3DView({
   walkProgress = 0,
   onWalkProgressChange,
   onAzimuthChange,
+  onExitWalk,
+  onSwitchToMapView,
+  onSwitchToOverview,
   animateVehicles = true,
   isMeasureMode = false,
   measurePoints = [],
@@ -1806,11 +1965,14 @@ const Layout3DView = React.forwardRef(function Layout3DView({
           walkProgress={walkProgress}
           onWalkProgressChange={onWalkProgressChange}
           onAzimuthChange={onAzimuthChange}
+          onExitWalk={onExitWalk}
+          onSwitchToMapView={onSwitchToMapView}
+          onSwitchToOverview={onSwitchToOverview}
           apiRef={ref}
         />
 
         {/* Clean Master Plan Terrain matching Image 2 */}
-        <CleanMasterPlanTerrain />
+        <CleanMasterPlanTerrain cameraPreset={cameraPreset} />
 
         {/* Connected Asphalt Road Network with Sidewalks & Road Labels */}
         <ConnectedRoadNetwork onRoadClick={onRoadClick} />

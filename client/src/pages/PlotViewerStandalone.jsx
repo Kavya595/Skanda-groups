@@ -48,7 +48,8 @@ import {
   CheckCircle,
   FileText,
   Play,
-  Pause
+  Pause,
+  Footprints
 } from 'lucide-react';
 import { fetchPlots, fetchPlotStats, trackActivityEvent, submitLead } from '../api/client';
 import { getEnrichedPlots, LAYOUT_BOUNDS, statusColors } from '../visualizer/masterPlanData';
@@ -760,6 +761,12 @@ export default function PlotViewerStandalone({ settings }) {
               onSelectPlot={handleSelectPlot}
               cameraPreset={cameraPreset}
               onAzimuthChange={setCameraAzimuth}
+              onExitWalk={() => {
+                setCameraPreset('overview');
+                setIsAutoWalking(false);
+              }}
+              onSwitchToMapView={() => setCameraPreset('mapView')}
+              onSwitchToOverview={() => setCameraPreset('overview')}
               searchTerm={searchTerm}
               filterStatus={statusFilter}
               filterFacing={facingFilter}
@@ -862,28 +869,64 @@ export default function PlotViewerStandalone({ settings }) {
 
 
 
-        {/* Floating Park View Controller (USER REQUIREMENT matching Screenshot 3 & 4) */}
-        {(cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30 w-[92%] max-w-md bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/90 shadow-2xl p-3.5 space-y-2 pointer-events-auto animate-fadeIn">
-            <div className="flex items-center justify-between">
+        {/* Floating Walk View Controller with Manual Minimize Button (USER REQUIREMENT) */}
+        {(cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') && viewMode === '3d' && (
+          <aside
+            aria-label="Walk View Navigation Controller"
+            className="absolute bottom-16 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-4 sm:px-5 py-3 rounded-2xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center justify-between gap-2.5 sm:gap-3.5 max-w-[94vw] pointer-events-auto animate-fadeIn"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-bold text-xs sm:text-sm whitespace-nowrap">
+                {cameraPreset === 'roadWalk'
+                  ? (WALK_ROADS[walkRoadIndex]?.name || "33' Avenue Road")
+                  : "Ac. 0.758 Central Park Lawn Walk"}
+              </span>
+            </div>
+
+            {cameraPreset === 'roadWalk' && (
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900">
-                  Ac. 0.758 Central Park &bull; Ground-Level Lawn Walk
-                </span>
+                <select
+                  value={walkRoadIndex}
+                  onChange={(e) => {
+                    setWalkRoadIndex(Number(e.target.value));
+                    setWalkProgress(0.12);
+                  }}
+                  className="bg-slate-800 text-xs text-slate-200 border border-slate-700 rounded-lg px-2 py-1 outline-none font-semibold cursor-pointer"
+                >
+                  {WALK_ROADS.map((r, i) => (
+                    <option key={r.id} value={i}>{r.shortName || r.name}</option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAutoWalking(w => !w)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    isAutoWalking
+                      ? 'bg-emerald-600 text-white border-emerald-500'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  {isAutoWalking ? 'Pause' : 'Auto Walk'}
+                </button>
               </div>
-              <button
-                onClick={() => setCameraPreset('overview')}
-                className="text-[11px] text-slate-500 hover:text-slate-800 font-bold px-2 py-0.5 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
-              >
-                Exit Park View
-              </button>
-            </div>
-            <div className="flex items-center justify-between text-xs text-slate-600">
-              <span>Flowering lawn &bull; Cycad palm shrubs &bull; Perimeter palms</span>
-              <span className="text-emerald-700 font-bold">Drag to explore</span>
-            </div>
-          </div>
+            )}
+
+            {/* Dedicated Minimize to Layout Button (User requirement: "can come out from walk view manually just minimizing") */}
+            <button
+              type="button"
+              onClick={() => {
+                setCameraPreset('overview');
+                setIsAutoWalking(false);
+              }}
+              className="px-3.5 py-1.5 bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 shrink-0"
+              title="Minimize and exit walk view to return to 3D layout overview"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Minimize to Layout</span>
+            </button>
+          </aside>
         )}
 
         {/* Bottom Left Floating Legend (Plots99 Exact Structure - Vertical) */}
@@ -949,10 +992,8 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
-
-
         {/* Bottom Right Map Attribution (Single Clean Text) */}
-        <div className={`absolute bottom-4 right-48 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
+        <div className={`absolute bottom-4 right-56 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
@@ -960,10 +1001,56 @@ export default function PlotViewerStandalone({ settings }) {
           </div>
         </div>
 
-        {/* Bottom Right 2D/3D Pill & Location Map */}
-        <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 ${
+        {/* Bottom Right View Mode Level & 2D/3D Toggle (User requirement: manual minimize/maximize) */}
+        <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 flex items-center gap-2 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
+          {/* 3D View Level Switcher (Map View / 3D Layout / Walk View) */}
+          {viewMode === '3d' && (
+            <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl hidden sm:flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setCameraPreset('mapView')}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  cameraPreset === 'mapView'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title="Minimize to Wide Regional Map View"
+              >
+                <Map className="w-3.5 h-3.5" />
+                <span>Map View</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCameraPreset('overview')}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  cameraPreset === 'overview'
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title="Focus on 3D Layout Master Plan"
+              >
+                <Box className="w-3.5 h-3.5" />
+                <span>3D Layout</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleRoadView}
+                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  cameraPreset === 'roadWalk'
+                    ? 'bg-brand-orange text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+                title="Maximize into Street-Level Walk View"
+              >
+                <Footprints className="w-3.5 h-3.5" />
+                <span>Walk View</span>
+              </button>
+            </div>
+          )}
+
+          {/* 2D / 3D Toggle Pill */}
           <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
             <button
               onClick={() => handleViewModeToggle('2d')}
