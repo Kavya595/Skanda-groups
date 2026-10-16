@@ -584,7 +584,9 @@ export default function PlotViewerStandalone({ settings }) {
           className="fixed top-0 left-0 w-full z-0 overflow-hidden h-[75vh] select-none bg-[#E5ECE3]"
         >
         {/* Floating Top Header (Branding & Search) */}
-        <header className="absolute top-3 left-3 right-3 z-30 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+        <header className={`absolute top-3 left-3 right-3 z-30 flex flex-wrap items-center justify-between gap-3 pointer-events-none transition-all duration-300 ${
+          isScrolledPastMap ? 'opacity-0 invisible pointer-events-none' : 'opacity-100 visible'
+        }`}>
           <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center gap-3">
             <a href="/" className="flex items-center group" title="Return to main website">
               <img
@@ -966,104 +968,12 @@ export default function PlotViewerStandalone({ settings }) {
       {/* 2. SLIDING BOTTOM CONTAINER SHEET (STARTING AT mt-[75vh])   */}
       {/* ========================================================== */}
       <div
-        className="container-main relative z-10 bg-white/95 backdrop-blur-xs rounded-t-[28px] sm:rounded-t-[36px] md:rounded-t-[40px] shadow-[0_-12px_40px_rgba(0,0,0,0.18)] border-t border-slate-200/40 max-w-full overflow-x-hidden mt-[75vh]"
+        className="container-main relative z-10 bg-white rounded-t-[28px] sm:rounded-t-[36px] md:rounded-t-[40px] shadow-[0_-12px_40px_rgba(0,0,0,0.18)] border-t border-slate-200/40 max-w-full overflow-x-hidden mt-[75vh]"
         style={{ width: '100%', borderTopColor: '#329e4d' }}
       >
-          {/* Sticky Navigation Bar matching Plots99 */}
-          <div className="sticky top-0 z-20 backdrop-blur-md bg-white/90 border-b border-slate-200/50 px-3 sm:px-6 py-2 sm:py-2.5 transition-all shadow-xs rounded-t-[28px] sm:rounded-t-[36px] md:rounded-t-[40px]">
-            <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 overflow-x-auto no-scrollbar">
-              <nav className="flex items-center gap-1 sm:gap-1.5 shrink-0" aria-label="Page Navigation">
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                  className="h-8 px-2.5 rounded-full text-xs font-semibold gap-1.5 text-slate-700 hover:text-emerald-700 hover:bg-slate-100 transition-all inline-flex items-center"
-                  title="Interactive Map"
-                >
-                  <Building className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden md:inline font-bold">Skandha Layout</span>
-                </button>
-                <div className="h-4 w-px bg-slate-300 mx-0.5" />
-                <button
-                  onClick={() => scrollToSection('sec-info')}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
-                >
-                  <Info className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Overview</span>
-                </button>
-                <button
-                  onClick={() => scrollToSection('sec-insights')}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
-                >
-                  <Lightbulb className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Insights</span>
-                </button>
-                <button
-                  onClick={() => scrollToSection('sec-approvals')}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">Approvals</span>
-                </button>
-                <button
-                  onClick={() => scrollToSection('sec-landmarks')}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Nearby</span>
-                </button>
-                <button
-                  onClick={() => scrollToSection('sec-contact')}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-medium gap-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all inline-flex items-center"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Contact</span>
-                </button>
-              </nav>
-
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => setIsRouteMapModalOpen(true)}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
-                  type="button"
-                  title="View Official Flyer Route Map"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-brand-orange" />
-                  <span className="hidden sm:inline">Location Map</span>
-                </button>
-                <button
-                  onClick={() => setIsAIAssistantOpen(true)}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
-                  type="button"
-                  title="Ask AI Assistant"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">Ask AI</span>
-                </button>
-                <a
-                  href="https://www.google.com/maps/dir/?api=1&destination=16.9555,78.5125"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
-                  title="Get Directions to Venture"
-                >
-                  <Navigation className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">Directions</span>
-                </a>
-                <button
-                  onClick={() => handleShareCurrentPlot(selectedPlot || plots[0])}
-                  className="h-8 px-2.5 sm:px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700"
-                  type="button"
-                  title="Share Venture"
-                >
-                  <Share2 className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Share</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
           {/* Sheet Content: Info & Overview */}
           <section id="sec-info" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-8 md:space-y-12">
-            {/* Top Brand & Title Info Block (exact Plots99 match) */}
+            {/* Top Brand & Title Info Block */}
             <div className="scroll-mt-24 space-y-5">
               <div className="flex items-start gap-3.5 sm:gap-5 md:items-center md:justify-between">
                 <div className="shrink-0">
@@ -1077,37 +987,37 @@ export default function PlotViewerStandalone({ settings }) {
                 </div>
 
                 <div className="space-y-1.5 sm:space-y-2 grow min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                    <span className="w-fit shrink-0 justify-center overflow-hidden whitespace-nowrap border transition-[color,box-shadow] rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 font-semibold text-[11px] sm:text-xs bg-emerald-600/10 text-emerald-700 border-emerald-600/20 flex items-center gap-1 sm:gap-1.5">
-                      <Layers className="w-3 h-3 text-emerald-600" />
-                      <span>Plotted Development</span>
-                    </span>
-                    <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-50 text-brand-orange border border-orange-200">
-                      DTCP &amp; TS RERA Approved
-                    </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className="w-fit shrink-0 justify-center overflow-hidden whitespace-nowrap border transition-[color,box-shadow] rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 font-semibold text-[11px] sm:text-xs bg-emerald-600/10 text-emerald-700 border-emerald-600/20 flex items-center gap-1 sm:gap-1.5">
+                        <Layers className="w-3 h-3 text-emerald-600" />
+                        <span>Plotted Development</span>
+                      </span>
+                      <span className="text-[11px] sm:text-xs font-semibold px-2.5 py-0.5 rounded-full bg-orange-50 text-brand-orange border border-orange-200">
+                        DTCP &amp; TS RERA Approved
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleShareCurrentPlot(selectedPlot || plots[0])}
+                      className="h-8 px-3 rounded-full text-xs font-semibold gap-1.5 border border-slate-300/80 hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-all shadow-2xs inline-flex items-center text-slate-700 bg-white"
+                      type="button"
+                      title="Share Venture"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>{copiedShare ? 'Copied Link!' : 'Share'}</span>
+                    </button>
                   </div>
 
                   <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]">
-                    Skandha Group &bull; Kadthal Venture
+                    Kadthal Venture
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-slate-500">
-                    <button
-                      onClick={() => setIsRouteMapModalOpen(true)}
-                      className="inline-flex items-center gap-1 font-semibold text-emerald-700 hover:text-emerald-800 hover:underline transition-colors text-left"
-                      title="View Official Flyer Location Route Map"
-                    >
+                    <div className="inline-flex items-center gap-1 font-semibold text-slate-600 text-left">
                       <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Kadthal, Srisailam Highway (View Official Flyer Map)</span>
-                    </button>
-                    <span className="opacity-40">•</span>
-                    <a
-                      href="/"
-                      className="group inline-flex items-center gap-1 font-medium uppercase tracking-wider text-slate-500 hover:text-emerald-700 transition-colors text-[11px] sm:text-xs"
-                    >
-                      <span>By Skandha Group</span>
-                      <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                    </a>
+                      <span>Kadthal, Srisailam Highway</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1121,7 +1031,7 @@ export default function PlotViewerStandalone({ settings }) {
                     Project Overview
                   </h3>
                   <p className="text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-                    By <strong>Skandha Group</strong>. A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City &amp; Hyderabad Pharma City.
+                    A DTCP-approved, 100% Vasthu-compliant residential plotted layout adjoining Srisailam Highway, situated 1 minute from Maisigandi Temple and minutes from the upcoming Mucherla Future City &amp; Hyderabad Pharma City.
                   </p>
                 </div>
 
