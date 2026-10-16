@@ -18,7 +18,8 @@ import {
   Maximize2,
   PhoneCall,
   Calendar,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { submitLead, trackActivityEvent } from '../api/client';
 
@@ -38,11 +39,57 @@ export default function ContactPage({ settings }) {
   const [result, setResult] = useState(null);
   const [activeMapView, setActiveMapView] = useState('google'); // 'google' or 'flyer'
   const [isFlyerZoomed, setIsFlyerZoomed] = useState(false);
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+  const [activeFaqCategory, setActiveFaqCategory] = useState('All');
 
   const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
   const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
   const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
+
+  const faqs = [
+    {
+      category: 'Legal & Approvals',
+      q: "Is this venture approved by DTCP and registered under TS RERA?",
+      a: "Yes. The venture is officially sanctioned by the Directorate of Town and Country Planning (DTCP) under layout permit TLP NO. 87/2024/H and registered with the Telangana State Real Estate Regulatory Authority (TS RERA) under registration PO2400009081. All 96 plots hold 100% clear legal title, guaranteeing instant spot registration without encumbrance."
+    },
+    {
+      category: 'Plots & Vasthu',
+      q: "What plot dimensions and orientations are available in the project?",
+      a: "The project features 96 surveyed residential villa plots ranging from 183 Sq.Yards up to 672 Sq.Yards (1,647 to 6,048 Sq.Ft). The entire layout has been engineered in strict adherence to 100% Vasthu principles, with East-facing and West-facing plot alignments as well as auspicious corner locations."
+    },
+    {
+      category: 'Bank Loans',
+      q: "Are housing and plotted development bank loans pre-approved for this venture?",
+      a: "Yes. Due to full statutory DTCP clearances and RERA certification, pre-approved bank loans up to 70% to 75% are available through leading banks including State Bank of India (SBI), HDFC Bank, and ICICI Bank. Our dedicated customer team assists buyers with seamless loan sanction paperwork."
+    },
+    {
+      category: 'Infrastructure',
+      q: "What on-site infrastructure and amenities are being developed?",
+      a: "The venture features a proposed 60'-0\" wide arterial road connecting directly toward Maisigandi Temple, 33'-0\" wide internal blacktop avenues, comprehensive underground sanitary drainage, overhead water storage tank, electrical lines with dedicated street lights, an Ac. 0.758 landscaped children's park with jogging pathways, boundary wall with 24/7 security cabin, and 2 full years of complimentary site maintenance."
+    },
+    {
+      category: 'Location & Growth',
+      q: "Where is the venture situated and how is connectivity to Hyderabad?",
+      a: "The layout directly adjoins the 4-lane Srisailam Highway (NH 765) in Kadthal, just a 1-minute drive to the famous Maisigandi Maisamma Temple. It offers direct signal-free access to Hyderabad via Outer Ring Road (Exit 14) and Rajiv Gandhi International Airport (Shamshabad)."
+    },
+    {
+      category: 'Location & Growth',
+      q: "What is the economic growth driver in the Kadthal corridor?",
+      a: "Kadthal is situated at the center of South Hyderabad's mega economic expansion, neighboring the upcoming Mucherla Future City (Life Sciences, AI City & Skills University), the massive Hyderabad Pharma City corridor, and the proposed Regional Ring Road (RRR), driving rapid long-term land appreciation."
+    },
+    {
+      category: 'Site Visits',
+      q: "How can I schedule a physical site visit or select a plot?",
+      a: "Skandha Group organizes daily guided site visits directly to the Kadthal project. You can submit an online enquiry, or chat with our verified advisors on WhatsApp to schedule a complimentary visit with comfortable cab pickup."
+    }
+  ];
+
+  const faqCategories = ['All', 'Legal & Approvals', 'Plots & Vasthu', 'Infrastructure', 'Bank Loans', 'Location & Growth', 'Site Visits'];
+
+  const filteredFaqs = activeFaqCategory === 'All'
+    ? faqs
+    : faqs.filter(f => f.category === activeFaqCategory);
 
   const connectivityHighlights = [
     { title: 'Maisigandi Temple', duration: '1 Min Drive', desc: 'Direct access via proposed 60ft arterial layout road', icon: Sparkles },
@@ -483,6 +530,93 @@ export default function ContactPage({ settings }) {
               </form>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 5. FREQUENTLY ASKED QUESTIONS (FAQ ACCORDION)              */}
+      {/* ========================================================== */}
+      <section id="faqs" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 scroll-mt-24">
+        <div className="text-center space-y-2">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+            <span className="h-px w-6 bg-brand-orange/40" />
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            FREQUENTLY ASKED QUESTIONS
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            <span className="h-px w-6 bg-brand-orange/40" />
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+            Everything You Need to Know
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages.
+          </p>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {faqCategories.map(cat => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => {
+                setActiveFaqCategory(cat);
+                setOpenFaqIndex(0);
+              }}
+              className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition-all ${
+                activeFaqCategory === cat
+                  ? 'bg-brand-orange text-white shadow-xs'
+                  : 'bg-[#0c0f17] text-slate-300 hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Accordion List */}
+        <div className="space-y-3.5">
+          {filteredFaqs.map((faq, idx) => {
+            const isOpen = openFaqIndex === idx;
+            return (
+              <div
+                key={faq.q}
+                className={`bg-[#0c0f17] rounded-xl border transition-all duration-200 overflow-hidden ${
+                  isOpen
+                    ? 'border-brand-orange shadow-md ring-1 ring-orange-500/20'
+                    : 'border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  className="w-full px-5 sm:px-6 py-4 text-left flex items-center justify-between gap-4 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
+                    <span className="text-sm sm:text-base font-bold text-white leading-snug">
+                      {faq.q}
+                    </span>
+                  </div>
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                      isOpen
+                        ? 'bg-orange-500/20 text-brand-orange rotate-180'
+                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                    }`}
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/80 bg-black/40">
+                    <p>{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
 

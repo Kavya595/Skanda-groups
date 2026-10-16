@@ -315,7 +315,66 @@ export default function ProjectPage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 5. PRIVATE SITE TOUR INVITATION                            */}
+      {/* 5. OFFICIAL BROCHURE & VENTURE DOCUMENTATION               */}
+      {/* ========================================================== */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-10 shadow-2xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 relative group overflow-hidden rounded-2xl border border-slate-800 bg-[#07090e]">
+              <img
+                src="/assets/hero_cover.jpg"
+                alt="Skandha Group Kadthal Brochure Document"
+                className="w-full h-auto max-h-[380px] object-cover object-top rounded-2xl transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none rounded-2xl" />
+              <div className="absolute bottom-4 left-4 right-4 text-xs font-bold text-white flex items-center justify-between">
+                <span className="bg-brand-orange px-3 py-1 rounded text-[11px] font-bold">
+                  Official Document
+                </span>
+                <span className="text-slate-300">
+                  Kadthal Plotted Community
+                </span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-7 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                VENTURE PORTFOLIO
+              </div>
+              <h3 className="font-serif text-2xl sm:text-4xl font-bold text-white">
+                Official Project Brochure &amp; Master Layout
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
+                Explore the complete master blueprint, sanctioned plot dimension charts, Vasthu orientations, and comprehensive connectivity highlights directly from the official Skandha Group publication.
+              </p>
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                <a
+                  href="/assets/skandha_brochure.pdf"
+                  download="Skandha_Group_Kadthal_Brochure.pdf"
+                  className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 rounded-xl shadow-md transition-all active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Project Brochure (PDF)</span>
+                </a>
+                <a
+                  href="/assets/skandha_flyer.pdf"
+                  download="Skandha_Group_Kadthal_Flyer.pdf"
+                  className="inline-flex items-center gap-2 bg-[#141824] hover:bg-slate-800 text-white border border-slate-700 text-xs font-bold uppercase tracking-wider px-6 py-3.5 rounded-xl transition-all"
+                >
+                  <Download className="w-4 h-4 text-brand-orange" />
+                  <span>Download Project Flyer (PDF)</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 6. PRIVATE SITE TOUR INVITATION                            */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 rounded-3xl p-8 sm:p-14 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">

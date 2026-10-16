@@ -6,6 +6,20 @@ import EnquiryModal from '../components/EnquiryModal';
 
 const DEFAULT_GALLERY_PHOTOS = [
   {
+    _id: 'photo-brochure-cover',
+    title: 'Official Kadthal Venture Publication Cover',
+    category: 'development',
+    imageUrl: '/assets/hero_cover.jpg',
+    caption: 'Locate yourself at the most desirable place — Official Skandha Group gated community brochure and villa plotted layout showcase.'
+  },
+  {
+    _id: 'photo-layout-plan-master',
+    title: 'DTCP Sanctioned 96-Plot Master Blueprint',
+    category: 'infrastructure',
+    imageUrl: '/assets/layout_plan_hd.png',
+    caption: 'Official surveyed layout permit TLP NO. 87/2024/H detailing road widths, plot orientations, and central park acreage.'
+  },
+  {
     _id: 'photo-villa-day',
     title: 'Bespoke Contemporary Villa Architecture',
     category: 'villas',

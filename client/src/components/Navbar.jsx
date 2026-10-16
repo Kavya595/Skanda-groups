@@ -21,7 +21,6 @@ export default function Navbar({ settings }) {
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [brochureDropdownOpen, setBrochureDropdownOpen] = useState(false);
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
-  const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
   const location = useLocation();
 
   // Close mobile menu on route change
@@ -29,7 +28,6 @@ export default function Navbar({ settings }) {
     setMobileMenuOpen(false);
     setBrochureDropdownOpen(false);
     setAboutDropdownOpen(false);
-    setProjectsDropdownOpen(false);
   }, [location.pathname]);
 
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -169,55 +167,15 @@ export default function Navbar({ settings }) {
                 )}
               </div>
 
-              {/* Featured Projects Dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={() => setProjectsDropdownOpen(true)}
-                onMouseLeave={() => setProjectsDropdownOpen(false)}
+              {/* Project Overview (Direct Link - Single Project) */}
+              <Link
+                to="/project"
+                className={`text-sm font-semibold tracking-wide transition-colors ${
+                  location.pathname === '/project' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                }`}
               >
-                <Link
-                  to="/project"
-                  className={`text-sm font-semibold tracking-wide transition-colors flex items-center gap-1.5 ${
-                    location.pathname === '/project' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
-                  }`}
-                >
-                  <span>Project Overview</span>
-                  <ChevronDown className="w-3.5 h-3.5 opacity-80" />
-                </Link>
-
-                {projectsDropdownOpen && (
-                  <div className="absolute top-full left-0 pt-2 w-56 z-50 animate-fadeIn">
-                    <div className="bg-[#12141a] border border-slate-800 rounded-sm shadow-2xl py-2">
-                      <Link
-                        to="/project"
-                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
-                      >
-                        Kadthal Plotted Community
-                      </Link>
-                      <a
-                        href="/#villas"
-                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
-                      >
-                        Bespoke Villa Concepts
-                      </a>
-                      <a
-                        href="/#lighting"
-                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
-                      >
-                        Twilight Boulevard Enclave
-                      </a>
-                      <a
-                        href="/plots"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block px-4 py-2 text-xs font-bold text-brand-orange hover:text-white hover:bg-brand-orange transition-colors"
-                      >
-                        Interactive 2D/3D Plot Viewer
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
+                Project Overview
+              </Link>
 
               {/* Gallery */}
               <Link
