@@ -287,7 +287,7 @@ export async function adminExportLeadsCsv() {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'skandha_leads.csv';
+  a.download = 'skandha_customers_leads_to_contact.csv';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -302,6 +302,21 @@ export async function adminGetAnalyticsSummary() {
     headers: { ...getAuthHeader() }
   });
   return handleResponse(res);
+}
+
+export async function adminExportWebsiteVisitsCsv() {
+  const res = await fetch(`${API_BASE}/admin/analytics/export/csv`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Website visits CSV export failed');
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'skandha_website_visits_analytics.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }
 
 // ==========================================

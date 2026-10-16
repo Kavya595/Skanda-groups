@@ -114,6 +114,7 @@ router.get('/admin/leads/export/csv', leadCtrl.exportLeadsCsv);
 
 // Admin Analytics & Activity
 router.get('/admin/analytics/summary', analyticsCtrl.getAnalyticsSummary);
+router.get('/admin/analytics/export/csv', analyticsCtrl.exportWebsiteVisitsCsv);
 
 // Admin Gallery Management
 router.get('/admin/gallery', galleryCtrl.getAdminGallery);

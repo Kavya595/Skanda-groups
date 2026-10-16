@@ -204,12 +204,36 @@ export async function deleteLead(req, res) {
 export async function exportLeadsCsv(req, res) {
   try {
     const leads = await Lead.find().sort({ createdAt: -1 });
-    const fields = ['_id', 'name', 'email', 'phone', 'preferredContactMethod', 'plotNumber', 'status', 'assignedTo', 'consent', 'createdAt'];
+    const formatted = leads.map(l => ({
+      'Customer Name': l.name || '',
+      'Phone Number': l.phone || '',
+      'Email Address': l.email || '',
+      'Inquired Plot #': l.plotNumber ? `Plot #${l.plotNumber}` : 'General Inquiry',
+      'Status': (l.status || 'new').toUpperCase(),
+      'Preferred Contact Method': (l.preferredContactMethod || 'whatsapp').toUpperCase(),
+      'Customer Notes / Inquiry Message': (l.message || '').replace(/\r?\n|\r/g, ' '),
+      'Assigned Sales Rep': l.assignedTo || 'Sales Team',
+      'Inquiry Date & Time': l.createdAt ? new Date(l.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '',
+      'Lead ID': l._id.toString()
+    }));
+
+    const fields = [
+      'Customer Name',
+      'Phone Number',
+      'Email Address',
+      'Inquired Plot #',
+      'Status',
+      'Preferred Contact Method',
+      'Customer Notes / Inquiry Message',
+      'Assigned Sales Rep',
+      'Inquiry Date & Time',
+      'Lead ID'
+    ];
     const json2csv = new Parser({ fields });
-    const csv = json2csv.parse(leads);
+    const csv = json2csv.parse(formatted);
 
     res.header('Content-Type', 'text/csv');
-    res.attachment('skandha_leads.csv');
+    res.attachment('skandha_customers_leads_to_contact.csv');
     return res.send(csv);
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });

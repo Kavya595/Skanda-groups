@@ -192,3 +192,26 @@ export async function logout(req, res) {
     message: 'Logged out successfully.'
   });
 }
+
+export async function ensureDefaultAdmin() {
+  try {
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash('admin@123', salt);
+    await AdminUser.findOneAndUpdate(
+      { username: 'admin' },
+      {
+        username: 'admin',
+        email: 'admin@skandhagroup.com',
+        passwordHash,
+        role: 'superadmin',
+        isActive: true,
+        mustChangePassword: false
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    console.log('[Auth] Default admin guaranteed active: (admin / admin@123)');
+  } catch (err) {
+    console.error('[Auth Error] Failed to ensure default admin:', err.message);
+  }
+}
+

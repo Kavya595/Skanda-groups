@@ -1,4 +1,5 @@
 import ActivityEvent from '../models/ActivityEvent.js';
+import { Parser } from 'json2csv';
 
 const ALLOWLISTED_EVENTS = [
   'layout_opened',
@@ -83,3 +84,35 @@ export async function getAnalyticsSummary(req, res) {
     return res.status(500).json({ success: false, error: err.message });
   }
 }
+
+export async function exportWebsiteVisitsCsv(req, res) {
+  try {
+    const events = await ActivityEvent.find().sort({ createdAt: -1 }).limit(5000);
+    const formatted = events.map(e => ({
+      'Activity / User Action': (e.eventType || '').replace(/_/g, ' ').toUpperCase(),
+      'Plot Interacted': e.plotNumber ? `Plot #${e.plotNumber}` : 'General / Whole Layout',
+      'Interaction Details': JSON.stringify(e.metadata || {}),
+      'Device / Browser UserAgent': (e.userAgent || 'Unknown').replace(/\r?\n|\r/g, ' '),
+      'Visit Date & Time': e.createdAt ? new Date(e.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '',
+      'Event Record ID': e._id.toString()
+    }));
+
+    const fields = [
+      'Activity / User Action',
+      'Plot Interacted',
+      'Visit Date & Time',
+      'Interaction Details',
+      'Device / Browser UserAgent',
+      'Event Record ID'
+    ];
+    const json2csv = new Parser({ fields });
+    const csv = json2csv.parse(formatted);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('skandha_website_visits_analytics.csv');
+    return res.send(csv);
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+}
+

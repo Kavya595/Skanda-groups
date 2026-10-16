@@ -18,7 +18,8 @@ import {
   adminGetLeads,
   adminGetAnalyticsSummary,
   adminExportLeadsCsv,
-  adminExportPlotsCsv
+  adminExportPlotsCsv,
+  adminExportWebsiteVisitsCsv
 } from '../../api/client';
 
 export default function AdminDashboard() {
@@ -70,20 +71,30 @@ export default function AdminDashboard() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => adminExportPlotsCsv()}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export Plots CSV</span>
-          </button>
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => adminExportLeadsCsv()}
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-xl transition-colors shadow-2xs"
+            title="Download verified leads and customer contact list"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export Leads CSV</span>
+            <span>Customers List to Contact</span>
+          </button>
+          <button
+            onClick={() => adminExportWebsiteVisitsCsv()}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+            title="Download website visitor events and activity report"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Website Visits Report</span>
+          </button>
+          <button
+            onClick={() => adminExportPlotsCsv()}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
+            title="Download plots layout inventory status"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Plots Inventory</span>
           </button>
         </div>
       </div>

@@ -132,9 +132,10 @@ export default function AdminLeads() {
         <button
           onClick={() => adminExportLeadsCsv()}
           className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-xl transition-colors shadow-2xs"
+          title="Download verified customer leads and contact list to re-engage"
         >
           <Download className="w-3.5 h-3.5" />
-          <span>Export All Leads (CSV)</span>
+          <span>Download Customer List to Contact (CSV)</span>
         </button>
       </div>
 

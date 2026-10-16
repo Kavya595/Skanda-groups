@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { adminGetAnalyticsSummary } from '../../api/client';
-import { Activity, Eye, Compass, Layers, Send, Search, Filter } from 'lucide-react';
+import { adminGetAnalyticsSummary, adminExportWebsiteVisitsCsv } from '../../api/client';
+import { Activity, Eye, Compass, Layers, Send, Search, Filter, Download } from 'lucide-react';
 
 export default function AdminAnalytics() {
   const [data, setData] = useState(null);
@@ -28,13 +28,24 @@ export default function AdminAnalytics() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-        <h1 className="text-2xl font-serif font-bold text-slate-900">
-          Privacy-Conscious Visitor Analytics
-        </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Anonymous layout engagement metrics. Compliant with privacy regulations without tracking personal identity.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+        <div>
+          <h1 className="text-2xl font-serif font-bold text-slate-900">
+            Visitor Analytics &amp; Activity
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Anonymous layout engagement metrics, plot click streams, and traffic trends.
+          </p>
+        </div>
+
+        <button
+          onClick={() => adminExportWebsiteVisitsCsv()}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold rounded-xl transition-colors shadow-2xs"
+          title="Download complete website visits and activity report"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Download Visits Report (CSV)</span>
+        </button>
       </div>
 
       {loading ? (

@@ -3,12 +3,14 @@ dotenv.config();
 
 import app from './app.js';
 import { connectDB } from './config/db.js';
+import { ensureDefaultAdmin } from './controllers/authController.js';
 
 const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
     await connectDB();
+    await ensureDefaultAdmin();
     const server = app.listen(PORT, () => {
       console.log(`=======================================================`);
       console.log(` Skandha Group API Server running on port ${PORT}`);
