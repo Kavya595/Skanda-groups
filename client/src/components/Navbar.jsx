@@ -6,174 +6,310 @@ import {
   X,
   ExternalLink,
   ShieldCheck,
-  Calendar,
-  Sparkles,
   ChevronRight,
-  PhoneCall
+  ChevronDown,
+  Phone,
+  FileText,
+  Download,
+  Instagram,
+  Youtube
 } from 'lucide-react';
 import EnquiryModal from './EnquiryModal';
 
 export default function Navbar({ settings }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [brochureDropdownOpen, setBrochureDropdownOpen] = useState(false);
+  const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
+  const [projectsDropdownOpen, setProjectsDropdownOpen] = useState(false);
   const location = useLocation();
 
+  // Close mobile menu on route change
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const navLinks = [
-    { label: 'Home', path: '/' },
-    { label: 'Project Specs', path: '/project' },
-    { label: 'Site Gallery', path: '/gallery' },
-    { label: 'About Skandha', path: '/about' },
-    { label: 'Contact & Map', path: '/contact' }
-  ];
+    setMobileMenuOpen(false);
+    setBrochureDropdownOpen(false);
+    setAboutDropdownOpen(false);
+    setProjectsDropdownOpen(false);
+  }, [location.pathname]);
 
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
-  const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
-  const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
+
+  const instagramUrl = (settings && settings.socialLinks && settings.socialLinks.instagram && !settings.socialLinks.instagram.endsWith('/skandhagroup'))
+    ? settings.socialLinks.instagram
+    : 'https://www.instagram.com/_skandhagroups_/';
+
+  const youtubeUrl = (settings && settings.socialLinks && settings.socialLinks.youtube && !settings.socialLinks.youtube.endsWith('/@skandhagroup'))
+    ? settings.socialLinks.youtube
+    : 'https://www.youtube.com/@SkandhaGroups-hyd';
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100/90 transition-all duration-300">
-        {/* Supreme Micro-Bar: Statutory Verification Ribbon */}
-        <div className="bg-slate-900 text-slate-300 text-[11px] font-medium py-1.5 px-4 border-b border-slate-800">
-          <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
-            <div className="flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/80">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                DTCP: {dtcpNo} &bull; TS RERA: {reraNo}
-              </span>
-              <span className="text-slate-500 hidden sm:inline">|</span>
-              <span className="text-slate-300 hidden md:inline">
-                Srisailam Highway (NH 765), Kadthal &bull; 1 Min to Maisigandi Temple
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 text-slate-300">
-              <Link
-                to="/admin/login"
-                className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-200 bg-slate-800/90 hover:bg-slate-700/90 px-2 py-0.5 rounded-md border border-slate-700"
-                title="Admin Staff Access Portal"
+      <header className="relative z-50">
+        {/* JB Infra Reference Top Bar: Dark Navy with White Icons and Square Social Buttons */}
+        <div className="bg-[#071326] text-white text-xs py-2 px-4 border-b border-[#0d223f]">
+          <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
+            {/* Callback Button & Email on Left */}
+            <div className="flex items-center gap-6 text-xs text-white">
+              <button
+                type="button"
+                onClick={() => setIsEnquiryModalOpen(true)}
+                className="hover:text-brand-orange transition-colors inline-flex items-center gap-2 font-medium"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Admin Access</span>
-              </Link>
-              <span className="text-slate-600 hidden sm:inline">|</span>
+                <Phone className="w-3.5 h-3.5 fill-white text-white" />
+                <span>Request Site Desk Callback</span>
+              </button>
               <a
                 href={`mailto:${email}`}
-                className="hover:text-brand-orange transition-colors hidden sm:inline-flex items-center gap-1 text-[11px]"
+                className="hover:text-brand-orange transition-colors inline-flex items-center gap-2 font-medium"
               >
-                <Mail className="w-3 h-3 text-orange-400" />
+                <Mail className="w-3.5 h-3.5 fill-white text-white" />
                 <span>{email}</span>
               </a>
-              <span className="text-slate-600 hidden sm:inline">|</span>
-              <span className="text-orange-300 font-semibold flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-orange-400" />
-                100% Vasthu Compliant
-              </span>
+            </div>
+
+            {/* Social Icon Squares on Right (Instagram, YouTube & Admin) */}
+            <div className="flex items-center gap-1.5">
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-6 h-6 rounded-sm bg-[#262626] hover:opacity-90 text-white flex items-center justify-center transition-opacity"
+                title="Instagram"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+
+              <a
+                href={youtubeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-6 h-6 rounded-sm bg-[#cd201f] hover:opacity-90 text-white flex items-center justify-center transition-opacity"
+                title="YouTube"
+                aria-label="YouTube"
+              >
+                <Youtube className="w-3.5 h-3.5 fill-white" />
+              </a>
+
+              <Link
+                to="/admin/login"
+                className="ml-3 text-[11px] font-semibold text-slate-300 hover:text-emerald-400 inline-flex items-center gap-1 bg-[#102340] px-2 py-0.5 rounded-sm border border-slate-700"
+                title="Admin Staff Portal"
+              >
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span className="hidden sm:inline">Admin</span>
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Supreme Floating Architectural Navigation Island */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2">
-          <div
-            className={`rounded-2xl transition-all duration-300 px-4 sm:px-6 py-2.5 flex items-center justify-between ${
-              isScrolled
-                ? 'bg-white/95 backdrop-blur-xl border border-slate-200/90 shadow-[0_12px_32px_-6px_rgba(0,0,0,0.08)]'
-                : 'bg-white/90 backdrop-blur-md border border-slate-200/70 shadow-sm'
-            }`}
-          >
-            {/* Brand Mark with Regal Architecture */}
-            <Link to="/" className="flex items-center gap-3 group shrink-0" title="Skandha Group">
+        {/* JB Infra Reference Main Header: Solid Pure Black Background */}
+        <div className="bg-[#000000] border-b border-black py-3.5">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            {/* Logo on Left */}
+            <Link to="/" className="flex items-center gap-3 shrink-0" title="Skandha Group">
               <img
-                src="/assets/skandha_logo.svg"
+                src="/assets/skandha_logo_white.svg"
                 alt="Skandha Group"
-                className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                className="h-10 sm:h-12 w-auto object-contain"
               />
-              <div className="border-l border-slate-200 pl-3 hidden sm:block">
-                <div className="text-xs font-bold tracking-wide text-slate-800">
-                  Kadthal Venture
-                </div>
-                <div className="text-[10px] font-medium tracking-wider uppercase text-slate-500">
-                  Srisailam Highway
-                </div>
-              </div>
             </Link>
 
-            {/* Supreme Nav Links: Floating Island Pills */}
-            <nav className="hidden lg:flex items-center gap-1 bg-slate-100/70 p-1.5 rounded-full border border-slate-200/60">
-              {navLinks.map(link => {
-                const isActive = location.pathname === link.path;
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
-                      isActive
-                        ? 'bg-white text-brand-orange shadow-xs font-bold'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
+            {/* Desktop Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-7">
+              {/* Home */}
+              <Link
+                to="/"
+                className={`text-sm font-semibold tracking-wide transition-colors ${
+                  location.pathname === '/' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                }`}
+              >
+                Home
+              </Link>
 
-              {/* Discreet Dedicated Plot Availability Link */}
+              {/* About Us Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => setAboutDropdownOpen(true)}
+                onMouseLeave={() => setAboutDropdownOpen(false)}
+              >
+                <Link
+                  to="/about"
+                  className={`text-sm font-semibold tracking-wide transition-colors flex items-center gap-1.5 ${
+                    location.pathname === '/about' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                  }`}
+                >
+                  <span>About Us</span>
+                  <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                </Link>
+
+                {aboutDropdownOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-52 z-50 animate-fadeIn">
+                    <div className="bg-[#12141a] border border-slate-800 rounded-sm shadow-2xl py-2">
+                      <Link
+                        to="/about"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        About Skandha Group
+                      </Link>
+                      <a
+                        href="/#amenities"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Infrastructure &amp; Parks
+                      </a>
+                      <a
+                        href="/#testimonials"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Client Testimonials
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Featured Projects Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => setProjectsDropdownOpen(true)}
+                onMouseLeave={() => setProjectsDropdownOpen(false)}
+              >
+                <Link
+                  to="/project"
+                  className={`text-sm font-semibold tracking-wide transition-colors flex items-center gap-1.5 ${
+                    location.pathname === '/project' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                  }`}
+                >
+                  <span>Project Overview</span>
+                  <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                </Link>
+
+                {projectsDropdownOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-56 z-50 animate-fadeIn">
+                    <div className="bg-[#12141a] border border-slate-800 rounded-sm shadow-2xl py-2">
+                      <Link
+                        to="/project"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Kadthal Plotted Community
+                      </Link>
+                      <a
+                        href="/#villas"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Bespoke Villa Concepts
+                      </a>
+                      <a
+                        href="/#lighting"
+                        className="block px-4 py-2 text-xs font-medium text-slate-200 hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Twilight Boulevard Enclave
+                      </a>
+                      <a
+                        href="/plots"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block px-4 py-2 text-xs font-bold text-brand-orange hover:text-white hover:bg-brand-orange transition-colors"
+                      >
+                        Interactive 2D/3D Plot Viewer
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Gallery */}
+              <Link
+                to="/gallery"
+                className={`text-sm font-semibold tracking-wide transition-colors ${
+                  location.pathname === '/gallery' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                }`}
+              >
+                Gallery
+              </Link>
+
+              {/* Brochures Dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={() => setBrochureDropdownOpen(true)}
+                onMouseLeave={() => setBrochureDropdownOpen(false)}
+              >
+                <button
+                  type="button"
+                  className="text-sm font-semibold tracking-wide text-white hover:text-brand-orange flex items-center gap-1.5 transition-colors"
+                >
+                  <span>Brochures</span>
+                  <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                </button>
+
+                {brochureDropdownOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-56 z-50 animate-fadeIn">
+                    <div className="bg-[#12141a] border border-slate-800 rounded-sm shadow-2xl py-2">
+                      <a
+                        href="/assets/skandha_brochure.pdf"
+                        download="Skandha_Group_Kadthal_Brochure.pdf"
+                        className="px-4 py-2.5 text-xs text-slate-200 hover:text-white hover:bg-brand-orange flex items-center justify-between transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Project Brochure</span>
+                        </span>
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                      <a
+                        href="/assets/skandha_flyer.pdf"
+                        download="Skandha_Group_Kadthal_Flyer.pdf"
+                        className="px-4 py-2.5 text-xs text-slate-200 hover:text-white hover:bg-brand-orange flex items-center justify-between transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Project Flyer</span>
+                        </span>
+                        <Download className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Contact */}
+              <Link
+                to="/contact"
+                className={`text-sm font-semibold tracking-wide transition-colors ${
+                  location.pathname === '/contact' ? 'text-brand-orange' : 'text-white hover:text-brand-orange'
+                }`}
+              >
+                Contact
+              </Link>
+            </nav>
+
+            {/* Right Button: Exact JB Infra "PLOT AVAILABILITY" */}
+            <div className="hidden sm:flex items-center">
               <a
                 href="/plots"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3.5 py-1.5 rounded-full text-xs font-bold text-orange-600 hover:text-orange-700 hover:bg-orange-50 transition-all inline-flex items-center gap-1"
-                title="Open Interactive 2D/3D Plot Viewer in New Window"
+                className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-sm shadow-md transition-all active:scale-95"
               >
-                <span>Plot Availability</span>
-                <ExternalLink className="w-3 h-3 opacity-70" />
+                PLOT AVAILABILITY
               </a>
-            </nav>
-
-            {/* Action CTA Button & Admin Access Icon */}
-            <div className="hidden sm:flex items-center gap-2">
-              <Link
-                to="/admin/login"
-                className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 flex items-center justify-center transition-all duration-200 border border-slate-700 shadow-xs hover:scale-105 shrink-0"
-                title="Admin Staff Portal"
-                aria-label="Admin Access"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              </Link>
-              <button
-                onClick={() => setIsEnquiryModalOpen(true)}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold px-4 sm:px-5 py-2.5 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Schedule Private Visit</span>
-                <ChevronRight className="w-3.5 h-3.5 opacity-80" />
-              </button>
             </div>
 
-            {/* Mobile Menu Trigger Button */}
-            <div className="lg:hidden flex items-center gap-2">
-              <Link
-                to="/admin/login"
-                className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 flex items-center justify-center transition-all duration-200 border border-slate-700 shadow-xs"
-                title="Admin Staff Portal"
-                aria-label="Admin Access"
+            {/* Mobile Menu Toggle Button */}
+            <div className="lg:hidden flex items-center gap-3">
+              <a
+                href="/plots"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-brand-orange text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-sm"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              </Link>
+                Plots
+              </a>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 type="button"
-                className="p-2 rounded-xl text-slate-700 hover:text-brand-orange hover:bg-slate-100 focus:outline-none transition-colors"
+                className="p-2 text-white hover:text-brand-orange transition-colors"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -182,73 +318,95 @@ export default function Navbar({ settings }) {
           </div>
         </div>
 
-        {/* Mobile Luxury Sheet Drawer */}
+        {/* Mobile Menu Off-Canvas Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden mx-3 sm:mx-6 bg-white/98 backdrop-blur-2xl border border-slate-200 rounded-3xl p-5 shadow-2xl space-y-4 animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="lg:hidden bg-[#0d0f14] border-b border-slate-800 px-5 py-5 space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-3 duration-200 text-white">
             <div className="flex flex-col space-y-1">
-              {navLinks.map(link => {
+              {[
+                { label: 'Home', path: '/' },
+                { label: 'About Us', path: '/about' },
+                { label: 'Project Overview', path: '/project' },
+                { label: 'Site Gallery', path: '/gallery' },
+                { label: 'Contact & Map', path: '/contact' }
+              ].map(link => {
                 const isActive = location.pathname === link.path;
                 return (
                   <Link
                     key={link.path}
                     to={link.path}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-between ${
+                    className={`px-3 py-2.5 rounded-sm text-sm font-semibold transition-colors flex items-center justify-between ${
                       isActive
-                        ? 'bg-orange-50 text-brand-orange font-bold'
-                        : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                        ? 'bg-brand-orange text-white font-bold'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
                     <span>{link.label}</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-500" />
                   </Link>
                 );
               })}
 
+              {/* Mobile Brochure Download Links */}
+              <div className="pt-2 border-t border-slate-800 space-y-1">
+                <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Project Downloads
+                </div>
+                <a
+                  href="/assets/skandha_brochure.pdf"
+                  download="Skandha_Group_Kadthal_Brochure.pdf"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 text-xs text-slate-300 hover:text-white flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-brand-orange" />
+                    <span>Download Project Brochure (PDF)</span>
+                  </span>
+                  <Download className="w-4 h-4 text-slate-500" />
+                </a>
+                <a
+                  href="/assets/skandha_flyer.pdf"
+                  download="Skandha_Group_Kadthal_Flyer.pdf"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-3 py-2 text-xs text-slate-300 hover:text-white flex items-center justify-between"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-brand-orange" />
+                    <span>Download Project Flyer (PDF)</span>
+                  </span>
+                  <Download className="w-4 h-4 text-slate-500" />
+                </a>
+              </div>
+
+              {/* Dedicated Plot Availability Link */}
               <a
                 href="/plots"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-bold text-brand-orange hover:bg-orange-50 flex items-center justify-between"
+                className="mt-2 px-4 py-3 rounded-sm text-xs font-bold uppercase tracking-wider bg-brand-orange hover:bg-brand-orange-dark text-white flex items-center justify-between shadow-md"
               >
                 <span>Interactive Plot Availability (2D/3D)</span>
-                <ExternalLink className="w-4 h-4 text-brand-orange" />
+                <ExternalLink className="w-4 h-4" />
               </a>
 
               <Link
                 to="/admin/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-between"
+                className="px-3 py-2.5 rounded-sm text-xs font-semibold text-slate-400 hover:text-emerald-400 flex items-center justify-between"
               >
                 <span className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span>Admin Staff Portal</span>
                 </span>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
+                <ChevronRight className="w-4 h-4 text-slate-600" />
               </Link>
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 space-y-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsEnquiryModalOpen(true);
-                }}
-                className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3 rounded-xl text-sm shadow-xs transition-colors flex items-center justify-center gap-2"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Schedule Private Visit</span>
-              </button>
-              <div className="text-[11px] text-center text-slate-500 pt-1">
-                DTCP: {dtcpNo} &bull; TS RERA: {reraNo}
-              </div>
             </div>
           </div>
         )}
       </header>
 
-      {/* Reusable Enquiry / Visit Modal */}
+      {/* Enquiry Modal */}
       <EnquiryModal
         isOpen={isEnquiryModalOpen}
         onClose={() => setIsEnquiryModalOpen(false)}

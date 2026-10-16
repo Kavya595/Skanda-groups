@@ -23,13 +23,28 @@ import {
   Moon,
   Layers,
   Home,
-  Download
+  Download,
+  PhoneCall,
+  Mail,
+  Send,
+  Star,
+  Play,
+  Award,
+  ChevronRight,
+  MessageCircle,
+  Clock,
+  Share2
 } from 'lucide-react';
-import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent } from '../api/client';
+import {
+  fetchPublicSettings,
+  fetchPlotStats,
+  fetchGallery,
+  trackActivityEvent,
+  submitLead
+} from '../api/client';
 import EnquiryModal from '../components/EnquiryModal';
 import Lightbox from '../components/Lightbox';
 import SpecialLandmarkView from '../components/SpecialLandmarkView';
-import SectionNavPill from '../components/SectionNavPill';
 import ScrollReveal from '../components/ScrollReveal';
 import TiltCard from '../components/TiltCard';
 import CountUp from '../components/CountUp';
@@ -43,12 +58,27 @@ export default function HomePage() {
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [activeFaqCategory, setActiveFaqCategory] = useState('All');
   const [selectedPhotoModal, setSelectedPhotoModal] = useState(null);
+  const [activeProjectId, setActiveProjectId] = useState(2);
 
-  // Luxury Villa Concepts State
+  // Villa Concepts State
   const [activeVillaConfig, setActiveVillaConfig] = useState('183');
 
-  // Twilight Architectural Lighting Showcase State
+  // Twilight Lighting Showcase State
   const [activeLightingIndex, setActiveLightingIndex] = useState(0);
+
+  // Embedded "Book a Site Visit" Form State (JB Infra Inspired)
+  const [visitFormData, setVisitFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    preferredContactMethod: 'whatsapp',
+    message: 'Requesting an escorted site visit to Skandha Group Kadthal project.',
+    consent: true,
+    hp_website: ''
+  });
+  const [visitLoading, setVisitLoading] = useState(false);
+  const [visitSuccess, setVisitSuccess] = useState(null);
+  const [visitError, setVisitError] = useState('');
 
   useEffect(() => {
     trackActivityEvent('layout_opened', null, { source: 'homepage' });
@@ -56,6 +86,11 @@ export default function HomePage() {
     fetchPlotStats().then(res => res.success && setStats(res.stats)).catch(console.error);
     fetchGallery().then(res => res.success && setGallery(res.items.slice(0, 6))).catch(console.error);
   }, []);
+
+  const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
+  const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
+  const contactEmail = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
+  const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
 
   const marqueeItems = [
     'DTCP SANCTIONED TLP NO. 87/2024/H',
@@ -218,6 +253,31 @@ export default function HomePage() {
     { title: '2 Years Maintenance', desc: 'Complimentary security & comprehensive site maintenance for 2 years.', icon: ShieldCheck }
   ];
 
+  // Verified Client Testimonials (JB Infra Reference Style)
+  const testimonials = [
+    {
+      name: 'Dr. K. Srinivas Rao',
+      location: 'Hyderabad',
+      rating: 5,
+      comment: 'Investing with Skandha Group at Kadthal was one of the smoothest real estate decisions for my family. The 100% DTCP sanction and TS RERA documentation gave us complete peace of mind, and the location near Maisigandi Temple is spiritually serene and commercially prime.',
+      highlight: '100% Transparent Documentation'
+    },
+    {
+      name: 'Rameshwar Reddy',
+      location: 'NRI Investor, USA',
+      rating: 5,
+      comment: 'The on-site development reality matches the promises completely: 40ft wide blacktop roads, overhead water tank, and beautiful avenue plantations. Being on Srisailam Highway and minutes from the Mucherla Future City corridor guarantees massive appreciation.',
+      highlight: 'Exceptional Capital Growth Corridor'
+    },
+    {
+      name: 'V. Lakshmi Prasanna',
+      location: 'Secunderabad',
+      rating: 5,
+      comment: 'We purchased an East-facing 240 Sq.Yd plot for constructing our custom weekend villa. The Vasthu alignment is impeccable, the park space is lush and peaceful, and spot registration was handled with absolute clarity and professionalism.',
+      highlight: 'Authentic Vasthu Precision'
+    }
+  ];
+
   const faqs = [
     {
       category: 'Legal & Approvals',
@@ -262,122 +322,433 @@ export default function HomePage() {
     ? faqs
     : faqs.filter(f => f.category === activeFaqCategory);
 
+  const handleVisitFormSubmit = async (e) => {
+    e.preventDefault();
+    setVisitError('');
+    setVisitLoading(true);
+
+    try {
+      const res = await submitLead(visitFormData);
+      if (res.success) {
+        setVisitSuccess(res);
+        trackActivityEvent('enquiry_submitted', null, { source: 'homepage_visit_section' });
+        if (res.whatsappUrl) {
+          try {
+            window.open(res.whatsappUrl, '_blank', 'noopener,noreferrer');
+          } catch {
+            // popup blocked fallback
+          }
+        }
+      } else {
+        setVisitError(res.error || 'Failed to submit site visit request');
+      }
+    } catch (err) {
+      setVisitError(err.message || 'Error sending request');
+    } finally {
+      setVisitLoading(false);
+    }
+  };
+
   return (
-    <div className="pb-20 overflow-hidden bg-white relative">
-      {/* Modern In-Page Sticky Section Navigation Pill */}
-      <SectionNavPill />
+    <div className="pb-20 overflow-hidden bg-[#000000] text-slate-100 relative">
+      {/* ========================================================== */}
+      {/* 1. CLEAN HERO BANNER IMAGE (ZERO CONTENT OVER BACKGROUND)   */}
+      {/* ========================================================== */}
+      <section className="relative w-full overflow-hidden bg-black min-h-[420px] sm:min-h-[480px] lg:min-h-[540px] flex items-end">
+        {/* Clean Full-Width Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/assets/hero_cover.jpg"
+            alt="Skandha Group Plotted Community Kadthal"
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Subtle bottom shadow gradient to anchor the 3-feature ribbon */}
+          <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+        </div>
+      </section>
 
       {/* ========================================================== */}
-      {/* 1. ELEGANT SIDE-BY-SIDE HERO SECTION                      */}
+      {/* 2. CONNECTED 3-FEATURE RIBBON (JB INFRA SIGNATURE)         */}
       {/* ========================================================== */}
-      <section className="relative bg-gradient-to-b from-orange-50/40 via-white to-slate-50/60 pt-4 pb-12 sm:pt-6 sm:pb-16 lg:py-16 border-b border-slate-100 overflow-hidden">
-        {/* Subtle Ambient Backing Glow */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-orange-400/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-80 h-80 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
+      <section className="relative -mt-16 sm:-mt-20 lg:-mt-24 z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Connected 3-Feature Ribbon With Chevron */}
+        <div className="feature-ribbon-wrap">
+          {/* Feature 1 (Left Box: White) */}
+          <div className="feature-ribbon-item">
+            <div className="feature-ribbon-icon shrink-0">
+              <img
+                src="/assets/feature_icon_handshake.png"
+                alt="25 Years of Trusted Real Estate Excellence"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-white leading-tight">
+                25 Years of Trusted Real Estate Excellence
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Our expertise ensures every venture is planned and executed to perfection, offering secure investments and lasting value.
+              </p>
+            </div>
+          </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Left Column: Text & Actions (7 cols) */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Regulatory Trust Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-bold text-emerald-800 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>DTCP Approved TLP NO. 87/2024/H &bull; TS RERA PO2400009081</span>
+          {/* Feature 2 (Middle Box: Brand Orange with Chevron Arrow) */}
+          <div className="feature-ribbon-item">
+            <div className="feature-ribbon-icon shrink-0">
+              <img
+                src="/assets/feature_icon_map.png"
+                alt="Prime Locations for Future Growth"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+            <div className="space-y-1.5 text-white">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-white leading-tight feature-ribbon-title">
+                Prime Locations for Future Growth
+              </h3>
+              <p className="text-xs sm:text-sm text-white/95 leading-relaxed feature-ribbon-text">
+                Invest in plots and villas designed for long-term appreciation and a premium lifestyle in high-growth corridors.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature 3 (Right Box: White) */}
+          <div className="feature-ribbon-item">
+            <div className="feature-ribbon-icon shrink-0">
+              <img
+                src="/assets/feature_icon_tailored.png"
+                alt="Tailored to Your Needs"
+                className="w-12 h-12 object-contain"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-white leading-tight">
+                Tailored to Your Needs
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                At Skandha Group, we believe in creating homes that reflect your dreams. From customizable plots to modern villas, every project is designed with your lifestyle in mind.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Sections Wrapper */}
+      <div className="space-y-16 mt-8 sm:mt-10">
+
+      {/* ========================================================== */}
+      {/* 3. PRIME PROJECTS CARDS (ALL 6 CARDS VISIBLE IN WINDOW)    */}
+      {/* ========================================================== */}
+      <section id="projects" className="bg-[#000000] text-white py-2 sm:py-4 scroll-mt-20 border-b border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Heading: Skandha Group */}
+          <div className="text-center mb-5 sm:mb-6">
+            <div className="inline-flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold uppercase tracking-widest text-white">
+              <span className="w-3.5 h-3.5 bg-brand-orange rounded-sm inline-block shadow-sm" />
+              <h2 className="font-bold tracking-widest uppercase">
+                SKANDHA GROUP
+              </h2>
+            </div>
+            {/* Orange horizontal accent rule matching Reference */}
+            <div className="w-40 sm:w-52 h-[2px] bg-brand-orange mx-auto mt-2" />
+          </div>
+
+          {/* 6 Cards Grid: Exactly 6 cards, no titles under images, no play buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+            {[
+              {
+                id: 1,
+                name: 'Pristine Plotted Community',
+                image: '/assets/site_bt_roads.jpg',
+                link: '/plots'
+              },
+              {
+                id: 2,
+                name: 'Nature Valley Villas',
+                image: '/assets/luxury_villa_day.jpg',
+                link: '/#villas'
+              },
+              {
+                id: 3,
+                name: 'Serene Boulevard Enclave',
+                image: '/assets/avenue_lighting.jpg',
+                link: '/#lighting'
+              },
+              {
+                id: 4,
+                name: 'Resort Pool Pavilion',
+                image: '/assets/pool_lighting.jpg',
+                link: '/about'
+              },
+              {
+                id: 5,
+                name: 'Twilight Signature Estates',
+                image: '/assets/villa_twilight_lighting.jpg',
+                link: '/#lighting'
+              },
+              {
+                id: 6,
+                name: 'Grand Master Layout',
+                image: '/assets/site_entrance_arch.jpg',
+                link: '/plots'
+              }
+            ].map((proj) => {
+              const isActive = activeProjectId === proj.id;
+              return (
+                <div
+                  key={proj.id}
+                  onClick={() => setActiveProjectId(isActive ? null : proj.id)}
+                  className={`transition-all duration-300 rounded-2xl p-2.5 cursor-pointer group relative ${
+                    isActive
+                      ? 'border-t-4 border-b-4 border-brand-orange bg-slate-900/60 shadow-2xl shadow-orange-500/20'
+                      : 'border-t-4 border-b-4 border-transparent hover:border-t-brand-orange/60 hover:border-b-brand-orange/60'
+                  }`}
+                >
+                  {/* Clean Image Container without play button or text */}
+                  <div className="aspect-[16/10] sm:aspect-video w-full rounded-xl overflow-hidden relative bg-slate-950 border border-slate-800/80 shadow-lg">
+                    <img
+                      src={proj.image}
+                      alt={proj.name}
+                      className="w-full h-full object-cover transform group-hover:scale-106 transition-transform duration-700 ease-out"
+                    />
+                    {/* Subtle Ambient Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-colors duration-300 pointer-events-none" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 4. JB INFRA SIGNATURE: COMPANY STATISTICS COUNTER STRIP    */}
+      {/* ========================================================== */}
+      <section className="bg-[#0b0e14] py-16 border-y border-slate-800 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {/* Stat 1 */}
+            <div className="space-y-2">
+              <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center mx-auto mb-3">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+                <CountUp end={100} suffix="%" duration={1500} />
+              </div>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                100% Legal Compliance
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                DTCP Sanctioned &amp; TS RERA Registered
+              </p>
+            </div>
+
+            {/* Stat 2 */}
+            <div className="space-y-2">
+              <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center mx-auto mb-3">
+                <Compass className="w-6 h-6" />
+              </div>
+              <div className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+                <CountUp end={10.5} decimals={1} suffix=" Ac" duration={1700} />
+              </div>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                10.50 Acres Developed
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Gated Plotted Master Community
+              </p>
+            </div>
+
+            {/* Stat 3 */}
+            <div className="space-y-2">
+              <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center mx-auto mb-3">
+                <Home className="w-6 h-6" />
+              </div>
+              <div className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+                <CountUp end={96} duration={1600} />
+              </div>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                96 Surveyed Plots
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                183 to 672 Sq.Yards Ready for Spot Registration
+              </p>
+            </div>
+
+            {/* Stat 4 */}
+            <div className="space-y-2">
+              <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center mx-auto mb-3">
+                <Award className="w-6 h-6" />
+              </div>
+              <div className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+                <CountUp end={40} suffix="' & 33'" duration={1500} />
+              </div>
+              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+                Wide Asphalt Roads
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                Paired with Ac. 0.758 Green Central Park
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 5. JB INFRA SIGNATURE: ABOUT SKANDHA GROUPS (2-COL)        */}
+      {/* ========================================================== */}
+      <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left: Feature Visual with Play/Zoom Trigger */}
+          <div className="lg:col-span-6 relative">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100 bg-slate-900 group">
+              <img
+                src="/assets/site_entrance_arch.jpg"
+                alt="Skandha Group Grand Entrance Arch & Security Portal"
+                className="w-full h-[380px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+
+              <div className="absolute top-4 left-4 bg-[#0c0f17]/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700">
+                Grand Entrance Arch &bull; 24/7 Security
               </div>
 
-              {/* Headline - User requirement: "and i dont want to hithlight alekya brundavan name dont use it as heading" */}
-              <h1 className="font-serif text-3xl sm:text-5xl lg:text-[3.25rem] font-black tracking-tight leading-[1.12] text-slate-900">
-                Locate Yourself At The Most <span className="text-brand-orange">Desirable Place</span>.
-              </h1>
+              {/* Center Play/Enlarge Button */}
+              <button
+                onClick={() => setSelectedPhotoModal({
+                  title: 'Grand Entrance Arch & Security Portal',
+                  category: 'Gated Security',
+                  desc: 'Completed entrance portal with 24/7 security cabin, CCTV surveillance, and boundary wall fencing at Kadthal.',
+                  image: '/assets/site_entrance_arch.jpg'
+                })}
+                className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-brand-orange/90 text-white flex items-center justify-center shadow-2xl hover:scale-110 hover:bg-brand-orange transition-all duration-300 group-hover:shadow-orange-500/50"
+                aria-label="Inspect Entrance Arch"
+              >
+                <Maximize2 className="w-6 h-6" />
+              </button>
 
-              {/* Sub-headline / Content */}
-              <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl">
-                Skandha Group offers 96 vastu-compliant residential villa plots adjoining Srisailam Highway (NH 765), just 1 minute to historic Maisigandi Temple and minutes from the booming Mucherla Future City &amp; Pharma City corridor.
-              </p>
+              <div className="absolute bottom-4 left-4 right-4 text-white text-xs">
+                <span className="font-bold">Sanctioned Reality:</span> Authentic on-site gated entrance portal at Kadthal, Srisailam Highway.
+              </div>
+            </div>
+          </div>
 
-              {/* CTAs */}
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+          {/* Right: Narrative & Legal Pedigree */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                ABOUT US
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+                We Provide The Beauty of Your Home
+              </h2>
+            </div>
+
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-light">
+              <strong className="text-white">Skandha Group</strong> has been a trusted name in plotted real estate development, dedicated to creating affordable, high-growth, and legally pristine living spaces in and around Hyderabad.
+            </p>
+            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              With a strong reputation for statutory compliance and architectural rigor, we specialize in DTCP and TS RERA sanctioned plotted layouts along Telangana's premier development corridors, including the high-speed Srisailam Highway (NH 765), Mucherla Future City, and Outer Ring Road (ORR) growth hubs.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              <Link
+                to="/about"
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 rounded-lg shadow-md hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5"
+              >
+                <span>About More</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+
+              <button
+                onClick={() => setIsEnquiryOpen(true)}
+                className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 rounded-lg transition-all border border-slate-800"
+              >
+                <Calendar className="w-4 h-4 text-brand-orange" />
+                <span>Schedule Visit</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 6. JB INFRA SIGNATURE: WHY CHOOSE SKANDHA GROUP            */}
+      {/* ========================================================== */}
+      <section className="bg-[#080d18] py-20 border-y border-slate-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            {/* Left: Checklist */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                  <span className="h-px w-6 bg-brand-orange/40" />
+                  <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                  WHY CHOOSE US
+                  <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                  <span className="h-px w-6 bg-brand-orange/40" />
+                </div>
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+                  Why Choose Skandha Group?
+                </h2>
+              </div>
+
+              {/* Caret Checklist Items */}
+              <ul className="space-y-3.5 pt-2">
+                {[
+                  '100% Clear Titles & Instant Spot Registration',
+                  'DTCP Sanctioned Layout (TLP NO. 87/2024/H)',
+                  'TS RERA Registered Legal Protection (PO2400009081)',
+                  'Prime Srisailam Highway (NH 765) & Future City Orbit',
+                  '100% Vasthu Compliant East & West Alignments',
+                  '40ft & 33ft Heavy-Duty Blacktop B.T Roads with Paver Curbs',
+                  'Dedicated Overhead Potable Reservoir & Subsurface Drainage',
+                  'Ac. 0.758 Cents Landscaped Central Green Park with Jogging Trail',
+                  '2 Years Complimentary Maintenance & 24/7 Gated Security Cabin',
+                  'Pre-Approved Bank Loans up to 75% with Leading Banks (SBI, HDFC, ICICI)'
+                ].map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-3 text-xs sm:text-sm text-slate-300 font-medium">
+                    <span className="w-5 h-5 rounded-full bg-orange-950/80 border border-brand-orange/40 text-brand-orange flex items-center justify-center shrink-0 mt-0.5">
+                      <ChevronRight className="w-3.5 h-3.5 text-brand-orange stroke-[3]" />
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="pt-4">
                 <a
                   href="/assets/skandha_brochure.pdf"
                   download="Skandha_Group_Kadthal_Brochure.pdf"
-                  className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-7 py-3.5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
-                  title="Download Official Project Brochure PDF"
+                  className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-lg shadow-md transition-all"
                 >
-                  <Download className="w-5 h-5" />
-                  <span>Download Brochure</span>
+                  <Download className="w-4 h-4" />
+                  <span>Download Sanctioned Brochure</span>
                 </a>
-
-                <button
-                  type="button"
-                  onClick={() => setIsEnquiryOpen(true)}
-                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-2xl text-sm sm:text-base font-bold shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
-                >
-                  <Calendar className="w-4 h-4 text-orange-400" />
-                  <span>Schedule Site Visit</span>
-                </button>
-
-                <Link
-                  to="/plots"
-                  className="inline-flex items-center justify-center gap-1.5 text-slate-700 hover:text-brand-orange font-bold text-sm px-3 py-3.5 rounded-xl transition-colors"
-                >
-                  <span>Explore Plots</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              {/* Key Highlights Grid */}
-              <div className="pt-6 border-t border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-orange-300 transition-colors">
-                  <div className="font-serif font-extrabold text-2xl text-brand-orange">
-                    <CountUp end={96} duration={1500} />
-                  </div>
-                  <div className="font-bold text-slate-800 text-xs mt-0.5">Surveyed Plots</div>
-                  <div className="text-slate-500 text-[11px]">DTCP Approved</div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-emerald-300 transition-colors">
-                  <div className="font-serif font-extrabold text-2xl text-emerald-600">
-                    <CountUp end={10.5} decimals={1} suffix=" Ac" duration={1700} />
-                  </div>
-                  <div className="font-bold text-slate-800 text-xs mt-0.5">Gated Layout</div>
-                  <div className="text-slate-500 text-[11px]">Ac. 0.758 Park</div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-amber-300 transition-colors">
-                  <div className="font-serif font-extrabold text-2xl text-amber-600">
-                    <CountUp end={40} suffix="' & 33'" duration={1600} />
-                  </div>
-                  <div className="font-bold text-slate-800 text-xs mt-0.5">Wide BT Roads</div>
-                  <div className="text-slate-500 text-[11px]">Smooth Asphalt</div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-orange-300 transition-colors">
-                  <div className="font-serif font-extrabold text-2xl text-brand-orange">
-                    <CountUp end={100} suffix="%" duration={1400} />
-                  </div>
-                  <div className="font-bold text-slate-800 text-xs mt-0.5">Vasthu Compliant</div>
-                  <div className="text-slate-500 text-[11px]">Spot Registration</div>
-                </div>
               </div>
             </div>
 
-            {/* Right Column: Clean Image Only (5 cols) - User explicitly instructed: "i dont want text on hero section image", "keep text and image a side", "dont use 3d layout in hero section" */}
+            {/* Right: Feature Landscape Photo */}
             <div className="lg:col-span-5 relative">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 group">
+              <div className="relative rounded-3xl overflow-hidden shadow-xl border-4 border-slate-800 bg-slate-900 group">
                 <img
-                  src="/assets/hero_cover.jpg"
-                  alt="Plotted Community at Kadthal, Srisailam Highway"
-                  className="w-full h-[360px] sm:h-[450px] lg:h-[500px] object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                  src="/assets/site_landscape_park.jpg"
+                  alt="Ac. 0.758 Landscaped Central Park Reserve"
+                  className="w-full h-[400px] object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                {/* Subtle Clean Bottom Location Bar (Not covering the image faces) */}
-                <div className="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-md text-white p-3 rounded-2xl border border-slate-700/60 shadow-lg flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <MapPin className="w-4 h-4 text-brand-orange shrink-0" />
-                    <span className="text-xs font-bold truncate">Kadthal, Srisailam Highway (NH 765)</span>
+                <div className="absolute top-4 left-4 bg-[#0c0f17]/90 backdrop-blur-md text-emerald-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700">
+                  Ac. 0.758 Central Park Reserve
+                </div>
+                <div className="absolute bottom-4 left-4 right-4 bg-black/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-slate-800">
+                  <div className="font-bold text-white text-xs">
+                    Sanctioned Green Lung Zone
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/80 shrink-0 ml-2">
-                    1 Min to Temple
-                  </span>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    Lush lawn turf, flowering shade trees, children play fixtures, and paved jogging trail.
+                  </div>
                 </div>
               </div>
             </div>
@@ -386,75 +757,36 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 2. INFINITE SUPREME LUXURY MARQUEE RIBBON                  */}
-      {/* ========================================================== */}
-      <div className="bg-slate-900 py-4.5 border-y border-slate-800 overflow-hidden shadow-inner">
-        <div className="animate-marquee flex items-center gap-8 whitespace-nowrap text-xs font-bold uppercase tracking-widest text-slate-300">
-          {[...marqueeItems, ...marqueeItems].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-6 shrink-0">
-              <span className="text-orange-400">&#10022;</span>
-              <span className="hover:text-white transition-colors">{item}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Content Sections Wrapper with Spacing */}
-      <div className="space-y-24 mt-20 sm:mt-24">
-
-      {/* ========================================================== */}
-      {/* 3. EDITORIAL QUOTATION & BRAND PHILOSOPHY                  */}
-      {/* ========================================================== */}
-      <section id="overview" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
-        <ScrollReveal direction="up">
-          <TiltCard
-            maxTilt={4}
-            className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/40 rounded-3xl p-8 sm:p-14 border border-orange-200/60 shadow-sm text-center group"
-          >
-            <Quote className="w-12 h-12 text-brand-orange/20 mx-auto mb-4 group-hover:scale-110 group-hover:text-brand-orange/30 transition-all duration-300" />
-            <blockquote className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal text-slate-900 leading-snug tracking-tight">
-              &ldquo;A harmonious plotted sanctuary where authentic Vasthu precision meets the future economic powerhouse of South Hyderabad.&rdquo;
-            </blockquote>
-            <div className="mt-6 flex flex-col items-center justify-center">
-              <div className="font-bold text-sm tracking-wider uppercase text-brand-orange">
-                Skandha Group Development Pledge
-              </div>
-              <div className="text-xs text-slate-500 mt-0.5">
-                Kadthal Mandal &bull; 100% Clear Title &bull; Immediate Spot Registration
-              </div>
-            </div>
-          </TiltCard>
-        </ScrollReveal>
-      </section>
-
-      {/* ========================================================== */}
-      {/* 4. BESPOKE VILLA CONCEPTS & ARCHITECTURAL SPLENDOR (NEW)    */}
+      {/* 7. BESPOKE VILLA CONCEPTS & ARCHITECTURAL SPLENDOR         */}
       {/* ========================================================== */}
       <section id="villas" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
         <ScrollReveal direction="up">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b border-slate-800">
             <div className="space-y-2 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
-                <Home className="w-3.5 h-3.5" />
-                <span>Architectural Vision &bull; Bespoke Villas</span>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                VILLA ARCHITECTURE
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
               </div>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
                 Craft Your Signature Villa Sanctuary
               </h2>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
                 Our gated venture offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+            <div className="flex items-center gap-2 bg-[#0e121b] p-1.5 rounded-xl border border-slate-800 shrink-0">
               {Object.keys(villaConfigs).map(key => (
                 <button
                   key={key}
                   onClick={() => setActiveVillaConfig(key)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                     activeVillaConfig === key
-                      ? 'bg-white text-brand-orange shadow-xs scale-105'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-brand-orange text-white shadow-xs'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   {villaConfigs[key].sqYards}
@@ -467,21 +799,21 @@ export default function HomePage() {
         {/* Villa Showcase Card */}
         <ScrollReveal direction="up" delay={150}>
           <TiltCard
-            maxTilt={5}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-slate-50/70 rounded-3xl border border-slate-200/90 p-6 sm:p-10 shadow-sm hover:shadow-xl transition-all duration-300"
+            maxTilt={4}
+            className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[#0b0e17] rounded-3xl border border-slate-800 p-6 sm:p-10 shadow-2xl transition-all duration-300"
           >
             {/* Left: High-End Villa Daylight Photography */}
-            <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
+            <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-800 bg-black">
               <img
                 src="/assets/luxury_villa_day.jpg"
                 alt="Bespoke Contemporary Luxury Villa at Skandha Group Kadthal"
-                className="w-full h-[360px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-[360px] sm:h-[440px] object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
+              <div className="absolute top-4 left-4 bg-[#0c0f17]/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 flex items-center gap-2">
                 <Sun className="w-3.5 h-3.5 text-amber-400" />
                 <span>Daylight Villa Concept</span>
               </div>
-              <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-slate-900 text-xs font-bold px-3.5 py-1.5 rounded-xl shadow border border-slate-200">
+              <div className="absolute bottom-4 right-4 bg-black/90 backdrop-blur-md text-white text-xs font-bold px-3.5 py-1.5 rounded-lg shadow border border-slate-800">
                 <span>{villaConfigs[activeVillaConfig].builtUp}</span>
               </div>
             </div>
@@ -489,41 +821,41 @@ export default function HomePage() {
             {/* Right: Villa Specifications & Architectural Breakdown */}
             <div className="lg:col-span-5 space-y-6">
               <div className="space-y-2">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3 py-1 rounded-md">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-brand-orange bg-orange-950/70 border border-orange-500/30 px-3 py-1 rounded-md">
                   {villaConfigs[activeVillaConfig].dimension} Dimension
                 </span>
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900">
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-white">
                   {villaConfigs[activeVillaConfig].type}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   {villaConfigs[activeVillaConfig].desc}
                 </p>
               </div>
 
               <div className="space-y-3 pt-2">
-                <div className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                <div className="text-xs font-bold text-slate-200 uppercase tracking-wider">
                   Architectural Highlights:
                 </div>
                 <ul className="space-y-2.5">
                   {villaConfigs[activeVillaConfig].highlights.map((h, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <li key={i} className="flex items-start gap-2.5 text-xs text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                       <span className="leading-snug">{h}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+              <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setIsEnquiryOpen(true)}
-                  className="btn-shimmer bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-md hover:shadow-orange-500/30 transition-all hover:-translate-y-0.5"
+                  className="bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-lg shadow-md hover:shadow-orange-500/30 transition-all hover:-translate-y-0.5"
                 >
                   Request Villa Floorplans
                 </button>
                 <Link
                   to="/project"
-                  className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs font-semibold px-5 py-3.5 rounded-xl transition-all hover:-translate-y-0.5"
+                  className="bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg transition-all"
                 >
                   View Plot Grid Matrix
                 </Link>
@@ -533,36 +865,38 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
-
       {/* ========================================================== */}
-      {/* 5. TWILIGHT AMBIANCE & CURATED LIGHTING SHOWCASE (NEW)      */}
+      {/* 8. TWILIGHT AMBIANCE & CURATED LIGHTING SHOWCASE           */}
       {/* ========================================================== */}
       <section id="lighting" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-800">
             <div className="space-y-2 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold uppercase tracking-wider text-amber-700">
-                <Moon className="w-3.5 h-3.5" />
-                <span>Evening Illumination &bull; Curated Lighting</span>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                TWILIGHT ILLUMINATION
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
               </div>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
                 Atmospheric Evening Ambiance
               </h2>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
                 Experience the tranquility of dusk across our landscaped avenues. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
               </p>
             </div>
 
-            {/* Interactive Scene Selector */}
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0">
+            {/* Scene Selector */}
+            <div className="flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 shrink-0">
               {lightingScenes.map((scene, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveLightingIndex(idx)}
-                  className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3.5 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                     activeLightingIndex === idx
-                      ? 'bg-white text-brand-orange shadow-xs scale-105'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-brand-orange text-white shadow-xs'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Scene {idx + 1}
@@ -574,21 +908,20 @@ export default function HomePage() {
 
         {/* Big Spotlight Card */}
         <ScrollReveal direction="up" delay={120}>
-          <div className="relative rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-900 group">
-            <div className="relative h-[380px] sm:h-[520px] overflow-hidden">
+          <div className="relative rounded-3xl overflow-hidden border border-slate-800 shadow-xl bg-slate-900 group">
+            <div className="relative h-[380px] sm:h-[500px] overflow-hidden">
               <img
                 src={lightingScenes[activeLightingIndex].image}
                 alt={lightingScenes[activeLightingIndex].title}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
-              {/* Subtle Twilight Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
 
               <div className="absolute top-6 left-6 flex flex-wrap items-center gap-2">
-                <span className="bg-orange-500/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-xl shadow-xs">
+                <span className="bg-brand-orange text-white text-xs font-bold px-3 py-1 rounded-lg shadow-xs">
                   {lightingScenes[activeLightingIndex].badge}
                 </span>
-                <span className="bg-slate-900/80 backdrop-blur-md text-slate-200 text-xs font-medium px-3 py-1 rounded-xl border border-white/20">
+                <span className="bg-[#0c0f17]/80 backdrop-blur-md text-slate-200 text-xs font-medium px-3 py-1 rounded-lg border border-white/20">
                   {lightingScenes[activeLightingIndex].tag}
                 </span>
               </div>
@@ -608,7 +941,7 @@ export default function HomePage() {
 
                 <button
                   onClick={() => setSelectedPhotoModal(lightingScenes[activeLightingIndex])}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all hover:scale-105 shrink-0 flex items-center gap-1.5"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition-all hover:scale-105 shrink-0 flex items-center gap-1.5"
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
                   <span>Enlarge View</span>
@@ -617,65 +950,33 @@ export default function HomePage() {
             </div>
           </div>
         </ScrollReveal>
-
-        {/* 3 Quick Cards Grid for Direct Navigation */}
-        <ScrollReveal direction="up" delay={200}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {lightingScenes.map((scene, idx) => {
-              const isActive = activeLightingIndex === idx;
-              return (
-                <TiltCard
-                  key={idx}
-                  maxTilt={5}
-                  onClick={() => setActiveLightingIndex(idx)}
-                  className={`p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center gap-4 ${
-                    isActive
-                      ? 'bg-orange-50/80 border-brand-orange shadow-md ring-1 ring-orange-500/30 scale-[1.02]'
-                      : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-md'
-                  }`}
-                >
-                  <img
-                    src={scene.image}
-                    alt={scene.title}
-                    className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 shadow-xs"
-                  />
-                  <div className="space-y-0.5">
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
-                      {scene.badge}
-                    </div>
-                    <div className="text-xs font-bold text-slate-900 leading-tight">
-                      {scene.title}
-                    </div>
-                  </div>
-                </TiltCard>
-              );
-            })}
-          </div>
-        </ScrollReveal>
       </section>
 
-
       {/* ========================================================== */}
-      {/* 6. ON-SITE INFRASTRUCTURE & REAL PHOTO GALLERY SHOWCASE    */}
+      {/* 9. ON-SITE INFRASTRUCTURE & REAL PHOTO GALLERY SHOWCASE    */}
       {/* ========================================================== */}
       <section id="developments" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 scroll-mt-24">
         <ScrollReveal direction="up">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-800">
             <div className="space-y-2 max-w-3xl">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200">
-                On-Site Reality &bull; Verified Construction
-              </span>
-              <h2 className="font-serif text-3xl sm:text-5xl font-bold text-slate-900 leading-tight">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                ON-SITE REALITY
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white leading-tight">
                 Project Amenities &amp; Infrastructure
               </h2>
-              <p className="text-sm sm:text-base text-slate-600 max-w-2xl font-light leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl font-light leading-relaxed">
                 Authentic on-site development photography highlighting genuine completed avenues, landscaped park reserves, water utilities, and gated security portals.
               </p>
             </div>
 
             <button
               onClick={() => setIsEnquiryOpen(true)}
-              className="btn-shimmer inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-5 py-3 rounded-xl shadow-xs transition-all hover:-translate-y-0.5 shrink-0"
+              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-lg shadow-md transition-all hover:-translate-y-0.5 shrink-0"
             >
               <Calendar className="w-4 h-4" />
               <span>Book Escorted Site Tour</span>
@@ -686,36 +987,36 @@ export default function HomePage() {
         {/* 8 Photo Grid Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {onSiteDevelopments.map((item, idx) => (
-            <ScrollReveal key={idx} delay={idx * 60} direction="up">
+            <ScrollReveal key={idx} delay={idx * 50} direction="up">
               <TiltCard
-                maxTilt={6}
+                maxTilt={5}
                 onClick={() => setSelectedPhotoModal(item)}
-                className="group bg-white rounded-3xl overflow-hidden border border-slate-200/90 shadow-xs hover:shadow-xl hover:border-orange-200 transition-all duration-300 flex flex-col cursor-pointer h-full"
+                className="group bg-[#0b0e17] rounded-2xl overflow-hidden border border-slate-800 shadow-md hover:shadow-2xl hover:border-brand-orange/50 transition-all duration-300 flex flex-col cursor-pointer h-full"
               >
-                <div className="relative h-56 overflow-hidden bg-slate-100">
+                <div className="relative h-52 overflow-hidden bg-slate-900">
                   <img
                     src={item.image}
                     alt={item.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
                   />
-                  <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
+                  <div className="absolute top-3 left-3 bg-[#0c0f17]/90 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-md border border-slate-700">
                     {item.category}
                   </div>
-                  <div className="absolute bottom-3 right-3 bg-white/95 text-brand-orange text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                  <div className="absolute bottom-3 right-3 bg-black/90 backdrop-blur-md text-brand-orange text-[10px] font-bold px-2.5 py-1 rounded-md shadow border border-slate-800">
                     {item.tag}
                   </div>
                 </div>
 
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-2">
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-2">
                   <div>
-                    <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
+                    <h3 className="font-bold text-sm text-white group-hover:text-brand-orange transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                    <p className="text-xs text-slate-400 leading-relaxed mt-1">
                       {item.desc}
                     </p>
                   </div>
-                  <div className="pt-2 text-xs font-semibold text-brand-orange flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                  <div className="pt-2 text-xs font-bold text-brand-orange flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                     <span>Inspect Development</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
@@ -727,19 +1028,23 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 7. COMPLETE 12 AMENITIES GRID                              */}
+      {/* 10. COMPLETE 12 AMENITIES GRID                             */}
       {/* ========================================================== */}
-      <section id="amenities" className="bg-slate-50/80 border-y border-slate-200/70 py-20 scroll-mt-24">
+      <section id="amenities" className="bg-[#080d18] border-y border-slate-900 py-20 scroll-mt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <ScrollReveal direction="up">
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-100/70 px-3.5 py-1 rounded-full">
-                Sanctioned Standards
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                SANCTIONED STANDARDS
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
                 Master Plan Features &amp; Infrastructure
               </h2>
-              <p className="text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-slate-400">
                 Built to high DTCP regulatory benchmarks ensuring long-term liveability and generational asset protection.
               </p>
             </div>
@@ -749,21 +1054,18 @@ export default function HomePage() {
             {amenities.map((item, idx) => {
               const IconComp = item.icon;
               return (
-                <ScrollReveal key={idx} delay={(idx % 4) * 70} direction="up">
-                  <TiltCard
-                    maxTilt={5}
-                    className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-lg hover:border-orange-200 transition-all duration-200 space-y-3 group h-full"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-orange-50 group-hover:bg-brand-orange text-brand-orange group-hover:text-white flex items-center justify-center transition-colors">
+                <ScrollReveal key={idx} delay={(idx % 4) * 60} direction="up">
+                  <div className="bg-[#0b0e17] p-6 rounded-2xl border border-slate-800 shadow-sm hover:shadow-xl hover:border-brand-orange/50 transition-all duration-200 space-y-3 group h-full">
+                    <div className="w-12 h-12 rounded-xl bg-orange-950/70 border border-orange-500/30 group-hover:bg-brand-orange text-brand-orange group-hover:text-white flex items-center justify-center transition-colors">
                       <IconComp className="w-6 h-6" />
                     </div>
-                    <h3 className="font-bold text-base text-slate-900 group-hover:text-brand-orange transition-colors">
+                    <h3 className="font-bold text-base text-white group-hover:text-brand-orange transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <p className="text-xs text-slate-400 leading-relaxed">
                       {item.desc}
                     </p>
-                  </TiltCard>
+                  </div>
                 </ScrollReveal>
               );
             })}
@@ -772,7 +1074,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 8. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER         */}
+      {/* 11. SPECIAL LANDMARK & LOCATION HIGHLIGHTS EXPLORER        */}
       {/* ========================================================== */}
       <section id="landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
         <ScrollReveal direction="up">
@@ -781,20 +1083,91 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 9. COMPREHENSIVE INTERACTIVE FAQ ACCORDION                 */}
+      {/* 12. JB INFRA SIGNATURE: TESTIMONIALS & CUSTOMER FEEDBACK   */}
       {/* ========================================================== */}
-      <section id="faqs" className="bg-slate-50/80 py-16 border-y border-slate-200/80 scroll-mt-24">
+      <section id="testimonials" className="bg-[#0b0e14] py-20 border-y border-slate-800 text-white scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+          <ScrollReveal direction="up">
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-8 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                TESTIMONIALS
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-8 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+                What Our Clients Say
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto font-light">
+                Hear authentic feedback from verified families and investors who have partnered with Skandha Group.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          {/* Testimonials 3-Card Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((item, idx) => (
+              <ScrollReveal key={idx} delay={idx * 100} direction="up">
+                <div className="bg-[#141824] rounded-2xl p-7 border border-slate-800 shadow-xl flex flex-col justify-between space-y-6 hover:border-brand-orange/40 transition-all duration-300 group h-full">
+                  <div className="space-y-4">
+                    {/* Star Rating */}
+                    <div className="flex items-center gap-1 text-amber-400">
+                      {[...Array(item.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-amber-400" />
+                      ))}
+                    </div>
+
+                    {/* Highlight Badge */}
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
+                      {item.highlight}
+                    </div>
+
+                    {/* Feedback Text */}
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed italic">
+                      &ldquo;{item.comment}&rdquo;
+                    </p>
+                  </div>
+
+                  {/* Author Info */}
+                  <div className="pt-4 border-t border-slate-800/80 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-brand-orange/20 border border-brand-orange/40 text-brand-orange font-bold text-sm flex items-center justify-center shrink-0">
+                      {item.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm text-white">
+                        {item.name}
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        {item.location} &bull; Verified Plot Owner
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 13. COMPREHENSIVE INTERACTIVE FAQ ACCORDION                */}
+      {/* ========================================================== */}
+      <section id="faqs" className="bg-[#080d18] py-16 border-y border-slate-900 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
           <ScrollReveal direction="up">
-            <div className="text-center space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200 inline-flex items-center gap-1.5">
-                <HelpCircle className="w-3.5 h-3.5" />
-                <span>Frequently Asked Questions</span>
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+            <div className="text-center space-y-2">
+              <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                FREQUENTLY ASKED QUESTIONS
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
                 Everything You Need to Know
               </h2>
-              <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
                 Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages.
               </p>
             </div>
@@ -809,10 +1182,10 @@ export default function HomePage() {
                   setActiveFaqCategory(cat);
                   setOpenFaqIndex(0);
                 }}
-                className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl transition-all ${
+                className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition-all ${
                   activeFaqCategory === cat
                     ? 'bg-brand-orange text-white shadow-xs'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    : 'bg-[#0b0e17] text-slate-300 hover:bg-slate-900 border border-slate-800'
                 }`}
               >
                 {cat}
@@ -828,27 +1201,27 @@ export default function HomePage() {
                 return (
                   <div
                     key={faq.q}
-                    className={`bg-white rounded-2xl border transition-all duration-200 overflow-hidden ${
+                    className={`bg-[#0b0e17] rounded-xl border transition-all duration-200 overflow-hidden ${
                       isOpen
-                        ? 'border-brand-orange/40 shadow-sm ring-1 ring-orange-500/10'
-                        : 'border-slate-200 hover:border-slate-300'
+                        ? 'border-brand-orange shadow-md ring-1 ring-orange-500/20'
+                        : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
                     <button
                       onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full px-5 sm:px-6 py-4.5 text-left flex items-center justify-between gap-4 transition-colors"
+                      className="w-full px-5 sm:px-6 py-4 text-left flex items-center justify-between gap-4 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
-                        <span className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                        <span className="text-sm sm:text-base font-bold text-white leading-snug">
                           {faq.q}
                         </span>
                       </div>
                       <div
                         className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
                           isOpen
-                            ? 'bg-orange-50 text-brand-orange rotate-180'
-                            : 'bg-slate-100 text-slate-500'
+                            ? 'bg-orange-500/20 text-brand-orange rotate-180'
+                            : 'bg-slate-900 text-slate-400 border border-slate-800'
                         }`}
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -856,7 +1229,7 @@ export default function HomePage() {
                     </button>
 
                     {isOpen && (
-                      <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50">
+                      <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/80 bg-black/40">
                         <p>{faq.a}</p>
                       </div>
                     )}
@@ -865,31 +1238,261 @@ export default function HomePage() {
               })}
             </div>
           </ScrollReveal>
-
-          {/* Still Have Questions Card */}
-          <ScrollReveal direction="up" delay={120}>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-center sm:text-left">
-                <h4 className="font-bold text-slate-900 text-sm sm:text-base">
-                  Have a specific query about an individual plot number?
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Our sales desk provides instant clarity on plot boundaries, current availability, and bank eligibility.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="btn-shimmer bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors shrink-0"
-              >
-                Ask Skandha Advisory
-              </button>
-            </div>
-          </ScrollReveal>
         </div>
       </section>
 
       {/* ========================================================== */}
-      {/* 10. VIP PRIVATE SITE VISIT INVITATION                      */}
+      {/* 14. JB INFRA SIGNATURE: VISIT OUR OFFICE & BOOK SITE VISIT */}
+      {/* ========================================================== */}
+      <section id="contact" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          {/* Left Column: Office Details & Map Embed */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                VISIT OUR OFFICE
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                <span className="h-px w-6 bg-brand-orange/40" />
+              </div>
+              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                Head Office &amp; Site Location
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-300">
+                Connect directly with Skandha Group sales advisors or visit our corporate office in Hastinapuram, Hyderabad.
+              </p>
+            </div>
+
+            {/* Office Cards */}
+            <div className="space-y-4">
+              <div className="p-5 rounded-2xl bg-[#0b0e17] border border-slate-800 shadow-sm space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-brand-orange flex items-center gap-2">
+                  <Building className="w-4 h-4" />
+                  <span>Corporate Headquarters</span>
+                </div>
+                <div className="flex items-start gap-2.5 text-xs text-slate-300">
+                  <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{officeAddress}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-300 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsEnquiryOpen(true)}
+                    className="flex items-center gap-1.5 font-semibold text-brand-orange hover:text-white transition-colors"
+                  >
+                    <PhoneCall className="w-3.5 h-3.5 text-brand-orange" />
+                    <span>Request Callback</span>
+                  </button>
+                  <div className="flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-brand-orange" />
+                    <a href={`mailto:${contactEmail}`} className="hover:text-brand-orange">
+                      {contactEmail}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Site / Project Location Card */}
+              <div className="p-5 rounded-2xl bg-[#0b0e17] border border-slate-800 shadow-sm space-y-3">
+                <div className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span>Project Site Location (Kadthal)</span>
+                </div>
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  Adjoining 4-lane Srisailam Highway (NH 765), Kadthal Mandal, Ranga Reddy District, Telangana - 509358. Just 1 minute drive from Maisigandi Temple.
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-brand-orange">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Daily Escorted Site Visits from 9:30 AM to 6:00 PM</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Embedded Google Map */}
+            <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-sm bg-slate-900 h-64 relative">
+              <iframe
+                title="Skandha Group Project & Office Location Map"
+                src="https://maps.google.com/maps?q=Kadthal%20Maisigandi%20Temple%20Telangana&t=m&z=12&output=embed&iwloc=near"
+                className="w-full h-full border-0"
+                loading="lazy"
+                aria-label="Kadthal Project Location Map"
+              />
+            </div>
+          </div>
+
+          {/* Right Column: Book a Site Visit Form (JB Infra Pattern) */}
+          <div className="lg:col-span-6 bg-[#0b0e17] rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-2xl">
+            <div className="space-y-2 pb-4 border-b border-slate-800">
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-950/70 border border-orange-500/30 px-3 py-1 rounded-full">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Book a Site Visit</span>
+              </div>
+              <h3 className="font-serif text-2xl font-bold text-white">
+                Schedule Your Escorted Project Tour
+              </h3>
+              <p className="text-xs text-slate-400">
+                Fill out the quick form below. Our official advisory desk will confirm your scheduled visit and arrange cab transportation.
+              </p>
+            </div>
+
+            {visitSuccess ? (
+              <div className="py-10 text-center space-y-4">
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <h4 className="text-xl font-bold text-slate-900">Site Visit Confirmed!</h4>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
+                  Thank you! Your site visit request has been securely logged. Our dedicated relationship manager will reach out shortly.
+                </p>
+                {visitSuccess.whatsappUrl && (
+                  <a
+                    href={visitSuccess.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    <span>Chat on WhatsApp Directly</span>
+                  </a>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleVisitFormSubmit} className="space-y-4 pt-5">
+                {visitError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+                    {visitError}
+                  </div>
+                )}
+
+                {/* Honeypot field for bot protection */}
+                <input
+                  type="text"
+                  name="hp_website"
+                  value={visitFormData.hp_website}
+                  onChange={e => setVisitFormData({ ...visitFormData, hp_website: e.target.value })}
+                  className="hidden"
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+
+                {/* Full Name */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={visitFormData.name}
+                    onChange={e => setVisitFormData({ ...visitFormData, name: e.target.value })}
+                    placeholder="Enter your full name"
+                    className="w-full px-4 py-3 rounded-xl bg-black/60 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-colors"
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={visitFormData.phone}
+                    onChange={e => setVisitFormData({ ...visitFormData, phone: e.target.value })}
+                    placeholder="10-digit mobile number"
+                    className="w-full px-4 py-3 rounded-xl bg-black/60 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-colors"
+                  />
+                </div>
+
+                {/* Email Address */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={visitFormData.email}
+                    onChange={e => setVisitFormData({ ...visitFormData, email: e.target.value })}
+                    placeholder="name@example.com"
+                    className="w-full px-4 py-3 rounded-xl bg-black/60 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-colors"
+                  />
+                </div>
+
+                {/* Preferred Contact Method */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">
+                    Preferred Communication Channel
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+                      { id: 'call', label: 'Phone Call', icon: PhoneCall },
+                      { id: 'email', label: 'Email', icon: Mail }
+                    ].map(method => {
+                      const Icon = method.icon;
+                      const isSelected = visitFormData.preferredContactMethod === method.id;
+                      return (
+                        <button
+                          key={method.id}
+                          type="button"
+                          onClick={() => setVisitFormData({ ...visitFormData, preferredContactMethod: method.id })}
+                          className={`p-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
+                            isSelected
+                              ? 'bg-orange-950/80 border-brand-orange text-brand-orange font-bold'
+                              : 'bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                          <span>{method.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-300">
+                    Special Inquiries or Preferred Date
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={visitFormData.message}
+                    onChange={e => setVisitFormData({ ...visitFormData, message: e.target.value })}
+                    placeholder="Enter any specific questions or preferred visit timing..."
+                    className="w-full px-4 py-3 rounded-xl bg-black/60 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange transition-colors resize-none"
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={visitLoading}
+                  className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {visitLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Send &bull; Book Site Visit</span>
+                    </>
+                  )}
+                </button>
+
+                <p className="text-[11px] text-slate-400 text-center pt-1">
+                  We respect your privacy. No spam. Direct consultation from authorized Skandha Group representatives.
+                </p>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 15. VIP PRIVATE SITE VISIT INVITATION                      */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal direction="up">
@@ -908,14 +1511,14 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-4 pt-4">
                 <button
                   onClick={() => setIsEnquiryOpen(true)}
-                  className="btn-shimmer bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-sm shadow-md transition-all flex items-center gap-2 hover:scale-[1.02]"
+                  className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center gap-2 hover:scale-[1.02]"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Schedule Private Escorted Visit</span>
                 </button>
                 <Link
                   to="/contact"
-                  className="bg-orange-950/40 hover:bg-orange-950/60 border border-white/30 text-white font-bold px-7 py-4 rounded-xl text-sm transition-all flex items-center gap-2 hover:scale-[1.02]"
+                  className="bg-orange-950/40 hover:bg-orange-950/60 border border-white/30 text-white font-bold px-7 py-4 rounded-xl text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center gap-2 hover:scale-[1.02]"
                 >
                   <Navigation className="w-4 h-4" />
                   <span>Get Route &amp; Driving Map</span>
@@ -925,6 +1528,7 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
       </section>
+
       </div>
 
       {/* On-Site Development / Lighting Photo Detail Modal */}
@@ -934,12 +1538,12 @@ export default function HomePage() {
           onClick={() => setSelectedPhotoModal(null)}
         >
           <div
-            className="relative max-w-4xl max-h-[90vh] bg-white rounded-3xl p-4 sm:p-6 shadow-2xl overflow-hidden space-y-4"
+            className="relative max-w-4xl max-h-[90vh] bg-[#0b0e17] border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl overflow-hidden space-y-4 text-white"
             onClick={e => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedPhotoModal(null)}
-              className="absolute top-4 right-4 z-10 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-full shadow transition-colors"
+              className="absolute top-4 right-4 z-10 bg-slate-900/90 hover:bg-slate-800 text-white p-2 rounded-full shadow border border-slate-700 transition-colors"
             >
               &times;
             </button>
@@ -950,17 +1554,17 @@ export default function HomePage() {
             />
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-2.5 py-0.5 rounded border border-orange-200">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-950/70 border border-orange-500/30 px-2.5 py-0.5 rounded">
                   {selectedPhotoModal.category}
                 </span>
-                <span className="text-xs font-medium text-slate-500">
+                <span className="text-xs font-medium text-slate-400">
                   Skandha Group Lifestyle Feature
                 </span>
               </div>
-              <h3 className="font-serif text-2xl font-bold text-slate-900">
+              <h3 className="font-serif text-2xl font-bold text-white">
                 {selectedPhotoModal.title}
               </h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-300">
                 {selectedPhotoModal.desc}
               </p>
             </div>
@@ -968,7 +1572,7 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Enquiry Modal */}
+      {/* Reusable Enquiry Modal */}
       <EnquiryModal
         isOpen={isEnquiryOpen}
         onClose={() => setIsEnquiryOpen(false)}

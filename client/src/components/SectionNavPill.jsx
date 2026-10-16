@@ -1,14 +1,17 @@
 import React from 'react';
-import { Home, Moon, Sparkles, MapPin, HelpCircle, Layers } from 'lucide-react';
+import { Home, Moon, Sparkles, MapPin, HelpCircle, Layers, Star, Calendar } from 'lucide-react';
 import { useScrollProgress, useScrollSpy } from '../hooks/useScrollSpy';
 
 const SECTIONS = [
-  { id: 'overview', label: 'Overview', icon: Home },
-  { id: 'villas', label: 'Villa Concepts', icon: Layers },
-  { id: 'lighting', label: 'Twilight Lighting', icon: Moon },
+  { id: 'projects', label: 'Prime Projects', icon: Layers },
+  { id: 'about', label: 'About Us', icon: Home },
+  { id: 'villas', label: 'Villas', icon: Sparkles },
+  { id: 'lighting', label: 'Lighting', icon: Moon },
+  { id: 'developments', label: 'On-Site Photos', icon: Sparkles },
   { id: 'amenities', label: 'Amenities', icon: Sparkles },
-  { id: 'landmarks', label: 'Location & Map', icon: MapPin },
-  { id: 'faqs', label: 'FAQs', icon: HelpCircle }
+  { id: 'landmarks', label: 'Location Map', icon: MapPin },
+  { id: 'testimonials', label: 'Reviews', icon: Star },
+  { id: 'contact', label: 'Visit Office', icon: Calendar }
 ];
 
 export default function SectionNavPill() {
@@ -19,7 +22,7 @@ export default function SectionNavPill() {
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
-      const top = el.getBoundingClientRect().top + window.pageYOffset - 120;
+      const top = el.getBoundingClientRect().top + window.pageYOffset - 110;
       window.scrollTo({
         top,
         behavior: 'smooth'
@@ -29,7 +32,7 @@ export default function SectionNavPill() {
 
   return (
     <div
-      className={`fixed top-20 left-1/2 -translate-x-1/2 z-30 transition-all duration-500 max-w-[95vw] sm:max-w-max ${
+      className={`fixed top-24 left-1/2 -translate-x-1/2 z-30 transition-all duration-500 max-w-[95vw] sm:max-w-max ${
         isScrolled
           ? 'translate-y-0 opacity-100 pointer-events-auto'
           : '-translate-y-8 opacity-0 pointer-events-none'
@@ -37,7 +40,7 @@ export default function SectionNavPill() {
     >
       <nav
         aria-label="Section Quick Jump Navigation"
-        className="flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-full bg-slate-900/85 hover:bg-slate-900/95 backdrop-blur-xl border border-slate-700/60 shadow-[0_10px_30px_rgba(0,0,0,0.25)] overflow-x-auto no-scrollbar"
+        className="flex items-center gap-1 sm:gap-1.5 p-1.5 rounded-full bg-[#11141c]/90 hover:bg-[#11141c]/98 backdrop-blur-xl border border-slate-700/80 shadow-[0_10px_30px_rgba(0,0,0,0.35)] overflow-x-auto no-scrollbar"
       >
         {SECTIONS.map((section) => {
           const IconComp = section.icon;
@@ -48,7 +51,7 @@ export default function SectionNavPill() {
               onClick={() => scrollToSection(section.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 ${
                 isActive
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30 scale-105'
+                  ? 'bg-brand-orange text-white shadow-md shadow-orange-950/50 scale-105'
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
             >

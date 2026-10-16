@@ -19,36 +19,43 @@ export default function CountUp({
     const el = elementRef.current;
     if (!el || hasAnimated) return;
 
+    const startCounting = () => {
+      setHasAnimated(true);
+      let startTime = null;
+      const target = parseFloat(end);
+
+      const step = (timestamp) => {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = easeOut * target;
+        setValue(current);
+
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          setValue(target);
+        }
+      };
+
+      requestAnimationFrame(step);
+    };
+
+    // If already in viewport on load, start immediately
+    const rect = el.getBoundingClientRect();
+    if (rect.top >= 0 && rect.top <= window.innerHeight) {
+      startCounting();
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setHasAnimated(true);
           observer.disconnect();
-
-          let startTime = null;
-          const target = parseFloat(end);
-
-          const step = (timestamp) => {
-            if (!startTime) startTime = timestamp;
-            const progress = Math.min((timestamp - startTime) / duration, 1);
-
-            // Ease-out cubic curve: 1 - Math.pow(1 - progress, 3)
-            const easeOut = 1 - Math.pow(1 - progress, 3);
-            const current = easeOut * target;
-
-            setValue(current);
-
-            if (progress < 1) {
-              requestAnimationFrame(step);
-            } else {
-              setValue(target);
-            }
-          };
-
-          requestAnimationFrame(step);
+          startCounting();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.1 }
     );
 
     observer.observe(el);

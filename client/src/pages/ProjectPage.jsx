@@ -15,7 +15,11 @@ import {
   ArrowRight,
   Eye,
   Layers,
-  MapPin
+  MapPin,
+  ExternalLink,
+  ChevronRight,
+  Download,
+  X
 } from 'lucide-react';
 import EnquiryModal from '../components/EnquiryModal';
 
@@ -71,62 +75,57 @@ export default function ProjectPage() {
   ];
 
   return (
-    <div className="space-y-20 pb-20">
+    <div className="bg-[#000000] text-slate-100 space-y-20 pb-20">
       {/* ========================================================== */}
-      {/* 1. EDITORIAL LUXURY HERO SECTION                           */}
+      {/* 1. HERO SECTION                                            */}
       {/* ========================================================== */}
-      <section className="relative min-h-[55vh] flex items-center justify-center bg-slate-950 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/assets/site_aerial_view.jpg"
-            alt="Skandha Group Aerial Perspective"
-            className="w-full h-full object-cover object-center transform scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/70 to-slate-950/40" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-slate-950/30" />
-        </div>
+      <section className="relative min-h-[50vh] flex items-center justify-center bg-gradient-to-b from-[#07090e] via-[#0b0e14] to-[#000000] py-16 sm:py-20 text-white overflow-hidden border-b border-slate-800">
+        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-brand-orange/15 blur-[120px] pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-white space-y-5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wide text-orange-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>DTCP Approved TLP NO. 87/2024/H &bull; TS RERA PO2400009081</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+            <span className="h-px w-8 bg-brand-orange/40" />
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            PROJECT BLUEPRINT
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            <span className="h-px w-8 bg-brand-orange/40" />
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight max-w-3xl">
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto text-white">
             Project Blueprint &amp; Sanctioned Standards
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-200 font-light leading-relaxed max-w-2xl">
+          <p className="text-sm sm:text-base text-slate-300 font-light leading-relaxed max-w-2xl mx-auto">
             An authentically verified 10.50-acre gated residential plotted enclave at Kadthal, engineered to the highest DTCP statutory standards with 96 villa plots and 100% Vasthu harmony.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 pt-3">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <a
+              href="/assets/skandha_brochure.pdf"
+              download="Skandha_Group_Kadthal_Brochure.pdf"
+              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-lg shadow-md transition-all"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download Official Brochure</span>
+            </a>
+
             <button
               onClick={() => setIsEnquiryOpen(true)}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-lg transition-all"
+              className="inline-flex items-center gap-2 bg-[#121622] hover:bg-slate-800 text-white border border-slate-700 text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-lg transition-all"
             >
-              <Calendar className="w-4 h-4" />
-              <span>Schedule Private Consultation</span>
+              <Calendar className="w-4 h-4 text-brand-orange" />
+              <span>Schedule Consultation</span>
             </button>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white text-xs font-semibold px-6 py-3.5 rounded-xl transition-all"
-            >
-              <MapPin className="w-4 h-4" />
-              <span>View Route &amp; Driving Directions</span>
-            </Link>
           </div>
         </div>
       </section>
 
-      {/* ========================================================== */}
-      {/* 2. INFINITE SPECIFICATION MARQUEE                          */}
-      {/* ========================================================== */}
-      <div className="bg-slate-900 py-3.5 border-y border-slate-800 overflow-hidden shadow-inner">
+      {/* Specification Marquee Ribbon */}
+      <div className="bg-[#07090e] py-3.5 border-y border-slate-800 overflow-hidden shadow-inner">
         <div className="animate-marquee flex items-center gap-8 whitespace-nowrap text-xs font-bold uppercase tracking-widest text-slate-300">
           {[...marqueeItems, ...marqueeItems].map((item, idx) => (
             <div key={idx} className="flex items-center gap-6 shrink-0">
-              <span className="text-orange-400">&#10022;</span>
+              <span className="text-brand-orange">&#10022;</span>
               <span>{item}</span>
             </div>
           ))}
@@ -134,100 +133,86 @@ export default function ProjectPage() {
       </div>
 
       {/* ========================================================== */}
-      {/* 3. ARCHITECTURAL QUOTATION BANNER                          */}
-      {/* ========================================================== */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-br from-orange-50 via-white to-amber-50/50 rounded-3xl p-8 sm:p-12 border border-orange-200/60 shadow-sm text-center space-y-4">
-          <Quote className="w-10 h-10 text-brand-orange/30 mx-auto" />
-          <blockquote className="font-serif text-xl sm:text-2xl lg:text-3xl font-normal text-slate-900 leading-snug">
-            &ldquo;Every dimension, avenue width, and plot boundary has been mathematically aligned to sacred Vasthu geometry and authenticated under statutory DTCP sanction.&rdquo;
-          </blockquote>
-          <div className="font-bold text-xs uppercase tracking-widest text-brand-orange">
-            Engineering &bull; Authenticity &bull; Clear Title
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================== */}
-      {/* 4. OFFICIAL LAYOUT BLUEPRINT SHOWCASE (BROCHURE PAGE 2)    */}
+      {/* 2. OFFICIAL LAYOUT BLUEPRINT SHOWCASE                      */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-100">
+        <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-10 shadow-sm space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-800">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  Official Sanctioned Layout
-                </span>
-                <span className="text-xs text-slate-500 font-medium">
-                  Sanctioned Master Plan &bull; TLP NO. 87/2024/H
-                </span>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">
+                <span className="h-px w-6 bg-brand-orange/40" />
+                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+                OFFICIAL SANCTIONED LAYOUT
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 mt-1">
+              <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white mt-1">
                 Challampally / Kadthal Sanctioned Layout Plan
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
                 Visualizing all 96 numbered plots, internal 40' &amp; 33' roads, Ac. 0.758 park, and adjoining Srisailam Highway frontage.
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => setIsBlueprintZoomed(true)}
-                className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold px-4 py-2.5 rounded-xl transition-colors"
+                className="inline-flex items-center gap-2 bg-[#141824] hover:bg-slate-800 text-white text-xs font-bold px-4 py-2.5 rounded-lg border border-slate-700 transition-colors"
               >
                 <Maximize2 className="w-3.5 h-3.5 text-brand-orange" />
                 <span>Zoom Official Blueprint</span>
               </button>
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-colors"
+
+              <a
+                href="/plots"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded-lg shadow-md transition-colors"
               >
-                <span>Request Plot Details</span>
-              </button>
+                <span>Interactive Plots (2D/3D)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
 
           {/* Blueprint Graphic Frame */}
           <div
             onClick={() => setIsBlueprintZoomed(true)}
-            className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 cursor-zoom-in group p-3"
+            className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] cursor-zoom-in group p-4"
           >
             <img
               src="/assets/layout_plan_hd.png"
               alt="Sanctioned Master Layout Plan"
               className="w-full h-auto max-h-[580px] object-contain rounded-xl mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
             />
-            <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 shadow flex items-center gap-1.5 pointer-events-none">
+            <div className="absolute bottom-6 right-6 bg-[#0c0f17]/90 text-white backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700 text-xs font-bold shadow flex items-center gap-1.5 pointer-events-none">
               <Eye className="w-3.5 h-3.5 text-brand-orange" />
               <span>Click to enlarge official layout blueprint</span>
             </div>
           </div>
 
           {/* Verification Stamps Ribbon */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#121622] border border-slate-800">
               <img
                 src="/assets/dtcp_approved_stamp.jpg"
                 alt="DTCP Approved Stamp"
-                className="w-14 h-14 object-contain"
+                className="w-14 h-14 object-contain rounded-lg"
               />
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Sanction Authority</div>
-                <div className="text-base font-extrabold text-slate-900">DTCP Approved Layout</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Sanction Authority</div>
+                <div className="text-base font-extrabold text-white">DTCP Approved Layout</div>
                 <div className="text-xs font-semibold text-brand-orange">TLP NO. 87/2024/H</div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#121622] border border-slate-800">
               <img
                 src="/assets/ts_rera_stamp.jpg"
                 alt="TS RERA Registration Stamp"
-                className="w-14 h-14 object-contain"
+                className="w-14 h-14 object-contain rounded-lg"
               />
               <div>
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-500">Regulatory Compliance</div>
-                <div className="text-base font-extrabold text-slate-900">TS RERA Registered</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Regulatory Compliance</div>
+                <div className="text-base font-extrabold text-white">TS RERA Registered</div>
                 <div className="text-xs font-semibold text-brand-orange">PO2400009081</div>
               </div>
             </div>
@@ -236,17 +221,21 @@ export default function ProjectPage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 5. INFRASTRUCTURE PILLARS WITH REAL SITE PHOTOS            */}
+      {/* 3. PHYSICAL INFRASTRUCTURE PILLARS                         */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3.5 py-1 rounded-full border border-orange-200">
-            Physical Infrastructure
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-slate-900">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+            <span className="h-px w-8 bg-brand-orange/40" />
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            PHYSICAL INFRASTRUCTURE
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            <span className="h-px w-8 bg-brand-orange/40" />
+          </div>
+          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
             Engineered To Endure For Generations
           </h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-xs sm:text-sm text-slate-400">
             This gated community combines heavy-duty civil engineering with sustainable greenery and pristine community utilities.
           </p>
         </div>
@@ -255,25 +244,25 @@ export default function ProjectPage() {
           {infrastructurePillars.map((pillar, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col group"
+              className="bg-[#0c0f17] rounded-3xl overflow-hidden border border-slate-800 shadow-sm hover:shadow-xl hover:border-brand-orange/40 transition-all duration-300 flex flex-col group"
             >
-              <div className="relative h-64 overflow-hidden bg-slate-100">
+              <div className="relative h-64 overflow-hidden bg-slate-900">
                 <img
                   src={pillar.image}
                   alt={pillar.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-106"
                 />
-                <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
+                <div className="absolute top-4 left-4 bg-[#0c0f17]/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-md border border-slate-700">
                   {pillar.stat}
                 </div>
               </div>
 
               <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-serif text-xl font-bold text-slate-900 group-hover:text-brand-orange transition-colors">
+                  <h3 className="font-serif text-xl font-bold text-white group-hover:text-brand-orange transition-colors">
                     {pillar.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-2 font-light">
                     {pillar.desc}
                   </p>
                 </div>
@@ -284,37 +273,39 @@ export default function ProjectPage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 6. VASTHU ORIENTATION & PLOT FACING MATRIX                 */}
+      {/* 4. VASTHU ORIENTATION & PLOT FACING MATRIX                 */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-6">
+        <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-10 shadow-sm space-y-6">
           <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              Vasthu Geometry &bull; 100% Orientation Harmony
-            </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">
+              <span className="h-px w-6 bg-brand-orange/40" />
+              <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+              VASTHU GEOMETRY
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-white mt-2">
               Plot Facing &amp; Orientation Hierarchy
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1">
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
               Every plot in the venture is surveyed strictly to 100% Vasthu principles. Preferences for corner positions, morning East frontage, and wide boulevard avenues are scheduled as below:
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-xs">
-            <table className="w-full text-left text-sm text-slate-700">
-              <thead className="bg-slate-100 text-xs uppercase tracking-wider font-bold text-slate-700 border-b border-slate-200">
+          <div className="overflow-x-auto rounded-2xl border border-slate-800 shadow-xs">
+            <table className="w-full text-left text-sm text-slate-300">
+              <thead className="bg-[#121622] text-xs uppercase tracking-wider font-bold text-slate-200 border-b border-slate-800">
                 <tr>
                   <th className="px-6 py-4">Plot Facing / Position</th>
                   <th className="px-6 py-4">Classification Tier</th>
                   <th className="px-6 py-4">Vasthu Advantage &amp; Specifications</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-slate-800 bg-[#0c0f17]">
                 {vasthuTiers.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-900">{row.type}</td>
+                  <tr key={idx} className="hover:bg-[#121622]/80 transition-colors">
+                    <td className="px-6 py-4 font-bold text-white">{row.type}</td>
                     <td className="px-6 py-4 font-bold text-brand-orange">{row.tier}</td>
-                    <td className="px-6 py-4 text-xs text-slate-600">{row.notes}</td>
+                    <td className="px-6 py-4 text-xs text-slate-300">{row.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -324,7 +315,7 @@ export default function ProjectPage() {
       </section>
 
       {/* ========================================================== */}
-      {/* 7. PRIVATE SITE TOUR INVITATION                            */}
+      {/* 5. PRIVATE SITE TOUR INVITATION                            */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 rounded-3xl p-8 sm:p-14 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
@@ -342,7 +333,7 @@ export default function ProjectPage() {
 
           <button
             onClick={() => setIsEnquiryOpen(true)}
-            className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-sm shadow-md transition-all shrink-0 flex items-center gap-2"
+            className="bg-white hover:bg-orange-50 text-brand-orange font-bold px-8 py-4 rounded-xl text-xs uppercase tracking-wider shadow-md transition-all shrink-0 flex items-center gap-2"
           >
             <Calendar className="w-4 h-4" />
             <span>Schedule Private Site Visit</span>
@@ -353,18 +344,18 @@ export default function ProjectPage() {
       {/* Zoom Modal for Blueprint Layout */}
       {isBlueprintZoomed && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/92 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setIsBlueprintZoomed(false)}
         >
           <div
-            className="relative max-w-6xl max-h-[92vh] bg-white rounded-3xl p-4 shadow-2xl overflow-hidden"
+            className="relative max-w-6xl max-h-[92vh] bg-[#0c0f17] border border-slate-800 rounded-3xl p-4 shadow-2xl overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             <button
               onClick={() => setIsBlueprintZoomed(false)}
-              className="absolute top-4 right-4 z-10 bg-slate-900/80 hover:bg-slate-900 text-white p-2 rounded-full shadow transition-colors"
+              className="absolute top-4 right-4 z-10 bg-slate-800/80 hover:bg-slate-700 text-white p-2 rounded-full shadow transition-colors"
             >
-              &times;
+              <X className="w-5 h-5" />
             </button>
             <img
               src="/assets/layout_plan_hd.png"
@@ -375,7 +366,7 @@ export default function ProjectPage() {
         </div>
       )}
 
-      {/* Enquiry Modal */}
+      {/* Reusable Enquiry Modal */}
       <EnquiryModal
         isOpen={isEnquiryOpen}
         onClose={() => setIsEnquiryOpen(false)}

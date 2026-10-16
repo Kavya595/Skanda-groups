@@ -1630,13 +1630,13 @@ export default function PlotViewerStandalone({ settings }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <a
-                    href="tel:+919100031199"
+                  <button
+                    onClick={() => setIsEnquiryOpen(true)}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-xs"
                   >
                     <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Call Sales Desk</span>
-                  </a>
+                    <span>Request Callback</span>
+                  </button>
                   <a
                     href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Skandha%20Group%20plots%20at%20Kadthal."
                     target="_blank"

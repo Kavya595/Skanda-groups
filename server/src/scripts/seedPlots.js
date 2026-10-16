@@ -47,7 +47,6 @@ async function seedDatabase() {
       brochurePdfUrl: '/assets/skandha_brochure.pdf',
       flyerPdfUrl: '/assets/skandha_flyer.pdf',
       socialLinks: {
-        facebook: '',
         instagram: 'https://www.instagram.com/_skandhagroups_/',
         youtube: 'https://www.youtube.com/@SkandhaGroups-hyd'
       },

@@ -102,7 +102,6 @@ export default function GalleryPage() {
   const [items, setItems] = useState(DEFAULT_GALLERY_PHOTOS);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [lightboxIndex, setLightboxIndex] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
 
   useEffect(() => {
@@ -116,15 +115,13 @@ export default function GalleryPage() {
       if (res.success && res.items && res.items.length > 0) {
         setItems(res.items);
       } else {
-        // Filter default photos by category
         if (selectedCategory === 'all') {
           setItems(DEFAULT_GALLERY_PHOTOS);
         } else {
           setItems(DEFAULT_GALLERY_PHOTOS.filter(p => p.category === selectedCategory));
         }
       }
-    } catch (err) {
-      console.warn('Using default gallery:', err);
+    } catch {
       if (selectedCategory === 'all') {
         setItems(DEFAULT_GALLERY_PHOTOS);
       } else {
@@ -143,87 +140,103 @@ export default function GalleryPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
-      {/* Editorial Luxury Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
-        <div className="space-y-3 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-xs font-bold uppercase tracking-wider text-brand-orange">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Curated Living &bull; Real Site Progress</span>
+    <div className="bg-[#000000] text-slate-100 space-y-16 pb-20">
+      {/* ========================================================== */}
+      {/* 1. HERO SECTION                                            */}
+      {/* ========================================================== */}
+      <section className="relative bg-gradient-to-b from-[#07090e] via-[#0b0e14] to-[#000000] py-16 sm:py-20 text-white overflow-hidden border-b border-slate-800">
+        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-brand-orange/15 blur-[120px] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
+            <span className="h-px w-8 bg-brand-orange/40" />
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            VISUAL SHOWCASE
+            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
+            <span className="h-px w-8 bg-brand-orange/40" />
           </div>
-          <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-slate-900 leading-tight">
-            Skandha Group Visual Showcase
+
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto text-white">
+            Site Progress &amp; Architecture Gallery
           </h1>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
+
+          <p className="text-sm sm:text-base text-slate-300 font-light leading-relaxed max-w-2xl mx-auto">
             Examine bespoke villa architectural concepts, warm twilight ambiance, and authentic on-site developmental progress across wide avenues, landscaped parkland, and security infrastructure.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <button
+              onClick={() => setIsEnquiryOpen(true)}
+              className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-lg shadow-md transition-all"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Book Escorted Site Visit</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================== */}
+      {/* 2. GALLERY CATEGORIES & GRID                               */}
+      {/* ========================================================== */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        {/* Category Tabs */}
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                selectedCategory === cat.id
+                  ? 'bg-brand-orange text-white shadow-md'
+                  : 'bg-[#121622] text-slate-300 hover:bg-[#181d2c] border border-slate-700'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
         </div>
 
-        <button
-          onClick={() => setIsEnquiryOpen(true)}
-          className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold px-6 py-3.5 rounded-xl shadow-xs transition-colors shrink-0"
-        >
-          <Calendar className="w-4 h-4" />
-          <span>Book Escorted Site Visit</span>
-        </button>
-      </div>
-
-      {/* Category Tabs */}
-      <div className="flex flex-wrap items-center gap-2">
-        {categories.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              selectedCategory === cat.id
-                ? 'bg-brand-orange text-white shadow-xs'
-                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {items.map((item, idx) => (
-          <div
-            key={item._id || idx}
-            onClick={() => setLightboxIndex(idx)}
-            className="group cursor-pointer bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-2xl hover:border-orange-200 overflow-hidden transition-all duration-300 flex flex-col"
-          >
-            <div className="relative h-64 overflow-hidden bg-slate-100">
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
-                <span className="text-xs font-bold text-white bg-brand-orange px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow">
-                  <Maximize2 className="w-3.5 h-3.5" />
-                  <span>Enlarge High-Res Photo</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-2 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
-                  {item.category}
+        {/* Gallery Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {items.map((item, idx) => (
+            <div
+              key={item._id || idx}
+              onClick={() => setLightboxIndex(idx)}
+              className="group cursor-pointer bg-[#0c0f17] rounded-2xl border border-slate-800 shadow-sm hover:shadow-2xl hover:border-brand-orange/40 overflow-hidden transition-all duration-300 flex flex-col"
+            >
+              <div className="relative h-64 overflow-hidden bg-slate-900">
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-5">
+                  <span className="text-xs font-bold text-white bg-brand-orange px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow">
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Enlarge High-Res Photo</span>
+                  </span>
                 </div>
-                <h3 className="font-serif font-bold text-slate-900 text-lg group-hover:text-brand-orange transition-colors mt-0.5">
-                  {item.title}
-                </h3>
-                {item.caption && (
-                  <p className="text-xs text-slate-600 leading-relaxed mt-1">
-                    {item.caption}
-                  </p>
-                )}
+              </div>
+
+              <div className="p-5 space-y-2 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-brand-orange">
+                    {item.category}
+                  </div>
+                  <h3 className="font-serif font-bold text-white text-lg group-hover:text-brand-orange transition-colors mt-0.5">
+                    {item.title}
+                  </h3>
+                  {item.caption && (
+                    <p className="text-xs text-slate-300 leading-relaxed mt-1 font-light">
+                      {item.caption}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Lightbox Modal */}

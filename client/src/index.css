@@ -296,3 +296,93 @@
 #popup-content {
   padding: 0;
 }
+
+/* JB Infra Signature Connected 3-Feature Ribbon */
+.feature-ribbon-wrap {
+  display: grid;
+  grid-template-columns: 1fr;
+  background-color: #0b0e17;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  box-shadow: 0px 20px 45px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 30;
+}
+
+@media (min-width: 1024px) {
+  .feature-ribbon-wrap {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0 30px;
+  }
+}
+
+.feature-ribbon-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 28px 24px;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+  .feature-ribbon-item {
+    padding: 40px 18px;
+  }
+  .feature-ribbon-item:first-child {
+    padding-left: 10px;
+    padding-right: 36px;
+  }
+  .feature-ribbon-item:nth-child(2) {
+    padding-left: 36px;
+    padding-right: 48px;
+  }
+  .feature-ribbon-item:last-child {
+    padding-left: 48px;
+    padding-right: 12px;
+  }
+}
+
+.feature-ribbon-icon img {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  object-fit: contain;
+  transition: transform 0.4s ease-in-out;
+}
+
+.feature-ribbon-item:hover .feature-ribbon-icon img {
+  transform: rotateY(180deg);
+}
+
+/* Orange Arrow Chevron for middle box on desktop matching JB Infra */
+@media (min-width: 1024px) {
+  .feature-ribbon-item:nth-child(2):before {
+    content: '';
+    height: 100%;
+    width: calc(100% + 48px);
+    background-color: #f25822;
+    position: absolute;
+    top: 0;
+    left: -48px;
+    z-index: -1;
+    clip-path: polygon(0 0, calc(100% - 48px) 0%, 100% 50%, calc(100% - 48px) 100%, 0 100%, 48px 50%);
+  }
+}
+
+/* Mobile fallback for middle box */
+@media (max-width: 1023px) {
+  .feature-ribbon-item:nth-child(2) {
+    background-color: #f25822;
+  }
+}
+
+.feature-ribbon-item:nth-child(2) .feature-ribbon-title,
+.feature-ribbon-item:nth-child(2) .feature-ribbon-text {
+  color: #ffffff;
+}
+
+.feature-ribbon-item:nth-child(2) .feature-ribbon-icon img {
+  filter: brightness(0) invert(1);
+}

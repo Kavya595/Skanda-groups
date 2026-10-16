@@ -12,7 +12,8 @@ import {
   FileText,
   CheckCircle2,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 
 export default function SpecialLandmarkView() {
@@ -99,8 +100,8 @@ export default function SpecialLandmarkView() {
       name: 'Laurus Labs',
       category: 'pharma',
       distance: 'Pharma Corridor',
-      road: 'Srisailam Highway East Flank',
-      desc: 'Major pharmaceutical innovation hub neighboring the development belt.',
+      road: "100' Approach Road",
+      desc: 'Major research and development facility located in the high-tech life sciences corridor.',
       color: 'bg-emerald-600 text-white'
     },
     {
@@ -108,8 +109,8 @@ export default function SpecialLandmarkView() {
       name: 'Aurobindo Pharma',
       category: 'pharma',
       distance: 'Pharma Corridor',
-      road: 'Srisailam Highway Flank',
-      desc: 'Major pharma powerhouse situated south along the Srisailam Highway stretch.',
+      road: "330' Master Plan Road",
+      desc: 'Key global supplier of specialty formulations situated neighboring Kadthal.',
       color: 'bg-emerald-600 text-white'
     },
     {
@@ -117,16 +118,16 @@ export default function SpecialLandmarkView() {
       name: 'Gland Pharma',
       category: 'pharma',
       distance: 'Pharma Corridor',
-      road: "330' Road Link",
-      desc: 'Leading injectable pharmaceutical manufacturing facility in the corridor.',
+      road: "330' Master Plan Road",
+      desc: 'Injectable biopharmaceutical campus positioned along the southern industrial corridor.',
       color: 'bg-emerald-600 text-white'
     },
     {
-      id: 'pharma_green',
-      name: 'Green Pharma City',
+      id: 'pharma_granules',
+      name: 'Granules India',
       category: 'pharma',
-      distance: 'Corridor Node',
-      road: 'Pyramid Road & Srisailam Highway',
+      distance: 'Pharma Corridor',
+      road: "100' Approach Road",
       desc: 'Eco-conscious life sciences industrial node neighboring the project.',
       color: 'bg-emerald-600 text-white'
     },
@@ -188,34 +189,34 @@ export default function SpecialLandmarkView() {
     : 'DTCP Sanctioned Master Layout Plan (TLP NO. 87/2024/H)';
 
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 shadow-sm space-y-8">
+    <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-10 shadow-sm space-y-8 text-white">
       {/* Top Header & Special Mode Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 px-3 py-1 rounded-full border border-orange-200">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
               Strategic Corridor &bull; Master Blueprint
             </span>
-            <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+            <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded border border-emerald-800/80">
               TLP NO. 87/2024/H
             </span>
           </div>
-          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900">
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white">
             Location Highlights &amp; Landmark Corridor
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl">
+          <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
             Interactive visual examination of Srisailam Highway, the upcoming Mucherla Future City corridor, and major pharmaceutical campuses.
           </p>
         </div>
 
         {/* Special 2-View Mode Switcher */}
-        <div className="bg-slate-100 p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap items-center border border-slate-200 shrink-0 gap-1">
+        <div className="bg-[#121622] p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap items-center border border-slate-700 shrink-0 gap-1">
           <button
             onClick={() => setActiveTab('route')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'route'
-                ? 'bg-white text-brand-orange shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-brand-orange text-white shadow-xs'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <Compass className="w-3.5 h-3.5" />
@@ -226,8 +227,8 @@ export default function SpecialLandmarkView() {
             onClick={() => setActiveTab('layout')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
               activeTab === 'layout'
-                ? 'bg-white text-brand-orange shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-brand-orange text-white shadow-xs'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -242,20 +243,20 @@ export default function SpecialLandmarkView() {
         <div className="lg:col-span-7 space-y-4">
           <div
             onClick={() => setIsZoomModalOpen(true)}
-            className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 cursor-zoom-in group p-3 shadow-xs hover:shadow-lg transition-all"
+            className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] cursor-zoom-in group p-3 shadow-xs hover:shadow-lg transition-all"
           >
             <img
               src={currentModalImage}
               alt={currentModalTitle}
               className="w-full h-auto max-h-[580px] object-contain rounded-xl mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
             />
-            <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-800 shadow flex items-center gap-1.5 pointer-events-none">
+            <div className="absolute bottom-6 right-6 bg-[#0c0f17]/90 text-white backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700 text-xs font-bold shadow flex items-center gap-1.5 pointer-events-none">
               <Maximize2 className="w-3.5 h-3.5 text-brand-orange" />
               <span>Click image to zoom full resolution</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <div className="flex items-center justify-between text-xs text-slate-400 px-1">
             <span>Source: Sanctioned Layout TLP NO. 87/2024/H &amp; Verified Highway Survey</span>
             <button
               onClick={() => setIsZoomModalOpen(true)}
@@ -277,8 +278,8 @@ export default function SpecialLandmarkView() {
                 onClick={() => setActiveCategory(cat.id)}
                 className={`text-[11px] font-bold px-3 py-1.5 rounded-lg transition-all ${
                   activeCategory === cat.id
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-brand-orange text-white shadow-xs'
+                    : 'bg-[#121622] text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
                 {cat.label}
@@ -288,22 +289,22 @@ export default function SpecialLandmarkView() {
 
           {/* Active Landmark Spotlight Card */}
           {selectedLandmark && (
-            <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl space-y-2 animate-in fade-in duration-200">
+            <div className="p-4 bg-orange-950/40 border border-orange-800/60 rounded-2xl space-y-2 animate-in fade-in duration-200">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">
                   Landmark Spotlight
                 </span>
-                <span className="text-xs font-extrabold bg-white text-slate-900 px-2 py-0.5 rounded border border-orange-200">
+                <span className="text-xs font-extrabold bg-[#121622] text-white px-2 py-0.5 rounded border border-orange-800/60">
                   {selectedLandmark.distance}
                 </span>
               </div>
-              <h4 className="font-serif text-lg font-bold text-slate-900">
+              <h4 className="font-serif text-lg font-bold text-white">
                 {selectedLandmark.name}
               </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-slate-300 leading-relaxed">
                 {selectedLandmark.desc}
               </p>
-              <div className="pt-1 text-[11px] text-slate-500 font-medium">
+              <div className="pt-1 text-[11px] text-slate-400 font-medium">
                 <strong>Approach Route:</strong> {selectedLandmark.road}
               </div>
             </div>
@@ -319,21 +320,21 @@ export default function SpecialLandmarkView() {
                   onClick={() => setSelectedLandmark(item)}
                   className={`p-3.5 rounded-2xl border cursor-pointer transition-all duration-200 flex items-center justify-between gap-3 ${
                     isSelected
-                      ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                      : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-800'
+                      ? 'bg-[#182030] text-white border-brand-orange shadow-md'
+                      : 'bg-[#0e121a] hover:bg-[#141a26] border-slate-800 text-slate-200'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                      isSelected ? 'bg-orange-500 text-white' : 'bg-orange-50 text-brand-orange'
+                      isSelected ? 'bg-brand-orange text-white' : 'bg-orange-500/10 text-brand-orange border border-orange-500/20'
                     }`}>
                       <MapPin className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className={`text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      <div className={`text-xs font-bold leading-tight ${isSelected ? 'text-white' : 'text-slate-200'}`}>
                         {item.name}
                       </div>
-                      <div className={`text-[11px] leading-tight mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-500'}`}>
+                      <div className={`text-[11px] leading-tight mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
                         {item.road}
                       </div>
                     </div>
@@ -341,8 +342,8 @@ export default function SpecialLandmarkView() {
 
                   <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg shrink-0 ${
                     isSelected
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-100 text-brand-orange'
+                      ? 'bg-brand-orange text-white'
+                      : 'bg-slate-800/80 text-brand-orange border border-slate-700/50'
                   }`}>
                     {item.distance}
                   </span>
@@ -354,13 +355,13 @@ export default function SpecialLandmarkView() {
       </div>
 
       {/* Corridor Verified Highlights Ribbon */}
-      <div className="pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2.5">
+      <div className="pt-6 border-t border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-[#121622] p-5 rounded-2xl border border-slate-800 space-y-2.5">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-orange">
             <CheckCircle2 className="w-4 h-4 text-brand-orange" />
             <span>Strategic Location Highlights</span>
           </div>
-          <ul className="space-y-1.5 text-xs text-slate-700">
+          <ul className="space-y-1.5 text-xs text-slate-300">
             <li className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange" />
               <span><strong>Just 1 min drive</strong> to Maisigandi Temple</span>
@@ -380,26 +381,26 @@ export default function SpecialLandmarkView() {
           </ul>
         </div>
 
-        <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2.5">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-800">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+        <div className="bg-[#121622] p-5 rounded-2xl border border-slate-800 space-y-2.5">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>Connectivity &amp; Major Investments</span>
           </div>
-          <ul className="space-y-1.5 text-xs text-slate-700">
+          <ul className="space-y-1.5 text-xs text-slate-300">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Good connectivity to <strong>Kandukur - Maheshwaram Industrial Belt</strong></span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Close to <strong>Maheshwara Maha Pyramid</strong></span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Major Pharma: <strong>Dr. Reddy's, Aurobindo, Hetero, Laurus, MSN, Gland</strong></span>
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Direct access to Hyderabad via <strong>Srisailam Highway &amp; ORR Exit 14</strong></span>
             </li>
           </ul>
@@ -409,22 +410,22 @@ export default function SpecialLandmarkView() {
       {/* Full-Screen Zoom Modal */}
       {isZoomModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/92 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setIsZoomModalOpen(false)}
         >
           <div
-            className="relative max-w-5xl max-h-[92vh] bg-white rounded-3xl p-4 shadow-2xl overflow-hidden space-y-3"
+            className="relative max-w-5xl max-h-[92vh] bg-[#0c0f17] border border-slate-800 rounded-3xl p-4 shadow-2xl overflow-hidden space-y-3"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-serif font-bold text-slate-900 text-lg">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-serif font-bold text-white text-lg">
                 {currentModalTitle}
               </h3>
               <button
                 onClick={() => setIsZoomModalOpen(false)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-full transition-colors"
+                className="bg-slate-800 hover:bg-slate-700 text-white p-1.5 rounded-full transition-colors"
               >
-                &times;
+                <X className="w-5 h-5" />
               </button>
             </div>
             <img

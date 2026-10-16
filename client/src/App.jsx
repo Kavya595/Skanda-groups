@@ -59,7 +59,7 @@ function PublicLayout({ settings }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white relative selection:bg-orange-100 selection:text-orange-900">
+    <div className="min-h-screen flex flex-col bg-[#000000] text-slate-100 relative selection:bg-orange-500 selection:text-white">
       <ScrollProgress />
       <Navbar settings={settings} />
       <main className="flex-1">

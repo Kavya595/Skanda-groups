@@ -16,8 +16,7 @@ const defaultPublicSettings = {
   flyerPdfUrl: '',
   socialLinks: {
     instagram: 'https://www.instagram.com/_skandhagroups_/',
-    youtube: 'https://www.youtube.com/@SkandhaGroups-hyd',
-    facebook: ''
+    youtube: 'https://www.youtube.com/@SkandhaGroups-hyd'
   },
   publicClaimsApproved: true,
   seo: {},
