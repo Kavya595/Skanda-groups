@@ -22,7 +22,8 @@ import {
   Sun,
   Moon,
   Layers,
-  Home
+  Home,
+  Download
 } from 'lucide-react';
 import { fetchPublicSettings, fetchPlotStats, fetchGallery, trackActivityEvent } from '../api/client';
 import EnquiryModal from '../components/EnquiryModal';
@@ -262,107 +263,127 @@ export default function HomePage() {
     : faqs.filter(f => f.category === activeFaqCategory);
 
   return (
-    <div className="space-y-24 pb-20 overflow-hidden bg-white relative">
+    <div className="pb-20 overflow-hidden bg-white relative">
       {/* Modern In-Page Sticky Section Navigation Pill */}
       <SectionNavPill />
 
       {/* ========================================================== */}
-      {/* 1. CINEMATIC SUPREME HERO SECTION                          */}
+      {/* 1. ELEGANT SIDE-BY-SIDE HERO SECTION                      */}
       {/* ========================================================== */}
-      <section className="relative min-h-[92vh] flex items-center justify-center bg-slate-950 overflow-hidden">
-        {/* Ambient Animated Depth Orbs */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 rounded-full bg-orange-500/20 blur-3xl pointer-events-none animate-soft-float z-10" />
-        <div className="absolute bottom-10 -right-20 w-96 h-96 rounded-full bg-amber-500/15 blur-3xl pointer-events-none animate-soft-float-reverse z-10" />
+      <section className="relative bg-gradient-to-b from-orange-50/40 via-white to-slate-50/60 pt-4 pb-12 sm:pt-6 sm:pb-16 lg:py-16 border-b border-slate-100 overflow-hidden">
+        {/* Subtle Ambient Backing Glow */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-orange-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-80 h-80 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
 
-        {/* Background Visual with Warm Amber Overlay */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/assets/hero_cover.jpg"
-            alt="Alekhya's Brundavan Villa Layout"
-            className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000"
-          />
-          {/* Accessible Luxury Gradient Overlays (Warm golden & orange tones) */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/65 to-slate-950/30" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-transparent to-slate-950/40" />
-        </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Column: Text & Actions (7 cols) */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Regulatory Trust Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-xs font-bold text-emerald-800 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>DTCP Approved TLP NO. 87/2024/H &bull; TS RERA PO2400009081</span>
+              </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 text-white">
-          <div className="max-w-3xl space-y-6">
-            {/* Regulatory Approval Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold tracking-wide text-orange-200 shadow-sm hover:border-orange-400/50 transition-colors">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>DTCP Approved TLP NO. 87/2024/H &bull; TS RERA PO2400009081</span>
+              {/* Headline - User requirement: "and i dont want to hithlight alekya brundavan name dont use it as heading" */}
+              <h1 className="font-serif text-3xl sm:text-5xl lg:text-[3.25rem] font-black tracking-tight leading-[1.12] text-slate-900">
+                Locate Yourself At The Most <span className="text-brand-orange">Desirable Place</span>.
+              </h1>
+
+              {/* Sub-headline / Content - User requirement: "if it is present in content that is ok" */}
+              <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl">
+                Alekhya's Brundavan by Skandha Group offers 96 vastu-compliant residential villa plots adjoining Srisailam Highway (NH 765), just 1 minute to historic Maisigandi Temple and minutes from the booming Mucherla Future City &amp; Pharma City corridor.
+              </p>
+
+              {/* CTAs - User requirement: "and download broucher button add" */}
+              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+                <a
+                  href="/assets/alekhyas_brundavan_brochure.pdf"
+                  download="Alekhyas_Brundavan_Brochure.pdf"
+                  className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-7 py-3.5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
+                  title="Download Official Project Brochure PDF"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download Brochure</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3.5 rounded-2xl text-sm sm:text-base font-bold shadow-md transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                  <Calendar className="w-4 h-4 text-orange-400" />
+                  <span>Schedule Site Visit</span>
+                </button>
+
+                <Link
+                  to="/plots"
+                  className="inline-flex items-center justify-center gap-1.5 text-slate-700 hover:text-brand-orange font-bold text-sm px-3 py-3.5 rounded-xl transition-colors"
+                >
+                  <span>Explore Plots</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              {/* Key Highlights Grid */}
+              <div className="pt-6 border-t border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-orange-300 transition-colors">
+                  <div className="font-serif font-extrabold text-2xl text-brand-orange">
+                    <CountUp end={96} duration={1500} />
+                  </div>
+                  <div className="font-bold text-slate-800 text-xs mt-0.5">Surveyed Plots</div>
+                  <div className="text-slate-500 text-[11px]">DTCP Approved</div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-emerald-300 transition-colors">
+                  <div className="font-serif font-extrabold text-2xl text-emerald-600">
+                    <CountUp end={10.5} decimals={1} suffix=" Ac" duration={1700} />
+                  </div>
+                  <div className="font-bold text-slate-800 text-xs mt-0.5">Gated Layout</div>
+                  <div className="text-slate-500 text-[11px]">Ac. 0.758 Park</div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-amber-300 transition-colors">
+                  <div className="font-serif font-extrabold text-2xl text-amber-600">
+                    <CountUp end={40} suffix="' & 33'" duration={1600} />
+                  </div>
+                  <div className="font-bold text-slate-800 text-xs mt-0.5">Wide BT Roads</div>
+                  <div className="text-slate-500 text-[11px]">Smooth Asphalt</div>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-white border border-slate-200/80 shadow-2xs hover:border-orange-300 transition-colors">
+                  <div className="font-serif font-extrabold text-2xl text-brand-orange">
+                    <CountUp end={100} suffix="%" duration={1400} />
+                  </div>
+                  <div className="font-bold text-slate-800 text-xs mt-0.5">Vasthu Compliant</div>
+                  <div className="text-slate-500 text-[11px]">Spot Registration</div>
+                </div>
+              </div>
             </div>
 
-            {/* Supreme Headline */}
-            <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.08] text-white drop-shadow-md">
-              Locate Yourself At The Most <span className="text-gradient-luxury">Desirable Place</span>.
-            </h1>
-
-            {/* Sub-headline / Concise Positioning */}
-            <p className="text-lg sm:text-xl text-slate-200 font-light leading-relaxed max-w-2xl drop-shadow">
-              <strong>Alekhya's Brundavan</strong> at Kadthal by <strong>Skandha Group</strong>. Premium residential villa plots adjoining Srisailam Highway (NH 765), just 1 minute to Maisigandi Temple and minutes from the booming Mucherla Future City corridor.
-            </p>
-
-            {/* Supreme Action CTAs */}
-            <div className="flex flex-wrap items-center gap-4 pt-4">
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="btn-shimmer inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-8 py-4 rounded-2xl text-base font-bold shadow-xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-1 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Calendar className="w-5 h-5 text-orange-200" />
-                <span>Schedule Private Site Visit</span>
-              </button>
-
-              <Link
-                to="/plots"
-                className="inline-flex items-center justify-center gap-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/30 text-white px-7 py-4 rounded-2xl text-base font-semibold shadow-md transition-all duration-300 transform hover:-translate-y-1 hover:border-orange-400/50"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>Explore 3D Master Plan</span>
-                <ArrowRight className="w-4 h-4 text-orange-300" />
-              </Link>
-            </div>
-
-            {/* Highlights Grid with Animated Rolling Numbers */}
-            <div className="pt-8 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs text-slate-300">
-              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.03]">
-                <div className="text-white font-serif font-extrabold text-2xl text-orange-400">
-                  <CountUp end={96} duration={1500} />
+            {/* Right Column: Clean Image Only (5 cols) - User explicitly instructed: "i dont want text on hero section image", "keep text and image a side", "dont use 3d layout in hero section" */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-slate-100 group">
+                <img
+                  src="/assets/hero_cover.jpg"
+                  alt="Plotted Community at Kadthal, Srisailam Highway"
+                  className="w-full h-[360px] sm:h-[450px] lg:h-[500px] object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                />
+                {/* Subtle Clean Bottom Location Bar (Not covering the image faces) */}
+                <div className="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-md text-white p-3 rounded-2xl border border-slate-700/60 shadow-lg flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <MapPin className="w-4 h-4 text-brand-orange shrink-0" />
+                    <span className="text-xs font-bold truncate">Kadthal, Srisailam Highway (NH 765)</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/80 shrink-0 ml-2">
+                    1 Min to Temple
+                  </span>
                 </div>
-                <div className="text-white font-semibold text-xs mt-0.5">Surveyed Plots</div>
-                <div className="text-slate-400 text-[10px]">DTCP Approved</div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-emerald-500/40 transition-all duration-300 hover:scale-[1.03]">
-                <div className="text-white font-serif font-extrabold text-2xl text-emerald-400">
-                  <CountUp end={10.5} decimals={1} suffix=" Ac" duration={1700} />
-                </div>
-                <div className="text-white font-semibold text-xs mt-0.5">Gated Layout</div>
-                <div className="text-slate-400 text-[10px]">Ac. 0.758 Park</div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-amber-500/40 transition-all duration-300 hover:scale-[1.03]">
-                <div className="text-white font-serif font-extrabold text-2xl text-amber-400">
-                  <CountUp end={40} suffix="' & 33'" duration={1600} />
-                </div>
-                <div className="text-white font-semibold text-xs mt-0.5">Wide BT Roads</div>
-                <div className="text-slate-400 text-[10px]">Smooth Asphalt</div>
-              </div>
-
-              <div className="bg-white/5 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all duration-300 hover:scale-[1.03]">
-                <div className="text-white font-serif font-extrabold text-2xl text-orange-400">
-                  <CountUp end={100} suffix="%" duration={1400} />
-                </div>
-                <div className="text-white font-semibold text-xs mt-0.5">Vasthu Compliant</div>
-                <div className="text-slate-400 text-[10px]">Spot Registration</div>
               </div>
             </div>
           </div>
         </div>
       </section>
-
 
       {/* ========================================================== */}
       {/* 2. INFINITE SUPREME LUXURY MARQUEE RIBBON                  */}
@@ -377,6 +398,9 @@ export default function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* Main Content Sections Wrapper with Spacing */}
+      <div className="space-y-24 mt-20 sm:mt-24">
 
       {/* ========================================================== */}
       {/* 3. EDITORIAL QUOTATION & BRAND PHILOSOPHY                  */}
@@ -901,6 +925,7 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
       </section>
+      </div>
 
       {/* On-Site Development / Lighting Photo Detail Modal */}
       {selectedPhotoModal && (

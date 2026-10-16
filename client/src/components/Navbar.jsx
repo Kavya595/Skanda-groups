@@ -41,7 +41,7 @@ export default function Navbar({ settings }) {
 
   return (
     <>
-      <header className="sticky top-0 z-50 transition-all duration-300">
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100/90 transition-all duration-300">
         {/* Supreme Micro-Bar: Statutory Verification Ribbon */}
         <div className="bg-slate-900 text-slate-300 text-[11px] font-medium py-1.5 px-4 border-b border-slate-800">
           <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
