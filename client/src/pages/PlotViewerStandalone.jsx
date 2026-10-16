@@ -1550,217 +1550,55 @@ export default function PlotViewerStandalone({ settings }) {
           {/* ========================================================== */}
           {/* 4. NEARBY LANDMARKS & CONNECTIVITY (OFFICIAL FLYER MAP)    */}
           {/* ========================================================== */}
-          <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
-                    <MapPin className="w-4 h-4" />
-                    <span>Strategic Location &amp; Roadmap</span>
-                  </div>
-                  <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
-                    Official Location Roadmap &amp; Regional Corridors
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Schematic connectivity map and surrounding growth hubs directly from the official project brochure / flyer.
-                  </p>
-                </div>
+          <section id="sec-landmarks" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <div>
+              <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
+                <MapPin className="w-4 h-4" />
+                <span>Strategic Location</span>
+              </div>
+              <h3 className="font-serif text-2xl sm:text-3xl font-bold text-slate-900 mt-1">
+                Key Landmark Drive Times &amp; Distances
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                Prime connectivity on Srisailam Highway with rapid drive-times to major upcoming industrial hubs.
+              </p>
+            </div>
 
-                <div className="flex items-center gap-2">
-                  <a
-                    href="/assets/skandha_flyer.pdf"
-                    download="Skandha_Group_Flyer.pdf"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {nearbyLandmarks.map((item, idx) => {
+                const IconComp = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download Flyer (PDF)</span>
-                  </a>
-                  <button
-                    onClick={() => {
-                      setRouteMapZoom(1);
-                      setIsRouteMapModalOpen(true);
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold transition-all shadow-xs"
-                  >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                    <span>View Full Schematic Map</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Official Flyer Schematic Route Map Showcase Card */}
-              <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
-                {/* Route Map Image Container */}
-                <div
-                  onClick={() => {
-                    setRouteMapZoom(1);
-                    setIsRouteMapModalOpen(true);
-                  }}
-                  className="lg:col-span-6 bg-slate-950 p-4 sm:p-6 flex flex-col items-center justify-center relative group cursor-pointer border-b lg:border-b-0 lg:border-r border-slate-800"
-                >
-                  <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand-orange text-white shadow-xs">
-                      Official Brochure Map
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-700 hidden sm:inline-block">
-                      Click to Enlarge
-                    </span>
-                  </div>
-
-                  <div className="w-full max-w-md h-72 sm:h-96 relative flex items-center justify-center overflow-hidden rounded-2xl bg-slate-900/50">
-                    <img
-                      src="/assets/route_map_hd.png"
-                      alt="Skandha Group Official Route Map"
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="bg-white/95 backdrop-blur-md px-4 py-2 rounded-xl text-slate-900 text-xs font-bold flex items-center gap-2 shadow-lg">
-                        <Maximize2 className="w-4 h-4 text-brand-orange" />
-                        <span>Click to Enlarge &amp; Zoom</span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <IconComp className="w-5 h-5" />
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 text-center text-xs text-slate-400">
-                    Schematic Road Network showing NH-765, ORR Exit 14, 200ft Future City Rd &amp; Pharma City
-                  </div>
-                </div>
-
-                {/* Key Corridor Highlights Breakdown */}
-                <div className="lg:col-span-6 p-6 sm:p-8 flex flex-col justify-between space-y-6">
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1">
-                      <Navigation className="w-3.5 h-3.5" />
-                      <span>Direct Corridor Connectivity</span>
-                    </div>
-                    <h4 className="font-serif text-xl sm:text-2xl font-bold text-slate-900">
-                      Srisailam Highway &bull; Mucherla Future City Belt
-                    </h4>
-                    <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-                      This plotted development is strategically located on the high-growth corridor between Hyderabad Outer Ring Road (Exit 14) and Kadthal, surrounded by national pharmaceutical leaders and future industrial zones.
-                    </p>
-                  </div>
-
-                  {/* 4 Strategic Corridors from the Flyer */}
-                  <div className="space-y-3">
-                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-orange-100 text-brand-orange font-bold text-xs flex items-center justify-center shrink-0">
-                        NH
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
+                        {item.category}
                       </span>
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Srisailam Highway (NH 765) &bull; 100ft Road Access</div>
-                        <div className="text-[11px] text-slate-600 mt-0.5">
-                          Direct 4-lane arterial connection from ORR Exit 14 with a wide 100ft road connecting to the SITE entrance.
-                        </div>
-                      </div>
                     </div>
 
-                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center shrink-0">
-                        200'
-                      </span>
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">200ft Future City Road &bull; 330ft Arterial Road</div>
-                        <div className="text-[11px] text-slate-600 mt-0.5">
-                          Rapid upcoming arterial roads providing high-speed cross-connectivity to Telangana AI City &amp; Mucherla.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center shrink-0">
-                        SEZ
-                      </span>
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Green Pharma City &bull; Global Pharma Campuses</div>
-                        <div className="text-[11px] text-slate-600 mt-0.5">
-                          Adjacent to Dr. Reddy's, Bharat Biotech, Hetero, MSN, Laurus Labs, Aurobindo Pharma, Biological E &amp; Gland Pharma.
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
-                      <span className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-xs flex items-center justify-center shrink-0">
-                        RRR
-                      </span>
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Regional Ring Road (RRR) &bull; Maisigandi Temple</div>
-                        <div className="text-[11px] text-slate-600 mt-0.5">
-                          10 mins to upcoming RRR Kadthal Interchange; 1 min to Sri Maisigandi Maisamma Temple.
-                        </div>
+                    <div className="mt-3">
+                      <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
+                        {item.name}
+                      </h4>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
+                        <span className="flex items-center gap-1">
+                          <Navigation className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{item.distance}</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-slate-700 font-semibold">
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{item.time}</span>
+                        </span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Quick CTAs */}
-                  <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
-                    <button
-                      onClick={() => {
-                        setRouteMapZoom(1);
-                        setIsRouteMapModalOpen(true);
-                      }}
-                      className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white font-bold px-5 py-2.5 rounded-xl text-xs shadow-xs transition-all"
-                    >
-                      <Maximize2 className="w-3.5 h-3.5" />
-                      <span>Enlarge Schematic Map</span>
-                    </button>
-
-                    <a
-                      href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-xs transition-colors"
-                    >
-                      <Navigation className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Get Directions on Google Maps</span>
-                      <ExternalLink className="w-3 h-3 text-slate-400" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nearby Landmarks Grid */}
-              <div className="pt-4">
-                <h4 className="font-serif text-lg sm:text-xl font-bold text-slate-900 mb-4">
-                  Key Landmark Drive Times &amp; Distances
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {nearbyLandmarks.map((item, idx) => {
-                    const IconComp = item.icon;
-                    return (
-                      <div
-                        key={idx}
-                        className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-orange-300 transition-all duration-200 flex flex-col justify-between group"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                            <IconComp className="w-5 h-5" />
-                          </div>
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${item.badgeColor}`}>
-                            {item.category}
-                          </span>
-                        </div>
-
-                        <div className="mt-3">
-                          <h4 className="font-bold text-slate-900 text-sm sm:text-base group-hover:text-brand-orange transition-colors">
-                            {item.name}
-                          </h4>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-slate-500 font-medium">
-                            <span className="flex items-center gap-1">
-                              <Navigation className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{item.distance}</span>
-                            </span>
-                            <span className="flex items-center gap-1 text-slate-700 font-semibold">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{item.time}</span>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+                );
+              })}
             </div>
           </section>
 
