@@ -47,10 +47,9 @@ async function seedDatabase() {
       brochurePdfUrl: '/assets/skandha_brochure.pdf',
       flyerPdfUrl: '/assets/skandha_flyer.pdf',
       socialLinks: {
-        facebook: 'https://facebook.com/skandhagroup',
-        instagram: 'https://instagram.com/skandhagroup',
-        youtube: 'https://youtube.com/@skandhagroup',
-        linkedin: 'https://linkedin.com/company/skandhagroup'
+        facebook: '',
+        instagram: 'https://www.instagram.com/_skandhagroups_/',
+        youtube: 'https://www.youtube.com/@SkandhaGroups-hyd'
       },
       publicClaimsApproved: true,
       seo: {

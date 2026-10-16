@@ -5,12 +5,10 @@ import {
   Mail,
   ShieldCheck,
   ExternalLink,
-  Facebook,
   Instagram,
   Youtube,
-  Linkedin,
-  Twitter,
-  MessageCircle
+  MessageCircle,
+  Facebook
 } from 'lucide-react';
 
 export default function Footer({ settings }) {
@@ -19,13 +17,23 @@ export default function Footer({ settings }) {
   const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
   const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
 
+  const instagramUrl = (settings && settings.socialLinks && settings.socialLinks.instagram && !settings.socialLinks.instagram.endsWith('/skandhagroup'))
+    ? settings.socialLinks.instagram
+    : 'https://www.instagram.com/_skandhagroups_/';
+
+  const youtubeUrl = (settings && settings.socialLinks && settings.socialLinks.youtube && !settings.socialLinks.youtube.endsWith('/@skandhagroup'))
+    ? settings.socialLinks.youtube
+    : 'https://www.youtube.com/@SkandhaGroups-hyd';
+
+  const rawFacebook = settings && settings.socialLinks && settings.socialLinks.facebook;
+  const facebookUrl = (rawFacebook && rawFacebook !== 'https://facebook.com' && rawFacebook !== 'https://facebook.com/skandhagroup') ? rawFacebook : '';
+  const whatsappUrl = 'https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots%20at%20Kadthal.';
+
   const socialLinks = [
-    { name: 'Facebook', icon: Facebook, href: 'https://facebook.com', hoverColor: 'hover:text-[#1877F2]' },
-    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com', hoverColor: 'hover:text-[#E4405F]' },
-    { name: 'YouTube', icon: Youtube, href: 'https://youtube.com', hoverColor: 'hover:text-[#FF0000]' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com', hoverColor: 'hover:text-[#0A66C2]' },
-    { name: 'X / Twitter', icon: Twitter, href: 'https://twitter.com', hoverColor: 'hover:text-white' },
-    { name: 'WhatsApp', icon: MessageCircle, href: 'https://wa.me/919100031199', hoverColor: 'hover:text-[#25D366]' }
+    ...(facebookUrl ? [{ name: 'Facebook', icon: Facebook, href: facebookUrl, hoverColor: 'hover:text-[#1877F2]' }] : []),
+    { name: 'Instagram', icon: Instagram, href: instagramUrl, hoverColor: 'hover:text-[#E4405F]' },
+    { name: 'YouTube', icon: Youtube, href: youtubeUrl, hoverColor: 'hover:text-[#FF0000]' },
+    { name: 'WhatsApp', icon: MessageCircle, href: whatsappUrl, hoverColor: 'hover:text-[#25D366]' }
   ];
 
   return (

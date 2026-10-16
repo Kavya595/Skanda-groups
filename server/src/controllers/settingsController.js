@@ -14,7 +14,11 @@ const defaultPublicSettings = {
   heroPosterUrl: '/assets/hero_cover.jpg',
   brochurePdfUrl: '',
   flyerPdfUrl: '',
-  socialLinks: {},
+  socialLinks: {
+    instagram: 'https://www.instagram.com/_skandhagroups_/',
+    youtube: 'https://www.youtube.com/@SkandhaGroups-hyd',
+    facebook: ''
+  },
   publicClaimsApproved: true,
   seo: {},
   whatsappAvailable: true

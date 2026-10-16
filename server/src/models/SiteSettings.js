@@ -18,10 +18,9 @@ const siteSettingsSchema = new mongoose.Schema({
   brochurePdfUrl: { type: String, default: '/assets/skandha_brochure.pdf' },
   flyerPdfUrl: { type: String, default: '/assets/skandha_flyer.pdf' },
   socialLinks: {
-    facebook: { type: String, default: 'https://facebook.com/skandhagroup' },
-    instagram: { type: String, default: 'https://instagram.com/skandhagroup' },
-    youtube: { type: String, default: 'https://youtube.com/@skandhagroup' },
-    linkedin: { type: String, default: 'https://linkedin.com/company/skandhagroup' }
+    facebook: { type: String, default: '' },
+    instagram: { type: String, default: 'https://www.instagram.com/_skandhagroups_/' },
+    youtube: { type: String, default: 'https://www.youtube.com/@SkandhaGroups-hyd' }
   },
   publicClaimsApproved: { type: Boolean, default: true },
   seo: {
