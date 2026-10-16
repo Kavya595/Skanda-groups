@@ -1760,7 +1760,7 @@ export default function PlotViewerStandalone({ settings }) {
                           <input
                             type="tel"
                             required
-                            placeholder="+91 98765 43210"
+                            placeholder="Enter contact number"
                             value={contactForm.phone}
                             onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
                             className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
@@ -1925,13 +1925,13 @@ export default function PlotViewerStandalone({ settings }) {
                 Direct builder bookings with guaranteed spot registration and bank loan assistance.
               </p>
               <div className="space-y-2 pt-1 text-xs">
-                <a
-                  href="tel:+919100031199"
-                  className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors font-medium"
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors font-medium text-left"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                  <span>+91 91000 31199 / Site Desk</span>
-                </a>
+                  <span>Request Site Desk Callback</span>
+                </button>
                 <a
                   href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots%20at%20Kadthal."
                   target="_blank"
