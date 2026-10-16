@@ -35,7 +35,7 @@ async function seedDatabase() {
   if (!settings) {
     settings = await SiteSettings.create({
       companyName: 'Skandha Group',
-      projectName: "Alekhya's Brundavan",
+      projectName: "Kadthal Venture",
       projectLocation: 'Kadthal, Srisailam Highway, Telangana',
       officeAddress: '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079',
       contactEmail: 'contact@skandhagroup.com',
@@ -44,8 +44,8 @@ async function seedDatabase() {
       reraNumber: 'PO2400009081',
       heroVideoUrl: '',
       heroPosterUrl: '/assets/hero_cover.jpg',
-      brochurePdfUrl: '/assets/alekhyas_brundavan_brochure.pdf',
-      flyerPdfUrl: '/assets/alekhyas_brundavan_flyer.pdf',
+      brochurePdfUrl: '/assets/skandha_brochure.pdf',
+      flyerPdfUrl: '/assets/skandha_flyer.pdf',
       socialLinks: {
         facebook: 'https://facebook.com/skandhagroup',
         instagram: 'https://instagram.com/skandhagroup',
@@ -54,15 +54,25 @@ async function seedDatabase() {
       },
       publicClaimsApproved: true,
       seo: {
-        title: "Alekhya's Brundavan | DTCP & RERA Approved Open Plots in Kadthal | Skandha Group",
+        title: "Skandha Group | DTCP & RERA Approved Open Plots in Kadthal",
         description: "Premium DTCP & RERA approved residential villa plots in Kadthal near Srisailam Highway & Maisigandi Temple by Skandha Group. 100% Vasthu compliant with 40' & 33' BT roads.",
-        keywords: "open plots Kadthal, Skandha Group, Alekhya Brundavan, DTCP approved plots, Srisailam Highway plots, Pharma City plots",
+        keywords: "open plots Kadthal, Skandha Group, DTCP approved plots, Srisailam Highway plots, Pharma City plots",
         ogImage: '/assets/hero_cover.jpg'
       }
     });
     console.log('✓ Initialized default site settings.');
   } else {
-    console.log('✓ Site settings already exist.');
+    settings.projectName = "Kadthal Venture";
+    settings.brochurePdfUrl = '/assets/skandha_brochure.pdf';
+    settings.flyerPdfUrl = '/assets/skandha_flyer.pdf';
+    settings.seo = {
+      title: "Skandha Group | DTCP & RERA Approved Open Plots in Kadthal",
+      description: "Premium DTCP & RERA approved residential villa plots in Kadthal near Srisailam Highway & Maisigandi Temple by Skandha Group. 100% Vasthu compliant with 40' & 33' BT roads.",
+      keywords: "open plots Kadthal, Skandha Group, DTCP approved plots, Srisailam Highway plots, Pharma City plots",
+      ogImage: '/assets/hero_cover.jpg'
+    };
+    await settings.save();
+    console.log('✓ Updated existing site settings to Kadthal Venture.');
   }
 
   // 3. Seed Gallery Items from brochure development photos

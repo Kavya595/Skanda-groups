@@ -221,7 +221,7 @@ export default function HomePage() {
   const faqs = [
     {
       category: 'Legal & Approvals',
-      q: "Is Alekhya's Brundavan approved by DTCP and registered under TS RERA?",
+      q: "Is this venture approved by DTCP and registered under TS RERA?",
       a: "Yes. The venture is officially sanctioned by the Directorate of Town and Country Planning (DTCP) under layout permit TLP NO. 87/2024/H and registered with the Telangana State Real Estate Regulatory Authority (TS RERA) under registration PO2400009081. All 96 plots hold 100% clear legal title, guaranteeing instant spot registration without encumbrance."
     },
     {
@@ -290,16 +290,16 @@ export default function HomePage() {
                 Locate Yourself At The Most <span className="text-brand-orange">Desirable Place</span>.
               </h1>
 
-              {/* Sub-headline / Content - User requirement: "if it is present in content that is ok" */}
+              {/* Sub-headline / Content */}
               <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl">
-                Alekhya's Brundavan by Skandha Group offers 96 vastu-compliant residential villa plots adjoining Srisailam Highway (NH 765), just 1 minute to historic Maisigandi Temple and minutes from the booming Mucherla Future City &amp; Pharma City corridor.
+                Skandha Group offers 96 vastu-compliant residential villa plots adjoining Srisailam Highway (NH 765), just 1 minute to historic Maisigandi Temple and minutes from the booming Mucherla Future City &amp; Pharma City corridor.
               </p>
 
-              {/* CTAs - User requirement: "and download broucher button add" */}
+              {/* CTAs */}
               <div className="flex flex-wrap items-center gap-3.5 pt-2">
                 <a
-                  href="/assets/alekhyas_brundavan_brochure.pdf"
-                  download="Alekhyas_Brundavan_Brochure.pdf"
+                  href="/assets/skandha_brochure.pdf"
+                  download="Skandha_Group_Kadthal_Brochure.pdf"
                   className="inline-flex items-center justify-center gap-2.5 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white px-7 py-3.5 rounded-2xl text-sm sm:text-base font-bold shadow-xl hover:shadow-orange-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-[0.98]"
                   title="Download Official Project Brochure PDF"
                 >
@@ -442,7 +442,7 @@ export default function HomePage() {
                 Craft Your Signature Villa Sanctuary
               </h2>
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
-                Alekhya's Brundavan offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
+                Our gated venture offers surveyed residential villa plots engineered for bespoke contemporary homes with crisp white architecture, warm teakwood pergolas, light ash-grey travertine stone terraces, and lush private gardens.
               </p>
             </div>
 
@@ -474,7 +474,7 @@ export default function HomePage() {
             <div className="lg:col-span-7 relative group rounded-2xl overflow-hidden shadow-md border border-slate-200 bg-white">
               <img
                 src="/assets/luxury_villa_day.jpg"
-                alt="Bespoke Contemporary Luxury Villa at Alekhya's Brundavan"
+                alt="Bespoke Contemporary Luxury Villa at Skandha Group Kadthal"
                 className="w-full h-[360px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-2">
@@ -549,7 +549,7 @@ export default function HomePage() {
                 Atmospheric Evening Ambiance
               </h2>
               <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
-                Experience the tranquility of dusk at Alekhya's Brundavan. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
+                Experience the tranquility of dusk across our landscaped avenues. Designed with energy-efficient warm amber lighting fixtures, illuminated tree avenues, and glowing private outdoor terraces that elevate evening living.
               </p>
             </div>
 
@@ -795,7 +795,7 @@ export default function HomePage() {
                 Everything You Need to Know
               </h2>
               <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages for Alekhya's Brundavan.
+                Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages.
               </p>
             </div>
           </ScrollReveal>
@@ -900,7 +900,7 @@ export default function HomePage() {
                 Complimentary Daily Site Tours
               </span>
               <h2 className="font-serif text-3xl sm:text-5xl font-bold leading-tight">
-                Experience Alekhya's Brundavan In Person
+                Experience Our Kadthal Venture In Person
               </h2>
               <p className="text-sm sm:text-base text-orange-100 leading-relaxed font-light">
                 Walk the wide blacktop avenues, inspect the landscaped Ac. 0.758 park, and experience the serenity of Kadthal just 1 minute from Maisigandi Temple.
@@ -954,7 +954,7 @@ export default function HomePage() {
                   {selectedPhotoModal.category}
                 </span>
                 <span className="text-xs font-medium text-slate-500">
-                  Alekhya's Brundavan Lifestyle Feature
+                  Skandha Group Lifestyle Feature
                 </span>
               </div>
               <h3 className="font-serif text-2xl font-bold text-slate-900">

@@ -63,7 +63,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
         <div>
           <h1 className="text-2xl font-serif font-bold text-slate-900">
-            Alekhya's Brundavan Dashboard
+            Skandha Group Dashboard
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
             Real-time project inventory, verified customer enquiries, and visitor analytics.
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h3 className="font-bold text-base text-slate-900">Inventory Distribution</h3>
-            <p className="text-xs text-slate-500">Real-time status breakdown of Alekhya's Brundavan plots</p>
+            <p className="text-xs text-slate-500">Real-time status breakdown of Skandha Group plots</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">

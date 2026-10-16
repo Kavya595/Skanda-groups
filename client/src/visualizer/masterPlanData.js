@@ -1,5 +1,5 @@
 /**
- * Master Plan Digitized GIS Dataset — Alekhya's Brundavan, Kadthal
+ * Master Plan Digitized GIS Dataset — Skandha Group, Kadthal
  * DTCP Approved Layout: TLP NO. 87/2024/H | TS RERA: PO2400009081
  * Reference: Authoritative Brochure Page 2 (96 Plots, Ac. 0.758 Park, Srisailam Highway NH-765)
  *
@@ -713,14 +713,14 @@ export function getEnrichedPlots(overridePlots = null) {
 export const SITE_BOUNDARY_GEO = SITE_BOUNDARY_LOCAL.map(([x, z]) => localToLatLng(x, z));
 
 /**
- * Authoritative Curated Regional Landmarks & Connectivity around Alekhya's Brundavan, Kadthal
+ * Authoritative Curated Regional Landmarks & Connectivity around Kadthal
  * Srisailam National Highway (NH-765) Corridor
  */
 export const REGIONAL_LANDMARKS = [
   {
     id: 'LM-SITE',
-    name: "Alekhya's Brundavan (Layout Site)",
-    shortName: "Alekhya's Brundavan",
+    name: "Skandha Venture (Layout Site)",
+    shortName: "Skandha Venture",
     category: 'SITE',
     categoryLabel: 'Project Site',
     distance: '0 km',

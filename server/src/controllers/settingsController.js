@@ -4,7 +4,7 @@ import AuditLog from '../models/AuditLog.js';
 
 const defaultPublicSettings = {
   companyName: 'Skandha Group',
-  projectName: "Alekhya's Brundavan",
+  projectName: "Kadthal Venture",
   projectLocation: 'Kadthal, Srisailam Highway, Hyderabad',
   officeAddress: 'Kadthal Mandal, Ranga Reddy District, Telangana',
   contactEmail: 'contact@skandhagroup.com',

@@ -1,7 +1,7 @@
 {
   "name": "skandha-brundavan-server",
   "version": "1.0.0",
-  "description": "Backend API for Skandha Group Alekhya's Brundavan",
+  "description": "Backend API for Skandha Group Kadthal Plotted Community",
   "main": "src/server.js",
   "type": "module",
   "scripts": {

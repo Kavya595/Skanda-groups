@@ -11,7 +11,7 @@ async function startServer() {
     await connectDB();
     const server = app.listen(PORT, () => {
       console.log(`=======================================================`);
-      console.log(` Alekhya's Brundavan API Server running on port ${PORT}`);
+      console.log(` Skandha Group API Server running on port ${PORT}`);
       console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(` Health Check: http://localhost:${PORT}/health`);
       console.log(` API Base:     http://localhost:${PORT}/api`);

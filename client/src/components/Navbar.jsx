@@ -100,10 +100,10 @@ export default function Navbar({ settings }) {
               />
               <div className="border-l border-slate-200 pl-3">
                 <div className="font-serif font-extrabold text-base sm:text-lg leading-tight text-slate-900 group-hover:text-brand-orange transition-colors">
-                  Alekhya's Brundavan
+                  Skandha Group
                 </div>
                 <div className="text-[10px] font-semibold tracking-wider uppercase text-slate-500">
-                  Kadthal &bull; Skandha Group
+                  Kadthal &bull; Srisailam Highway
                 </div>
               </div>
             </Link>

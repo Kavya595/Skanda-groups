@@ -79,7 +79,7 @@ export default function ProjectPage() {
         <div className="absolute inset-0 z-0">
           <img
             src="/assets/site_aerial_view.jpg"
-            alt="Alekhya's Brundavan Aerial Perspective"
+            alt="Skandha Group Aerial Perspective"
             className="w-full h-full object-cover object-center transform scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/92 via-slate-950/70 to-slate-950/40" />
@@ -140,7 +140,7 @@ export default function ProjectPage() {
         <div className="bg-gradient-to-br from-orange-50 via-white to-amber-50/50 rounded-3xl p-8 sm:p-12 border border-orange-200/60 shadow-sm text-center space-y-4">
           <Quote className="w-10 h-10 text-brand-orange/30 mx-auto" />
           <blockquote className="font-serif text-xl sm:text-2xl lg:text-3xl font-normal text-slate-900 leading-snug">
-            &ldquo;Every dimension, avenue width, and plot boundary in Alekhya's Brundavan has been mathematically aligned to sacred Vasthu geometry and authenticated under statutory DTCP sanction.&rdquo;
+            &ldquo;Every dimension, avenue width, and plot boundary has been mathematically aligned to sacred Vasthu geometry and authenticated under statutory DTCP sanction.&rdquo;
           </blockquote>
           <div className="font-bold text-xs uppercase tracking-widest text-brand-orange">
             Engineering &bull; Authenticity &bull; Clear Title
@@ -164,7 +164,7 @@ export default function ProjectPage() {
                 </span>
               </div>
               <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 mt-1">
-                Challampally / Alekhya's Brundavanam Layout Plan
+                Challampally / Kadthal Sanctioned Layout Plan
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
                 Visualizing all 96 numbered plots, internal 40' &amp; 33' roads, Ac. 0.758 park, and adjoining Srisailam Highway frontage.
@@ -195,7 +195,7 @@ export default function ProjectPage() {
           >
             <img
               src="/assets/layout_plan_hd.png"
-              alt="Alekhya's Brundavan Sanctioned Master Layout Plan"
+              alt="Sanctioned Master Layout Plan"
               className="w-full h-auto max-h-[580px] object-contain rounded-xl mx-auto transition-transform duration-300 group-hover:scale-[1.01]"
             />
             <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 shadow flex items-center gap-1.5 pointer-events-none">
@@ -247,7 +247,7 @@ export default function ProjectPage() {
             Engineered To Endure For Generations
           </h2>
           <p className="text-sm text-slate-600">
-            Alekhya's Brundavan combines heavy-duty civil engineering with sustainable greenery and pristine community utilities.
+            This gated community combines heavy-duty civil engineering with sustainable greenery and pristine community utilities.
           </p>
         </div>
 
@@ -368,7 +368,7 @@ export default function ProjectPage() {
             </button>
             <img
               src="/assets/layout_plan_hd.png"
-              alt="Alekhya's Brundavan Master Layout Plan Full Size"
+              alt="Master Layout Plan Full Size"
               className="max-h-[85vh] w-auto object-contain rounded-2xl mx-auto"
             />
           </div>

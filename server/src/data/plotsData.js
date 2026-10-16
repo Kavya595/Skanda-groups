@@ -1,5 +1,5 @@
 /**
- * Alekhya's Brundavan - Layout Plot Dataset
+ * Skandha Group - Layout Plot Dataset
  * Digitized directly from Brochure Page 2:
  * DTCP Approved Layout TLP NO. 87/2024/H | TS RERA: P02400009081 @ Kadthal
  * Total 96 Plots + Open Space Park (Ac. 0.758 cents)

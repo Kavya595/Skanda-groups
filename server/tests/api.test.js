@@ -30,7 +30,7 @@ test('1. Health Check & Public Endpoints', async (t) => {
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
     assert.equal(res.body.settings.companyName, 'Skandha Group');
-    assert.equal(res.body.settings.projectName, "Alekhya's Brundavan");
+    assert.equal(res.body.settings.projectName, "Kadthal Venture");
     assert.equal(res.body.settings.dtcpNumber, 'TLP NO. 87/2024/H');
     // Ensure raw phone number is NOT exposed in public settings
     assert.equal(res.body.settings.whatsappNumber, undefined);

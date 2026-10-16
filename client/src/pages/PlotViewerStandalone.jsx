@@ -261,7 +261,7 @@ export default function PlotViewerStandalone({ settings }) {
   const [aiChatMessages, setAiChatMessages] = useState([
     {
       role: 'assistant',
-      text: "Namaste! I am your Alekhya's Brundavan AI Assistant. How can I help you regarding plot availability, Vasthu facings, DTCP/RERA approvals, or Srisailam Highway connectivity today?"
+      text: "Namaste! I am your Skandha AI Assistant. How can I help you regarding plot availability, Vasthu facings, DTCP/RERA approvals, or Srisailam Highway connectivity today?"
     }
   ]);
   const [aiInputText, setAiInputText] = useState('');
@@ -272,15 +272,15 @@ export default function PlotViewerStandalone({ settings }) {
     const lower = promptText.toLowerCase();
 
     if (lower.includes('east') || lower.includes('facing')) {
-      reply = "Alekhya's Brundavan offers premium East-facing plots (e.g. Plots 2, 3, 4, 5, 23, 24, 25, 91, 92, 93, 94, 95) with sizes ranging from 194 to 295 sq.yds. All plots are 100% Vasthu compliant with 33' blacktop road access.";
+      reply = "Our Kadthal community offers premium East-facing plots (e.g. Plots 2, 3, 4, 5, 23, 24, 25, 91, 92, 93, 94, 95) with sizes ranging from 194 to 295 sq.yds. All plots are 100% Vasthu compliant with 33' blacktop road access.";
     } else if (lower.includes('dtcp') || lower.includes('rera') || lower.includes('approval') || lower.includes('legal')) {
-      reply = "Alekhya's Brundavan is fully sanctioned by DTCP (Sanction Order: TLP NO. 87/2024/H) and registered with TS RERA (Reg No: PO2400009081). The venture provides 100% clear title ownership with instant spot registration and bank loan tie-ups with SBI, HDFC, and ICICI.";
+      reply = "This venture is fully sanctioned by DTCP (Sanction Order: TLP NO. 87/2024/H) and registered with TS RERA (Reg No: PO2400009081). The venture provides 100% clear title ownership with instant spot registration and bank loan tie-ups with SBI, HDFC, and ICICI.";
     } else if (lower.includes('distance') || lower.includes('temple') || lower.includes('airport') || lower.includes('rgia')) {
-      reply = "Key connectivity from Alekhya's Brundavan (Kadthal):\n• Maisigandi Maisamma Temple: 0.8 km (1 min)\n• Srisailam Highway (NH 765): Direct Frontage (0 min)\n• Regional Ring Road (RRR) Kadthal Junction: 12.4 km (10 mins)\n• Hyderabad Pharma City SEZ: 18.5 km (15 mins)\n• Rajiv Gandhi International Airport (RGIA): 38.5 km (32 mins)";
+      reply = "Key connectivity from the site (Kadthal):\n• Maisigandi Maisamma Temple: 0.8 km (1 min)\n• Srisailam Highway (NH 765): Direct Frontage (0 min)\n• Regional Ring Road (RRR) Kadthal Junction: 12.4 km (10 mins)\n• Hyderabad Pharma City SEZ: 18.5 km (15 mins)\n• Rajiv Gandhi International Airport (RGIA): 38.5 km (32 mins)";
     } else if (lower.includes('size') || lower.includes('dimension') || lower.includes('area') || lower.includes('road')) {
       reply = "Plot sizes range from 183 to 672 sq.yards (1,647 to 6,048 sq.ft) with standard dimensions such as 55' x 30' and 55' x 33'. The layout features a 60' wide main approach road, 33' wide internal blacktop boulevards, and an Ac. 0.758 landscaped central park.";
     } else {
-      reply = "Alekhya's Brundavan by Skandha Group is a prime 96-plot gated community situated directly on Srisailam Highway in Kadthal. Would you like to schedule a site visit or enquire about specific plot numbers? Click 'Enquire Plot' or message us directly on WhatsApp!";
+      reply = "This development by Skandha Group is a prime 96-plot gated community situated directly on Srisailam Highway in Kadthal. Would you like to schedule a site visit or enquire about specific plot numbers? Click 'Enquire Plot' or message us directly on WhatsApp!";
     }
 
     setAiChatMessages(prev => [
@@ -420,8 +420,8 @@ export default function PlotViewerStandalone({ settings }) {
     const shareUrl = `${window.location.origin}/plots?plot=${target.plotNumber}`;
     if (navigator.share) {
       navigator.share({
-        title: `Alekhya's Brundavan - Plot #${target.plotNumber}`,
-        text: `Inspect Plot #${target.plotNumber} (${target.areaSqYds} sq.yds, ${target.facing} facing) in Alekhya's Brundavan at Kadthal.`,
+        title: `Skandha Group - Plot #${target.plotNumber}`,
+        text: `Inspect Plot #${target.plotNumber} (${target.areaSqYds} sq.yds, ${target.facing} facing) in Skandha Group Plotted Community at Kadthal.`,
         url: shareUrl
       }).catch(() => {});
     } else {
@@ -602,7 +602,7 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="border-l border-slate-200 pl-3">
               <div className="flex items-center gap-2">
                 <h1 className="font-serif font-bold text-base text-slate-900 leading-tight">
-                  Alekhya's Brundavan
+                  Skandha Group
                 </h1>
                 <span className="text-[10px] uppercase font-bold tracking-wider bg-orange-50 text-brand-orange border border-orange-200 px-2 py-0.5 rounded-full hidden sm:inline-block">
                   Master Plan
@@ -989,7 +989,7 @@ export default function PlotViewerStandalone({ settings }) {
                   title="Interactive Map"
                 >
                   <Building className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="hidden md:inline font-bold">Alekhya's Brundavan</span>
+                  <span className="hidden md:inline font-bold">Skandha Layout</span>
                 </button>
                 <div className="h-4 w-px bg-slate-300 mx-0.5" />
                 <button
@@ -1098,7 +1098,7 @@ export default function PlotViewerStandalone({ settings }) {
                   </div>
 
                   <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]">
-                    Alekhya's Brundavan
+                    Skandha Group &bull; Kadthal Venture
                   </h1>
 
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-slate-500">
@@ -1797,14 +1797,14 @@ export default function PlotViewerStandalone({ settings }) {
                     Official Location Roadmap &amp; Regional Corridors
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                    Schematic connectivity map and surrounding growth hubs directly from the official Alekhya's Brundavan project brochure / flyer.
+                    Schematic connectivity map and surrounding growth hubs directly from the official project brochure / flyer.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <a
-                    href="/assets/alekhyas_brundavan_flyer.pdf"
-                    download="Alekhyas_Brundavan_Flyer.pdf"
+                    href="/assets/skandha_flyer.pdf"
+                    download="Skandha_Group_Flyer.pdf"
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors"
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1845,7 +1845,7 @@ export default function PlotViewerStandalone({ settings }) {
                   <div className="w-full max-w-md h-72 sm:h-96 relative flex items-center justify-center overflow-hidden rounded-2xl bg-slate-900/50">
                     <img
                       src="/assets/route_map_hd.png"
-                      alt="Alekhya's Brundavan Official Route Map"
+                      alt="Skandha Group Official Route Map"
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1872,7 +1872,7 @@ export default function PlotViewerStandalone({ settings }) {
                       Srisailam Highway &bull; Mucherla Future City Belt
                     </h4>
                     <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
-                      Alekhya's Brundavan is strategically located on the high-growth corridor between Hyderabad Outer Ring Road (Exit 14) and Kadthal, surrounded by national pharmaceutical leaders and future industrial zones.
+                      This plotted development is strategically located on the high-growth corridor between Hyderabad Outer Ring Road (Exit 14) and Kadthal, surrounded by national pharmaceutical leaders and future industrial zones.
                     </p>
                   </div>
 
@@ -2014,7 +2014,7 @@ export default function PlotViewerStandalone({ settings }) {
                     Connect with Our Project Desk
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-                    Schedule an on-site visit to Alekhya's Brundavan at Kadthal, receive certified DTCP/RERA documents, or request custom rate cards.
+                    Schedule an on-site visit to our Kadthal venture, receive certified DTCP/RERA documents, or request custom rate cards.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -2026,7 +2026,7 @@ export default function PlotViewerStandalone({ settings }) {
                     <span>Call Sales Desk</span>
                   </a>
                   <a
-                    href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
+                    href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Skandha%20Group%20plots%20at%20Kadthal."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-xs"
@@ -2232,7 +2232,7 @@ export default function PlotViewerStandalone({ settings }) {
                 />
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                <strong className="text-white">Alekhya's Brundavan</strong> is a landmark DTCP-approved gated community residential layout by <strong>Skandha Group</strong>, strategically poised on Srisailam Highway (NH 765), Kadthal.
+                <strong className="text-white">Skandha Group</strong> presents a landmark DTCP-approved gated community residential layout, strategically poised on Srisailam Highway (NH 765), Kadthal.
               </p>
               <div className="space-y-1 text-[11px] text-slate-400">
                 <div><span className="text-slate-300 font-semibold">DTCP Sanction:</span> TLP NO. 87/2024/H</div>
@@ -2310,7 +2310,7 @@ export default function PlotViewerStandalone({ settings }) {
                   <span>+91 91000 31199 / Site Desk</span>
                 </a>
                 <a
-                  href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots%20at%20Kadthal."
+                  href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots%20at%20Kadthal."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all font-semibold"
@@ -2388,7 +2388,7 @@ export default function PlotViewerStandalone({ settings }) {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-white">Alekhya's Brundavan AI</h3>
+                    <h3 className="text-sm font-bold text-white">Skandha AI Assistant</h3>
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   </div>
                   <div className="text-[10px] text-slate-300 font-medium">
@@ -2467,7 +2467,7 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="px-4 py-2 bg-emerald-50 border-t border-emerald-100 flex items-center justify-between text-[11px] text-emerald-900">
               <span className="font-medium">Prefer direct human assistance?</span>
               <a
-                href="https://wa.me/919100000000?text=Hi%2C%20I%20am%20interested%20in%20Alekhya%27s%20Brundavan%20plots."
+                href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-bold text-emerald-700 hover:underline flex items-center gap-1"
@@ -2544,8 +2544,8 @@ export default function PlotViewerStandalone({ settings }) {
                 </div>
 
                 <a
-                  href="/assets/alekhyas_brundavan_flyer.pdf"
-                  download="Alekhyas_Brundavan_Flyer.pdf"
+                  href="/assets/skandha_flyer.pdf"
+                  download="Skandha_Group_Flyer.pdf"
                   className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
                   title="Download Official Flyer PDF"
                 >
@@ -2568,7 +2568,7 @@ export default function PlotViewerStandalone({ settings }) {
               <div className="relative inline-block transition-transform duration-200 ease-out" style={{ transform: `scale(${routeMapZoom})` }}>
                 <img
                   src="/assets/route_map_hd.png"
-                  alt="Alekhya's Brundavan Schematic Route Map"
+                  alt="Skandha Group Schematic Route Map"
                   className="max-h-[62vh] max-w-full object-contain rounded-xl shadow-2xl border border-slate-800/80"
                 />
               </div>

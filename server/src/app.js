@@ -66,7 +66,7 @@ const healthHandler = (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    service: "Skandha Group - Alekhya's Brundavan API"
+    service: "Skandha Group Kadthal API"
   });
 };
 app.get('/health', healthHandler);

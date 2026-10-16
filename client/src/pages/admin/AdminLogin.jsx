@@ -76,7 +76,7 @@ export default function AdminLogin() {
             Authorized Admin Portal
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Alekhya's Brundavan Project Control Center
+            Skandha Group Project Control Center
           </p>
         </div>
 

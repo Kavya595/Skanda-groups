@@ -97,7 +97,7 @@ export default function AdminLayout() {
                   Admin Portal
                 </div>
                 <div className="text-[10px] font-medium text-emerald-700">
-                  Alekhya's Brundavan
+                  Kadthal Venture
                 </div>
               </div>
             </Link>

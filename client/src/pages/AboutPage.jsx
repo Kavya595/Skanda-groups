@@ -73,13 +73,13 @@ export default function AboutPage({ settings }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="space-y-6">
           <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900 leading-snug">
-            Our Vision: Alekhya's Brundavan at Kadthal
+            Our Vision: Premium Plotted Living at Kadthal
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-            With <strong>Alekhya's Brundavan</strong>, our vision was clear: to craft a peaceful, green plotted community that balances serene residential living with the unprecedented economic growth of the Srisailam Highway / Future City corridor.
+            With <strong>Skandha Group</strong>, our vision was clear: to craft a peaceful, green plotted community that balances serene residential living with the unprecedented economic growth of the Srisailam Highway / Future City corridor.
           </p>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-            Surrounded by historic landmarks like Maisigandi Temple and connected to Hyderabad's upcoming Life Sciences &amp; Pharma belts, Alekhya's Brundavan delivers an ideal foundation for constructing a custom dream villa or creating an enduring intergenerational asset.
+            Surrounded by historic landmarks like Maisigandi Temple and connected to Hyderabad's upcoming Life Sciences &amp; Pharma belts, this development delivers an ideal foundation for constructing a custom dream villa or creating an enduring intergenerational asset.
           </p>
 
           <div className="pt-2 flex items-center gap-4">

@@ -33,8 +33,8 @@ export default function PlotDrawer({ plot, isOpen, onClose, onEnquire }) {
     const shareUrl = `${window.location.origin}/plots?plot=${plot.plotNumber}`;
     if (navigator.share) {
       navigator.share({
-        title: `Alekhya's Brundavan - Plot #${plot.plotNumber}`,
-        text: `Check out Plot #${plot.plotNumber} (${sqYds} sq.yds, ${plot.facing} facing) in Alekhya's Brundavan at Kadthal, Srisailam Highway.`,
+        title: `Skandha Group - Plot #${plot.plotNumber}`,
+        text: `Check out Plot #${plot.plotNumber} (${sqYds} sq.yds, ${plot.facing} facing) in Skandha Group Plotted Community at Kadthal, Srisailam Highway.`,
         url: shareUrl
       }).catch(() => {});
     } else {

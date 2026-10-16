@@ -87,7 +87,7 @@ const DEFAULT_GALLERY_PHOTOS = [
     title: 'Historic Maisigandi Temple',
     category: 'development',
     imageUrl: '/assets/maisigandi_temple.jpg',
-    caption: 'Renowned spiritual landmark situated just 1 minute drive from Alekhya’s Brundavan layout.'
+    caption: 'Renowned spiritual landmark situated just 1 minute drive from the layout.'
   },
   {
     _id: 'photo-9',
@@ -152,7 +152,7 @@ export default function GalleryPage() {
             <span>Curated Living &bull; Real Site Progress</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-slate-900 leading-tight">
-            Alekhya's Brundavan Visual Showcase
+            Skandha Group Visual Showcase
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-light">
             Examine bespoke villa architectural concepts, warm twilight ambiance, and authentic on-site developmental progress across wide avenues, landscaped parkland, and security infrastructure.

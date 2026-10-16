@@ -45,7 +45,7 @@ sitePhotos.forEach(p => {
 });
 
 // 5. Copy official brochures as downloadable PDFs
-fs.copyFileSync(path.join(uploadedDir, 'media_1791868372689_2230b34d.pdf'), path.join(targetDir, 'alekhyas_brundavan_brochure.pdf'));
-fs.copyFileSync(path.join(uploadedDir, 'media_1791868379295_0972c4c4.pdf'), path.join(targetDir, 'alekhyas_brundavan_flyer.pdf'));
+fs.copyFileSync(path.join(uploadedDir, 'media_1791868372689_2230b34d.pdf'), path.join(targetDir, 'skandha_brochure.pdf'));
+fs.copyFileSync(path.join(uploadedDir, 'media_1791868379295_0972c4c4.pdf'), path.join(targetDir, 'skandha_flyer.pdf'));
 
 console.log('Successfully organized and copied all official assets into client/public/assets!');

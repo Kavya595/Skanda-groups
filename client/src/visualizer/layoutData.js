@@ -1,6 +1,6 @@
 /**
  * Client Layout Data & Enriched Plots
- * Matches Brochure Page 2: Challampally / Alekhya's Brundavan
+ * Matches Brochure Page 2: Challampally / Kadthal Venture
  * DTCP Approved TLP NO. 87/2024/H | TS RERA: P02400009081
  */
 

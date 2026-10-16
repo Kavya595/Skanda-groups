@@ -43,7 +43,7 @@ export default function Footer({ settings }) {
             </Link>
             <div className="space-y-1">
               <h3 className="font-serif text-lg font-bold text-white tracking-wide">
-                Alekhya's Brundavan
+                Skandha Group
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
                 10.50-Acre landmark DTCP sanctioned &amp; TS RERA registered plotted community in Kadthal, adjoining Srisailam Highway (NH 765) and 1 minute to Maisigandi Temple.

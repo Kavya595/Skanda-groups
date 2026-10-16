@@ -1600,29 +1600,29 @@ export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
         <meshStandardMaterial color="#D97706" metalness={0.7} roughness={0.3} />
       </mesh>
 
-      {/* "ALEKHYA'S BRUNDAVAN" Text Facing Highway (East side) */}
+      {/* "SKANDHA GROUP" Text Facing Highway (East side) */}
       <Text
         position={[0, 4.9, 0.38]}
-        fontSize={0.44}
+        fontSize={0.52}
         color="#FEF08A"
         fontWeight="bold"
         anchorX="center"
         anchorY="middle"
       >
-        ALEKHYA'S BRUNDAVAN
+        SKANDHA GROUP
       </Text>
 
-      {/* "WELCOME TO BRUNDAVAN" Text Facing Inside Layout (West side) */}
+      {/* "WELCOME TO GATED COMMUNITY" Text Facing Inside Layout (West side) */}
       <Text
         position={[0, 4.9, -0.38]}
         rotation={[0, Math.PI, 0]}
-        fontSize={0.42}
+        fontSize={0.4}
         color="#FEF08A"
         fontWeight="bold"
         anchorX="center"
         anchorY="middle"
       >
-        WELCOME TO BRUNDAVAN
+        WELCOME TO SKANDHA GATED COMMUNITY
       </Text>
     </group>
   );

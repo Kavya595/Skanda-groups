@@ -85,7 +85,7 @@ export default function ContactPage({ settings }) {
           <span>Strategic Location &bull; Kadthal Corridor</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-serif font-extrabold text-slate-900 tracking-tight leading-tight">
-          Locate Alekhya's Brundavan
+          Locate Our Kadthal Project
         </h1>
         <p className="text-base sm:text-lg text-slate-600 font-light leading-relaxed">
           Situated adjoining Srisailam Highway (NH 765) at Kadthal, right in the high-growth orbit of Mucherla Future City. Connect with Skandha Group advisors or schedule a guided site tour.
@@ -183,7 +183,7 @@ export default function ContactPage({ settings }) {
           {activeMapView === 'google' ? (
             <div className="w-full h-full relative">
               <iframe
-                title="Alekhya's Brundavan Location on Google Maps"
+                title="Skandha Group Kadthal Location on Google Maps"
                 src="https://maps.google.com/maps?q=Maisigandi+Maha+Maisamma+Temple+Kadthal+Telangana&t=&z=13&ie=UTF8&iwloc=&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"
@@ -198,7 +198,7 @@ export default function ContactPage({ settings }) {
             <div className="w-full h-full flex items-center justify-center bg-slate-950/5 relative overflow-hidden group">
               <img
                 src="/assets/route_map_hd.png"
-                alt="Alekhya's Brundavan Official Flyer Location & Route Map"
+                alt="Skandha Group Official Flyer Location & Route Map"
                 className="max-h-full max-w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
                 onClick={() => setIsFlyerZoomed(true)}
               />
@@ -350,7 +350,7 @@ export default function ContactPage({ settings }) {
                   className="mt-1 rounded text-brand-orange focus:ring-orange-500 border-slate-300"
                 />
                 <label htmlFor="contactConsent" className="text-xs text-slate-600 leading-snug">
-                  I give consent to Skandha Group to contact me regarding Alekhya's Brundavan project specifications and spot registration details.
+                  I give consent to Skandha Group to contact me regarding project specifications and spot registration details.
                 </label>
               </div>
 
@@ -429,7 +429,7 @@ export default function ContactPage({ settings }) {
             </button>
             <img
               src="/assets/route_map_hd.png"
-              alt="Alekhya's Brundavan Full Route Map"
+              alt="Skandha Group Full Route Map"
               className="max-h-[85vh] w-auto object-contain rounded-2xl mx-auto"
             />
           </div>

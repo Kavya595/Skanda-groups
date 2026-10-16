@@ -24,7 +24,7 @@ export default function SpecialLandmarkView() {
   const landmarks = [
     {
       id: 'site',
-      name: "Alekhya's Brundavan (SITE)",
+      name: "Skandha Venture (SITE)",
       category: 'site',
       distance: 'Adjoining Highway',
       road: "100' Proposed Road & Srisailam Highway",

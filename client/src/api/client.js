@@ -225,7 +225,7 @@ export async function adminExportPlotsCsv() {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'alekhyas_brundavan_plots_inventory.csv';
+  a.download = 'skandha_plots_inventory.csv';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -287,7 +287,7 @@ export async function adminExportLeadsCsv() {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'alekhyas_brundavan_leads.csv';
+  a.download = 'skandha_leads.csv';
   document.body.appendChild(a);
   a.click();
   a.remove();

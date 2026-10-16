@@ -60,7 +60,7 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
         <div className="bg-gradient-to-r from-orange-50 via-white to-orange-50 px-6 py-4 border-b border-orange-100 flex items-center justify-between">
           <div>
             <h3 className="font-serif font-bold text-lg text-slate-900">
-              {prefilledPlot ? `Enquire for Plot #${prefilledPlot.plotNumber}` : "Enquire for Alekhya's Brundavan"}
+              {prefilledPlot ? `Enquire for Plot #${prefilledPlot.plotNumber}` : "Enquire with Skandha Group"}
             </h3>
             <p className="text-xs text-slate-500">
               Direct consultation from official Skandha Group sales advisors
@@ -236,7 +236,7 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
                 className="mt-1 rounded text-brand-orange focus:ring-orange-500 border-slate-300"
               />
               <label htmlFor="consentCheck" className="text-xs text-slate-600 leading-snug">
-                I authorize Skandha Group to contact me regarding Alekhya's Brundavan project details, verified DTCP approvals, and site availability.
+                I authorize Skandha Group to contact me regarding project details, verified DTCP approvals, and site availability.
               </label>
             </div>
 

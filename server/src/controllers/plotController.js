@@ -359,7 +359,7 @@ export async function exportPlotsCsv(req, res) {
     const csv = json2csv.parse(plots);
 
     res.header('Content-Type', 'text/csv');
-    res.attachment('alekhyas_brundavan_plots_inventory.csv');
+    res.attachment('skandha_plots_inventory.csv');
     return res.send(csv);
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });

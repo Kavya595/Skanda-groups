@@ -48,7 +48,7 @@ export async function submitLead(req, res) {
     // Sanitize phone number (strip spaces, +, hyphens)
     const sanitizedNumber = rawNumber.replace(/[^\d]/g, '');
 
-    let waMessage = `Hello Skandha Group! I am ${name.trim()}. I am interested in Alekhya's Brundavan, Kadthal.`;
+    let waMessage = `Hello Skandha Group! I am ${name.trim()}. I am interested in Kadthal plotted development.`;
     if (plotNumber) {
       waMessage += ` Specifically inquiring about Plot #${plotNumber}.`;
     }
@@ -209,7 +209,7 @@ export async function exportLeadsCsv(req, res) {
     const csv = json2csv.parse(leads);
 
     res.header('Content-Type', 'text/csv');
-    res.attachment('alekhyas_brundavan_leads.csv');
+    res.attachment('skandha_leads.csv');
     return res.send(csv);
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
