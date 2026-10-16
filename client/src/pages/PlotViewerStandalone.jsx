@@ -993,7 +993,7 @@ export default function PlotViewerStandalone({ settings }) {
         </div>
 
         {/* Bottom Right Map Attribution (Single Clean Text) */}
-        <div className={`absolute bottom-4 right-56 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
+        <div className={`absolute bottom-4 right-36 z-20 pointer-events-auto hidden md:block select-none transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
           <div className="text-[10px] text-slate-500 font-sans tracking-wide">
@@ -1005,52 +1005,7 @@ export default function PlotViewerStandalone({ settings }) {
         <div className={`absolute bottom-4 right-4 z-30 pointer-events-auto transition-opacity duration-300 flex items-center gap-2 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
-          {/* 3D View Level Switcher (Map View / 3D Layout / Walk View) */}
-          {viewMode === '3d' && (
-            <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl hidden sm:flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setCameraPreset('mapView')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  cameraPreset === 'mapView'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-                title="Minimize to Wide Regional Map View"
-              >
-                <Map className="w-3.5 h-3.5" />
-                <span>Map View</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setCameraPreset('overview')}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  cameraPreset === 'overview'
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-                title="Focus on 3D Layout Master Plan"
-              >
-                <Box className="w-3.5 h-3.5" />
-                <span>3D Layout</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleRoadView}
-                className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                  cameraPreset === 'roadWalk'
-                    ? 'bg-brand-orange text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-                title="Maximize into Street-Level Walk View"
-              >
-                <Footprints className="w-3.5 h-3.5" />
-                <span>Walk View</span>
-              </button>
-            </div>
-          )}
-
-          {/* 2D / 3D Toggle Pill */}
+        {/* Bottom Right 2D/3D Pill */}
           <div className="bg-white/95 backdrop-blur-md p-1 rounded-2xl border border-slate-200/90 shadow-2xl flex items-center gap-1">
             <button
               onClick={() => handleViewModeToggle('2d')}
