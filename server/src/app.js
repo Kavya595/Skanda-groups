@@ -55,11 +55,36 @@ if (process.env.NODE_ENV !== 'test') {
 const clientDist = path.join(__dirname, '../../client/dist');
 const clientPublic = path.join(__dirname, '../../client/public');
 if (fs.existsSync(clientDist)) {
-  app.use(express.static(clientDist));
+  app.use(express.static(clientDist, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      }
+    }
+  }));
 }
 if (fs.existsSync(clientPublic)) {
   app.use(express.static(clientPublic));
 }
+
+// Fallback for stale asset hashes from previous builds
+app.use('/assets', (req, res, next) => {
+  const assetsDir = path.join(clientDist, 'assets');
+  if (req.path.endsWith('.css') && fs.existsSync(assetsDir)) {
+    const cssFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('index-') && f.endsWith('.css'));
+    if (cssFiles.length > 0) {
+      res.setHeader('Content-Type', 'text/css');
+      return res.sendFile(path.join(assetsDir, cssFiles[0]));
+    }
+  } else if (req.path.endsWith('.js') && fs.existsSync(assetsDir)) {
+    const jsFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('index-') && f.endsWith('.js'));
+    if (jsFiles.length > 0) {
+      res.setHeader('Content-Type', 'application/javascript');
+      return res.sendFile(path.join(assetsDir, jsFiles[0]));
+    }
+  }
+  res.status(404).send('Asset not found');
+});
 
 // Health check endpoints
 const healthHandler = (req, res) => {
@@ -87,11 +112,12 @@ app.use('/api', apiRoutes);
 
 // SPA fallback for HTML5 routing (when running monolithically locally)
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api') || req.path === '/health') {
+  if (req.path.startsWith('/api') || req.path.startsWith('/assets') || req.path === '/health') {
     return next();
   }
   const indexPath = path.join(clientDist, 'index.html');
   if (fs.existsSync(indexPath)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     return res.sendFile(indexPath);
   }
   next();

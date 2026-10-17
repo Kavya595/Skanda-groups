@@ -40,7 +40,22 @@ function spaFallbackPlugin() {
         fs.mkdirSync(routeDir, { recursive: true });
         fs.copyFileSync(indexPath, path.join(routeDir, 'index.html'));
       }
-      console.log(`[spaFallbackPlugin] Generated 404.html and route entries for: ${SPA_ROUTES.join(', ')}`);
+
+      // 3. Keep fallback aliases for stale browser caches
+      const assetsDir = path.join(distDir, 'assets');
+      if (fs.existsSync(assetsDir)) {
+        const cssFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('index-') && f.endsWith('.css'));
+        if (cssFiles.length > 0) {
+          fs.copyFileSync(path.join(assetsDir, cssFiles[0]), path.join(assetsDir, 'index-BYaJ1B11.css'));
+          fs.copyFileSync(path.join(assetsDir, cssFiles[0]), path.join(assetsDir, 'index.css'));
+        }
+        const jsFiles = fs.readdirSync(assetsDir).filter(f => f.startsWith('index-') && f.endsWith('.js'));
+        if (jsFiles.length > 0) {
+          fs.copyFileSync(path.join(assetsDir, jsFiles[0]), path.join(assetsDir, 'index-BKcxF_bX.js'));
+          fs.copyFileSync(path.join(assetsDir, jsFiles[0]), path.join(assetsDir, 'index.js'));
+        }
+      }
+      console.log(`[spaFallbackPlugin] Generated 404.html, asset aliases, and route entries for: ${SPA_ROUTES.join(', ')}`);
     }
   };
 }
