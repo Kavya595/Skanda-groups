@@ -57,7 +57,7 @@ export default function PlotModal({ isOpen, onClose, project }) {
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
-                <span>2D & 3D Interactive Map</span>
+                <span>Interactive Map & 3D</span>
               </button>
 
               <button

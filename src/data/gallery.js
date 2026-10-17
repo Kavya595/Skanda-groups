@@ -7,14 +7,14 @@
  */
 
 export const GALLERY_CATEGORIES = [
-  "Brundavanam"
+  "Grand Valley"
 ];
 
 export const GALLERY_ITEMS = [
   {
     id: 1,
     title: "Contemporary Luxury Villa Architecture",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
     alt: "Contemporary luxury two-story villa with manicured front lawn and modern architecture",
@@ -23,7 +23,7 @@ export const GALLERY_ITEMS = [
   {
     id: 2,
     title: "Wide Paved Boulevards & Palm Avenues",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80",
     alt: "Wide paved community boulevard with avenue landscaping and clean curbstones",
@@ -32,7 +32,7 @@ export const GALLERY_ITEMS = [
   {
     id: 3,
     title: "Children's Adventure Playground",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?auto=format&fit=crop&w=800&q=80",
     alt: "Modern equipped playground with slides and swings in a community park",
@@ -41,7 +41,7 @@ export const GALLERY_ITEMS = [
   {
     id: 4,
     title: "Landscaped Central Park & Jogging Trail",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?auto=format&fit=crop&w=800&q=80",
     alt: "Jogging path winding through a manicured green park with mature shade trees",
@@ -50,7 +50,7 @@ export const GALLERY_ITEMS = [
   {
     id: 5,
     title: "Architectural Gated Entrance & Security",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
     alt: "Imposing modern community entry gate with perimeter compound fencing",
@@ -59,7 +59,7 @@ export const GALLERY_ITEMS = [
   {
     id: 6,
     title: "Expansive Plotted Vistas & Clear Horizons",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80",
     alt: "Expansive green landscape with clear blue skies and open residential plots",
@@ -68,7 +68,7 @@ export const GALLERY_ITEMS = [
   {
     id: 7,
     title: "Community Club & Leisure Pavilion",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80",
     alt: "Modern pavilion terrace overlooking tranquil garden water features",
@@ -77,7 +77,7 @@ export const GALLERY_ITEMS = [
   {
     id: 8,
     title: "Arterial Highway & Corridor Transit",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?auto=format&fit=crop&w=800&q=80",
     alt: "Multi-lane national expressway connecting to urban hubs and airports",
@@ -86,7 +86,7 @@ export const GALLERY_ITEMS = [
   {
     id: 9,
     title: "Illuminated Night Boulevards & Street Lighting",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=800&q=80",
     alt: "Paved residential roadway at dusk with bright designer streetlights",
@@ -95,7 +95,7 @@ export const GALLERY_ITEMS = [
   {
     id: 10,
     title: "Civic Utilities & Water Infrastructure",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?auto=format&fit=crop&w=800&q=80",
     alt: "Modern infrastructure reservoir and civic stormwater management",
@@ -104,7 +104,7 @@ export const GALLERY_ITEMS = [
   {
     id: 11,
     title: "Vibrant Community Life & Serenity",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1511895426328-dc8714191300?auto=format&fit=crop&w=800&q=80",
     alt: "Family enjoying a peaceful sunny afternoon in a lush green neighborhood park",
@@ -113,7 +113,7 @@ export const GALLERY_ITEMS = [
   {
     id: 12,
     title: "Elevated Villa Terraces & Green Balconies",
-    category: "Brundavanam",
+    category: "Grand Valley",
     image: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=85",
     thumbnail: "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=800&q=80",
     alt: "Outdoor villa patio and terrace overlooking surrounding greenery",

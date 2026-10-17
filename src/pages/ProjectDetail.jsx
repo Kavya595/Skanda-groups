@@ -18,7 +18,13 @@ import {
 
 export default function ProjectDetail() {
   const { projects } = usePlotContext();
-  const project = projects?.[0] || PROJECTS_DATA[0]; // Alekya
+  const rawProject = projects?.[0] || PROJECTS_DATA[0];
+  const project = {
+    ...rawProject,
+    name: (rawProject.name && !rawProject.name.includes('Alekya')) ? rawProject.name : 'Skandha Grand Valley',
+    projectFullName: (rawProject.projectFullName && !rawProject.projectFullName.includes('Alekya')) ? rawProject.projectFullName : 'Skandha Grand Valley',
+    subTitle: (rawProject.subTitle && !rawProject.subTitle.includes('Alekya')) ? rawProject.subTitle : 'Challampally, Kadthal'
+  };
   const [showPlotModal, setShowPlotModal] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [inquiryData, setInquiryData] = useState({
@@ -125,7 +131,7 @@ export default function ProjectDetail() {
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm bg-[#F58220] hover:bg-[#E07016] text-white shadow-xl hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-0.5 text-center"
               >
                 <Layers className="w-4 h-4 text-white" />
-                <span>View Plots (2D & 3D Interactive Map)</span>
+                <span>View Plots (Interactive Map & 3D)</span>
               </Link>
 
               {/* Official Brochure Download */}
@@ -182,7 +188,7 @@ export default function ProjectDetail() {
                   Project Overview
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[#202124] mt-1">
-                  Alekya at Kadthal: Designed for Serene Living & Rapid Appreciation
+                  Skandha Grand Valley at Kadthal: Designed for Serene Living & Rapid Appreciation
                 </h2>
                 <p className="text-base text-[#6B7280] leading-relaxed mt-4">
                   {project.overview}
@@ -242,7 +248,7 @@ export default function ProjectDetail() {
                 </div>
                 
                 <p className="text-xs text-[#6B7280] mb-5 leading-relaxed">
-                  Alekya offers thoughtfully oriented villa parcels designed to maximize natural ventilation and natural sunlight as per authentic Vasthu principles:
+                  Our community offers thoughtfully oriented villa parcels designed to maximize natural ventilation and natural sunlight as per authentic Vasthu principles:
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
@@ -266,7 +272,7 @@ export default function ProjectDetail() {
                       Explore Nextora-Style Interactive GIS Masterplan
                     </span>
                     <span className="text-blue-800 mt-1 block">
-                      Inspect all 96 plotted parcels in interactive 2D and 3D views with live green/blue/red availability colors.
+                      Inspect all 96 plotted parcels in interactive map and 3D views with live green/blue/red availability colors.
                     </span>
                   </div>
                   <Link
@@ -289,7 +295,7 @@ export default function ProjectDetail() {
                     Direct Plot Inquiries
                   </span>
                   <h3 className="text-xl font-extrabold text-[#202124] mt-1">
-                    Book Your Plot at Alekya
+                    Book Your Plot at Skandha Grand Valley
                   </h3>
                   <p className="text-xs text-[#6B7280] mt-1 leading-relaxed">
                     Connect with our sales specialists for live plot availability and guided site visits.
@@ -299,7 +305,7 @@ export default function ProjectDetail() {
                 {formSubmitted ? (
                   <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-900 space-y-2">
                     <div className="font-bold">Inquiry Registered!</div>
-                    <p>Thank you, {inquiryData.name}. Our advisory team will email you shortly at {inquiryData.email} with Alekya plot sheets.</p>
+                    <p>Thank you, {inquiryData.name}. Our advisory team will email you shortly at {inquiryData.email} with project plot sheets.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleInquirySubmit} className="space-y-4 text-xs">
@@ -368,7 +374,7 @@ export default function ProjectDetail() {
                     className="w-full py-3 rounded-xl font-bold text-xs bg-[#F58220] hover:bg-[#E07016] text-white transition-colors cursor-pointer flex items-center justify-center gap-2 shadow"
                   >
                     <Layers className="w-4 h-4" />
-                    <span>View Interactive 2D & 3D Plots</span>
+                    <span>View Interactive Map & 3D Plots</span>
                   </Link>
 
                   <a

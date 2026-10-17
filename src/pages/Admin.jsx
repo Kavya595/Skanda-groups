@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   ShieldCheck, 
   Lock, 
+  LogIn,
   AlertCircle, 
   LogOut, 
   Check, 
@@ -31,12 +32,23 @@ export default function Admin() {
     resetPlots 
   } = usePlotContext();
 
-  // Authentication State
+  // Authentication State (Session-based: auto-expires on tab/window close, requires login on every new session or after logout)
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('skandha_admin_logged_in') === 'true';
+    // Purge legacy persistent localStorage login so existing browsers are forced to authenticate cleanly
+    try {
+      localStorage.removeItem('skandha_admin_logged_in');
+    } catch {
+      // ignore
+    }
+    try {
+      return sessionStorage.getItem('skandha_admin_session_logged_in') === 'true';
+    } catch {
+      return false;
+    }
   });
   const [adminPin, setAdminPin] = useState('');
   const [authError, setAuthError] = useState('');
+  const [logoutNotice, setLogoutNotice] = useState('');
 
   // Selected Plot for Instant Confirmation Modal
   const [selectedPlot, setSelectedPlot] = useState(null);
@@ -76,6 +88,23 @@ export default function Admin() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Non-passive Wheel Zoom to avoid passive listener console warnings
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+
+    const onWheelHandler = (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 0.08 : -0.08;
+      setZoomLevel(prev => Math.min(Math.max(0.3, prev + zoomFactor), 2.2));
+    };
+
+    el.addEventListener('wheel', onWheelHandler, { passive: false });
+    return () => {
+      el.removeEventListener('wheel', onWheelHandler);
+    };
+  }, []);
+
   // Drag pan handlers
   const handleMouseDown = (e) => {
     if (e.button !== 0) return;
@@ -113,16 +142,31 @@ export default function Admin() {
     e.preventDefault();
     if (adminPin === 'admin123' || adminPin === 'skandha2026') {
       setIsAuthenticated(true);
-      localStorage.setItem('skandha_admin_logged_in', 'true');
+      try {
+        sessionStorage.setItem('skandha_admin_session_logged_in', 'true');
+        localStorage.removeItem('skandha_admin_logged_in');
+      } catch {
+        // ignore
+      }
+      setAdminPin('');
       setAuthError('');
+      setLogoutNotice('');
     } else {
-      setAuthError('Invalid Admin Passcode. Use admin123 or skandha2026.');
+      setAuthError('Invalid Admin Password.');
     }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('skandha_admin_logged_in');
+    setAdminPin('');
+    setAuthError('');
+    setLogoutNotice('');
+    try {
+      sessionStorage.removeItem('skandha_admin_session_logged_in');
+      localStorage.removeItem('skandha_admin_logged_in');
+    } catch {
+      // ignore
+    }
   };
 
   // Open Action Modal when clicking any plot on the map
@@ -206,8 +250,7 @@ export default function Admin() {
               <Lock className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white">Map Admin Portal</h2>
-              <p className="text-xs text-slate-400">Live Interactive Plot Booking & Confirmation</p>
+              <h2 className="text-xl font-black text-white">Admin Portal</h2>
             </div>
           </div>
 
@@ -221,40 +264,26 @@ export default function Admin() {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                Admin Passcode
+                Admin Password
               </label>
               <input
                 type="password"
                 required
                 value={adminPin}
                 onChange={(e) => setAdminPin(e.target.value)}
-                placeholder="Enter passcode (admin123)..."
+                placeholder="Enter admin password..."
                 className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 focus:border-[#F58220] outline-none text-sm transition-colors"
               />
-              <span className="text-[11px] text-slate-500 mt-1.5 block">
-                Default authorization passcode: <code className="text-[#F58220]">admin123</code> or <code className="text-[#F58220]">skandha2026</code>
-              </span>
             </div>
 
             <button
               type="submit"
               className="w-full py-3.5 rounded-xl font-bold text-white bg-[#F58220] hover:bg-[#E07016] shadow-lg transition-all cursor-pointer text-sm flex items-center justify-center gap-2"
             >
-              <ShieldCheck className="w-4 h-4" />
-              <span>Enter Map Admin</span>
+              <LogIn className="w-4 h-4" />
+              <span>Login</span>
             </button>
           </form>
-
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-            <Link to="/" className="hover:text-slate-300 flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Website</span>
-            </Link>
-            <Link to="/projects/alekya/map" className="hover:text-[#F58220] flex items-center gap-1">
-              <Layers className="w-3.5 h-3.5" />
-              <span>Public Map</span>
-            </Link>
-          </div>
         </div>
       </div>
     );
@@ -290,7 +319,7 @@ export default function Admin() {
         <div className="flex items-center gap-2 sm:gap-3 text-xs">
           {/* Green (Available) */}
           <div className="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+            <span className="w-2 h-2 rounded-full bg-[#008532]" />
             <span className="hidden sm:inline">Available:</span>
             <strong className="text-white font-black">{stats.available}</strong>
           </div>
@@ -314,21 +343,32 @@ export default function Admin() {
             to="/projects/alekya/map"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold transition-colors text-xs"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold transition-colors text-xs"
             title="View Live Public Map"
           >
-            <ExternalLink className="w-3 h-3 text-[#F58220]" />
+            <ExternalLink className="w-3.5 h-3.5 text-[#F58220]" />
             <span>Public View</span>
           </Link>
 
-          {/* Logout */}
+          {/* Back to Website */}
+          <Link
+            to="/"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold transition-colors text-xs"
+            title="Return to Main Website"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Website</span>
+          </Link>
+
+          {/* Prominent Admin Logout Button */}
           <button
             type="button"
             onClick={handleLogout}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-red-400 border border-slate-700 transition-colors cursor-pointer"
-            title="Logout Admin"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 hover:text-red-200 border border-red-500/40 transition-all font-bold text-xs cursor-pointer shadow-xs"
+            title="Logout from Admin Portal"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5 text-red-400" />
+            <span>Logout</span>
           </button>
         </div>
       </header>
@@ -383,10 +423,10 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* 3. MAIN WORKSPACE: THE LIVE INTERACTIVE LAYOUT MAP ONLY */}
+      {/* 3. MAIN WORKSPACE: THE LIVE INTERACTIVE LAYOUT (MAP VIEW REMOVED) */}
       <main 
         ref={canvasRef}
-        className="flex-1 relative overflow-hidden bg-[#0a0c10] cursor-grab active:cursor-grabbing flex items-center justify-center"
+        className="flex-1 relative overflow-hidden bg-slate-950 cursor-grab active:cursor-grabbing flex items-center justify-center"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -399,7 +439,7 @@ export default function Admin() {
           }}
           className="transition-transform duration-75 select-none py-6 px-4"
         >
-          {/* Authentic CHALLAMPALLY / ALEKYA BRUNDAVANAM DTCP Masterplan */}
+          {/* Authentic CHALLAMPALLY / SKANDHA GRAND VALLEY DTCP Masterplan */}
           <ChallampallyMasterplan
             plotLookup={plotLookup}
             onSelectPlot={(p) => handlePlotClick(p)}
@@ -410,11 +450,11 @@ export default function Admin() {
         {/* Bottom Helper Bar */}
         <div className="absolute bottom-3 left-4 z-20 bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-800 text-[11px] text-slate-300 shadow-lg flex items-center gap-3">
           <span className="flex items-center gap-1.5 font-bold text-emerald-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]" /> Green: Available
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e]" /> Green: Available
           </span>
           <span className="text-slate-600">&bull;</span>
           <span className="flex items-center gap-1.5 font-bold text-blue-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#2563eb]" /> Blue: Booked
+            <span className="w-2.5 h-2.5 rounded-full bg-[#3b82f6]" /> Blue: Booked
           </span>
           <span className="text-slate-600">&bull;</span>
           <span className="flex items-center gap-1.5 font-bold text-red-400">

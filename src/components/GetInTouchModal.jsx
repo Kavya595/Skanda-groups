@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, CheckCircle2, Phone, Mail, User, MapPin, Loader2, Sparkles } from 'lucide-react';
 import { COMPANY_CONFIG } from '../config/company';
 
-export default function GetInTouchModal({ isOpen, onClose }) {
+export default function GetInTouchModal({ isOpen, onClose, initialPlot = null }) {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
     email: '',
-    venture: "Alekya (Alekya's Brundavan, Kadthal)",
+    venture: "Skandha Grand Valley (Kadthal, Srisailam Highway)",
     interest: 'Plot Booking & Pricing',
     message: ''
   });
@@ -34,13 +34,20 @@ export default function GetInTouchModal({ isOpen, onClose }) {
     };
   }, [isOpen, onClose]);
 
-  // Reset state when opened
+  // Reset state when opened and prefill plot inquiry if provided
   useEffect(() => {
     if (isOpen) {
       setIsSuccess(false);
       setErrors({});
+      if (initialPlot) {
+        setFormData((prev) => ({
+          ...prev,
+          interest: `Plot #${initialPlot.number} (${initialPlot.sqYards} Sq.Yds)`,
+          message: `Inquiring about Plot #${initialPlot.number} (${initialPlot.sqYards} Sq.Yds, ${initialPlot.facing || 'East'} Facing) at Skandha Grand Valley.`
+        }));
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialPlot]);
 
   if (!isOpen) return null;
 
@@ -75,6 +82,27 @@ export default function GetInTouchModal({ isOpen, onClose }) {
     setIsSubmitting(true);
 
     try {
+      // If customer is inquiring about a specific plot, submit to backend bookings database
+      if (initialPlot) {
+        try {
+          await fetch('/api/bookings/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              plotNumber: initialPlot.number,
+              plotId: initialPlot.id,
+              customerName: formData.fullName,
+              customerPhone: formData.phone,
+              email: formData.email,
+              tokenAmount: 'Inquiry / Booking Token',
+              notes: formData.message || `Customer enquiry for Plot #${initialPlot.number}`
+            })
+          });
+        } catch (apiErr) {
+          console.warn('[GetInTouchModal] Backend plot booking sync notice:', apiErr.message);
+        }
+      }
+
       if (COMPANY_CONFIG.backendApi?.isLiveConfigured && COMPANY_CONFIG.backendApi?.contactEndpoint) {
         await fetch(COMPANY_CONFIG.backendApi.contactEndpoint, {
           method: 'POST',
@@ -83,7 +111,7 @@ export default function GetInTouchModal({ isOpen, onClose }) {
         });
       } else {
         // Fast, smooth client-side dispatch simulation
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       setIsSuccess(true);
@@ -91,7 +119,7 @@ export default function GetInTouchModal({ isOpen, onClose }) {
         fullName: '',
         phone: '',
         email: '',
-        venture: "Alekya (Alekya's Brundavan, Kadthal)",
+        venture: "Skandha Grand Valley (Kadthal, Srisailam Highway)",
         interest: 'Plot Booking & Pricing',
         message: ''
       });

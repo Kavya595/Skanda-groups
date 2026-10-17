@@ -19,12 +19,19 @@ import NotFound from './pages/NotFound';
 
 function AppContent() {
   const location = useLocation();
-  const isFullMapRoute = location.pathname === '/projects/alekya/map';
+  const isStandaloneRoute = 
+    location.pathname === '/projects/alekya/map' || 
+    location.pathname === '/projects/grand-valley/map' || 
+    location.pathname.endsWith('/map') ||
+    location.pathname === '/admin';
 
-  if (isFullMapRoute) {
+  if (isStandaloneRoute) {
     return (
       <Routes>
         <Route path="/projects/alekya/map" element={<ProjectMapPage />} />
+        <Route path="/projects/grand-valley/map" element={<ProjectMapPage />} />
+        <Route path="/projects/:slug/map" element={<ProjectMapPage />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     );
   }
@@ -42,7 +49,8 @@ function AppContent() {
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/alekya" element={<ProjectDetail />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/projects/grand-valley" element={<ProjectDetail />} />
+          <Route path="/projects/:slug" element={<ProjectDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

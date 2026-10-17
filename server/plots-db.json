@@ -30,16 +30,7 @@
     "facing": "East",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked",
-    "lastUpdated": "2026-10-12T06:24:28.076Z",
-    "customer": {
-      "name": "kavya",
-      "phone": "123456789",
-      "tokenAmount": "₹50,000",
-      "bookedBy": "Admin Access",
-      "bookedAt": "2026-10-12T06:24:28.076Z",
-      "notes": "igwduycjw"
-    }
+    "status": "available"
   },
   {
     "id": 4,
@@ -50,7 +41,7 @@
     "facing": "East",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 5,
@@ -94,7 +85,7 @@
     "facing": "West",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 9,
@@ -138,7 +129,7 @@
     "facing": "East",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 13,
@@ -171,9 +162,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "available",
-    "lastUpdated": "2026-10-12T06:26:25.969Z",
-    "customer": null
+    "status": "available"
   },
   {
     "id": 16,
@@ -228,7 +217,7 @@
     "facing": "East",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 21,
@@ -272,7 +261,7 @@
     "facing": "West",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 25,
@@ -305,7 +294,7 @@
     "facing": "East",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 28,
@@ -349,7 +338,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 32,
@@ -393,7 +382,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 36,
@@ -437,7 +426,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 40,
@@ -470,7 +459,7 @@
     "facing": "East",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 43,
@@ -558,7 +547,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 51,
@@ -591,7 +580,7 @@
     "facing": "East",
     "isCorner": true,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 54,
@@ -635,7 +624,7 @@
     "facing": "East",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 58,
@@ -690,7 +679,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 63,
@@ -745,7 +734,7 @@
     "facing": "East",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 68,
@@ -822,7 +811,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 75,
@@ -888,7 +877,7 @@
     "facing": "East",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 81,
@@ -954,7 +943,7 @@
     "facing": "West",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 87,
@@ -1009,7 +998,7 @@
     "facing": "East (Highway Facing)",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "booked"
+    "status": "available"
   },
   {
     "id": 92,
@@ -1042,7 +1031,7 @@
     "facing": "East (Highway Facing)",
     "isCorner": false,
     "roadWidth": "33' B.T. Road",
-    "status": "sold"
+    "status": "available"
   },
   {
     "id": 95,

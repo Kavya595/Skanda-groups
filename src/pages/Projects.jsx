@@ -50,7 +50,7 @@ export default function Projects() {
 
       {/* 4. Call to Action */}
       <CallToAction 
-        title="Interested in Owning a Plot at Alekya?"
+        title="Interested in Owning a Plot at Skandha Grand Valley?"
         subtitle="Schedule a complimentary site visit with our sales advisors. Free vehicle transport arranged from our Hastinapuram office."
       />
     </div>

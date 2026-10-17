@@ -12,11 +12,11 @@ const META_MAP = {
   },
   '/projects': {
     title: 'Projects | Residential Developments - Skandha Groups',
-    description: 'Discover Skandha Groups residential ventures featuring our flagship gated community layout Alekya in Kadthal.'
+    description: 'Discover Skandha Groups residential ventures featuring our flagship gated community layout Skandha Grand Valley in Kadthal.'
   },
   '/projects/alekya': {
-    title: "Alekya | DTCP & TS RERA Approved Plotted Community Kadthal - Skandha Groups",
-    description: "Explore Alekya (Alekya's Brundavan) in Kadthal, Srisailam Highway. DTCP Approved TLP 87/2024/H, TS RERA PO2400009081, 60ft, 40ft & 33ft BT roads."
+    title: "Skandha Grand Valley | DTCP & TS RERA Approved Plotted Community Kadthal - Skandha Groups",
+    description: "Explore Skandha Grand Valley in Kadthal, Srisailam Highway. DTCP Approved TLP 87/2024/H, TS RERA PO2400009081, 60ft, 40ft & 33ft BT roads."
   },
   '/gallery': {
     title: 'Media Gallery | Architectural Elevations & Community Landscapes - Skandha Groups',

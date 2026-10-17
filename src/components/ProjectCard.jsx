@@ -46,10 +46,10 @@ export default function ProjectCard({ project, onViewPlots }) {
                 Active Residential Venture
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-[#202124] group-hover:text-[#F58220] transition-colors mt-0.5">
-                {project.name}
+                {(!project.name || project.name.includes('Alekya')) ? 'Skandha Grand Valley' : project.name}
               </h3>
               <p className="text-sm text-gray-500 font-semibold">
-                {project.projectFullName} &bull; {project.subTitle}
+                {(!project.projectFullName || project.projectFullName.includes('Alekya')) ? 'Skandha Grand Valley' : project.projectFullName} &bull; {(!project.subTitle || project.subTitle.includes('Alekya')) ? 'Challampally, Kadthal' : project.subTitle}
               </p>
             </div>
             {project.brochureUrl && (

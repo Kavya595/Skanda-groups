@@ -109,16 +109,15 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Right Action Button */}
+            {/* Right Action Button: View Plots */}
             <div className="hidden md:flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsInquiryModalOpen(true)}
+              <Link
+                to="/projects/alekya/map"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-sm font-semibold text-white bg-[#F58220] hover:bg-[#E07016] shadow-sm hover:shadow transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#F58220] cursor-pointer"
               >
-                <span>Get in Touch</span>
+                <span>View Plots</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
 
             {/* Mobile Hamburger Button */}
@@ -158,16 +157,13 @@ export default function Navbar() {
               ))}
               
               <div className="pt-4 border-t border-gray-100 flex flex-col gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setIsInquiryModalOpen(true);
-                  }}
+                <Link
+                  to="/projects/alekya/map"
+                  onClick={() => setMobileMenuOpen(false)}
                   className="w-full text-center py-3 px-4 rounded-md font-semibold text-white bg-[#F58220] hover:bg-[#E07016] shadow transition-colors cursor-pointer"
                 >
-                  Get in Touch
-                </button>
+                  View Plots
+                </Link>
               </div>
             </div>
           </div>

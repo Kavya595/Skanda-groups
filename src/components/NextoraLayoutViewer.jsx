@@ -1,11 +1,10 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { 
   Maximize2, 
   Minimize2, 
   RotateCcw, 
   Search, 
   X, 
-  Layers, 
   Box, 
   Trees, 
   Compass, 
@@ -15,12 +14,16 @@ import {
   Share2, 
   Lock, 
   Sparkles, 
-  Info 
+  Info,
+  Navigation,
+  MapPin
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { usePlotContext } from '../context/PlotContext';
 import PlotMap3D from './PlotMap3D';
-import ChallampallyMasterplan from './ChallampallyMasterplan';
+import PlotLayoutMap from './PlotLayoutMap';
+import PlotSpecificationsModal from './PlotSpecificationsModal';
+import GetInTouchModal from './GetInTouchModal';
 
 export default function NextoraLayoutViewer({ 
   isFullscreen = false, 
@@ -28,15 +31,16 @@ export default function NextoraLayoutViewer({
   showBackButton = false 
 }) {
   const { plots, stats, projects } = usePlotContext();
-  const currentProject = projects?.[0] || {
-    name: 'Alekya Brundavan',
-    dtcpNo: 'TLP NO. 87/2024/H',
-    reraNo: 'PO2400009081',
-    location: 'Kadthal, Srisailam Highway'
+  const rawProject = projects?.[0];
+  const currentProject = {
+    name: (rawProject?.name && !rawProject.name.includes('Alekya')) ? rawProject.name : 'Skandha Grand Valley',
+    dtcpNo: rawProject?.dtcpNo || 'TLP NO. 87/2024/H',
+    reraNo: rawProject?.reraNo || 'PO2400009081',
+    location: rawProject?.location || 'Kadthal, Srisailam Highway'
   };
 
-  // View state: '2d' or '3d'
-  const [viewMode, setViewMode] = useState('2d');
+  // View state: 'map' (GIS Map View) or '3d' (3D Isometric Map)
+  const [viewMode, setViewMode] = useState('map');
 
   // Search & Filter Drawer State (Nextora style)
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -44,25 +48,36 @@ export default function NextoraLayoutViewer({
   const [searchPlotNo, setSearchPlotNo] = useState('');
   const [filterStatus, setFilterStatus] = useState('0'); // '0'=all, '1'=available, '2'=booked, '3'=sold
   const [filterFacing, setFilterFacing] = useState('0'); // '0'=all, '1'=East, '2'=West, '3'=Corner
+  const [minSqYards, setMinSqYards] = useState('');
+  const [maxSqYards, setMaxSqYards] = useState('');
 
   // Active filter criteria applied to map
   const [appliedFilters, setAppliedFilters] = useState({
     plotNo: '',
     status: 'all',
-    facing: 'all'
+    facing: 'all',
+    minArea: '',
+    maxArea: ''
   });
 
-  // Selected Plot & Popup State (Nextora style #popup)
+  // Selected Plot & Popup State
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [popupPosition, setPopupPosition] = useState(null);
+  const [isGetInTouchOpen, setIsGetInTouchOpen] = useState(false);
+  const [inquiryPlot, setInquiryPlot] = useState(null);
 
-  // Pan & Zoom Canvas State
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  // Map Pan & Zoom Triggers
+  const [mapZoomTrigger, setMapZoomTrigger] = useState(null);
+  const [mapResetTrigger, setMapResetTrigger] = useState(0);
+  const [leafletZoomLevel, setLeafletZoomLevel] = useState(18);
+  const [mapLayer, setMapLayer] = useState('osm'); // 'osm' | 'satellite'
+
+  const handleLeafletZoomChange = useCallback((z) => {
+    setLeafletZoomLevel(z);
+  }, []);
 
   const containerRef = useRef(null);
+  const mapSurfaceRef = useRef(null);
 
   // Fullscreen container toggle
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
@@ -90,31 +105,6 @@ export default function NextoraLayoutViewer({
     document.addEventListener('fullscreenchange', handleFsChange);
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, []);
-
-  // Responsive Auto-fit Zoom on Mount and Resize
-  useEffect(() => {
-    const calculateInitialZoom = () => {
-      if (typeof window === 'undefined') return;
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const zoomX = (width - 70) / 1200;
-      const zoomY = (height - 120) / 720;
-      const bestZoom = Math.min(zoomX, zoomY, 1);
-      setZoomLevel(Math.max(0.30, Math.min(1.0, Number(bestZoom.toFixed(2)))));
-    };
-    calculateInitialZoom();
-    window.addEventListener('resize', calculateInitialZoom);
-    return () => window.removeEventListener('resize', calculateInitialZoom);
-  }, []);
-
-  // Quick lookup map for plots by plot number
-  const plotLookup = useMemo(() => {
-    const map = {};
-    plots.forEach(p => {
-      map[p.number] = p;
-    });
-    return map;
-  }, [plots]);
 
   // Total square yards statistics (Booked Area vs Available Area)
   const areaStats = useMemo(() => {
@@ -154,7 +144,9 @@ export default function NextoraLayoutViewer({
     setAppliedFilters({
       plotNo: searchPlotNo.trim(),
       status: statusVal,
-      facing: facingVal
+      facing: facingVal,
+      minArea: minSqYards.trim() ? Number(minSqYards) : '',
+      maxArea: maxSqYards.trim() ? Number(maxSqYards) : ''
     });
 
     // Auto-select plot if exact plot number is typed
@@ -171,56 +163,32 @@ export default function NextoraLayoutViewer({
     setSearchPlotNo('');
     setFilterStatus('0');
     setFilterFacing('0');
+    setMinSqYards('');
+    setMaxSqYards('');
     setSearchType('0');
     setAppliedFilters({
       plotNo: '',
       status: 'all',
-      facing: 'all'
+      facing: 'all',
+      minArea: '',
+      maxArea: ''
     });
   };
 
   // Reset Map View (Zoom & Pan)
   const handleResetMap = () => {
-    setZoomLevel(1);
-    setPanOffset({ x: 0, y: 0 });
+    setMapResetTrigger(prev => prev + 1);
     setSelectedPlot(null);
   };
 
-  // Handle Mouse Pan
-  const handleMouseDown = (e) => {
-    // Only drag with left mouse button if not clicking a plot button or interactive form
-    if (e.button !== 0) return;
-    if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    setPanOffset({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // Handle Zoom In / Zoom Out
+  // Handle Zoom In / Zoom Out (Purely controls zoom in each view independently)
   const handleZoom = (delta) => {
-    setZoomLevel(prev => Math.min(Math.max(0.3, prev + delta), 2.5));
-  };
-
-  // Handle Wheel Zoom
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 0.08 : -0.08;
-    setZoomLevel(prev => Math.min(Math.max(0.3, prev + zoomFactor), 2.5));
+    setMapZoomTrigger(delta > 0 ? 'in' : 'out');
+    setTimeout(() => setMapZoomTrigger(null), 100);
   };
 
   // Plot matching filter check
-  const isPlotHighlighted = (plot) => {
+  const isPlotHighlighted = useCallback((plot) => {
     if (!plot) return false;
     if (appliedFilters.plotNo && !plot.number.toString().includes(appliedFilters.plotNo)) {
       return false;
@@ -234,82 +202,20 @@ export default function NextoraLayoutViewer({
         return false;
       }
     }
-    return true;
-  };
-
-  // Handle Plot Click: open Nextora-style popup
-  const handlePlotClick = (plot, e) => {
-    e.stopPropagation();
-    setSelectedPlot(plot);
-  };
-
-  // Render individual 2D Plot Polygon/Tile (Color-coded: Green = Available, Blue = Booked, Red = Sold)
-  const renderPlotBox = (plotNumber, customStyle = {}) => {
-    const plot = plotLookup[plotNumber];
-    if (!plot) return null;
-
-    const isSelected = selectedPlot?.id === plot.id || selectedPlot?.number === plot.number;
-    const isMatched = isPlotHighlighted(plot);
-
-    // Exact Nextora colors
-    let bgColor = '#10b981'; // Green (Available)
-    let borderColor = '#059669';
-    let textColor = '#ffffff';
-
-    if (plot.status === 'booked') {
-      bgColor = '#2563eb'; // Blue (Booked)
-      borderColor = '#1d4ed8';
-    } else if (plot.status === 'sold') {
-      bgColor = '#ef4444'; // Red (Sold)
-      borderColor = '#b91c1c';
+    const sq = Number(plot.sqYards) || 0;
+    if (appliedFilters.minArea && sq < appliedFilters.minArea) {
+      return false;
     }
+    if (appliedFilters.maxArea && sq > appliedFilters.maxArea) {
+      return false;
+    }
+    return true;
+  }, [appliedFilters]);
 
-    const opacity = isMatched ? 1 : 0.22;
-
-    return (
-      <button
-        key={plot.number}
-        type="button"
-        onClick={(e) => handlePlotClick(plot, e)}
-        style={{
-          backgroundColor: bgColor,
-          borderColor: isSelected ? '#F58220' : borderColor,
-          opacity: opacity,
-          ...customStyle
-        }}
-        className={`relative flex flex-col items-center justify-center p-1 border rounded transition-all duration-150 cursor-pointer text-left select-none group
-          ${isSelected 
-            ? 'ring-4 ring-[#F58220] ring-offset-2 ring-offset-slate-900 z-30 scale-105 shadow-xl' 
-            : 'hover:scale-102 hover:z-20 hover:shadow-lg'
-          }
-        `}
-        title={`Plot #${plot.number} • ${plot.sqYards} Sq.Yds (${plot.status.toUpperCase()})`}
-      >
-        {/* Plot Number in Bold Center Badge */}
-        <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white/95 text-gray-900 border border-black/20 flex items-center justify-center font-black text-[9px] sm:text-[10px] shadow-xs">
-          {plot.number}
-        </div>
-
-        {/* Square Yards Metric */}
-        <span className="text-[8px] sm:text-[9px] font-bold tracking-tight text-white drop-shadow mt-0.5 whitespace-nowrap">
-          {plot.sqYards} yds
-        </span>
-
-        {/* Dimension indicator (North width) */}
-        <span className="text-[7px] text-white/90 font-medium hidden sm:block truncate max-w-[90%] leading-none mt-0.5">
-          {plot.dimensions.split('×')[0]?.trim()}
-        </span>
-
-        {/* Corner Indicator Badge */}
-        {plot.isCorner && (
-          <span 
-            className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-amber-300 ring-1 ring-black/40 shadow-xs" 
-            title="Corner Plot" 
-          />
-        )}
-      </button>
-    );
-  };
+  // Live count of matching plots
+  const matchedPlotCount = useMemo(() => {
+    return plots.filter(p => isPlotHighlighted(p)).length;
+  }, [plots, isPlotHighlighted]);
 
   return (
     <div 
@@ -338,7 +244,7 @@ export default function NextoraLayoutViewer({
 
           <div className="flex items-baseline gap-2">
             <span className="text-sm sm:text-lg font-black text-[#F58220] tracking-tight uppercase">
-              {currentProject.name || 'Alekya Brundavan'}
+              {currentProject.name || 'Skandha Grand Valley'}
             </span>
             <span className="hidden md:inline-block text-[11px] text-gray-500 font-medium">
               &bull; DTCP: {currentProject.dtcpNo || 'TLP NO. 87/2024/H'}
@@ -356,10 +262,10 @@ export default function NextoraLayoutViewer({
           </div>
 
           {/* Plots Available (Green) */}
-          <div className="inline-flex items-center gap-1.5 font-bold text-emerald-700">
-            <span className="w-3 h-3 rounded-full bg-[#10b981] shadow-xs" />
+          <div className="inline-flex items-center gap-1.5 font-bold text-gray-800">
+            <span className="w-3 h-3 rounded-full shadow-xs bg-[#008532]" />
             <span>Plots Available:</span>
-            <span className="px-2 py-0.5 rounded bg-emerald-100 border border-emerald-300 font-black text-emerald-900">
+            <span className="px-2 py-0.5 rounded bg-emerald-100 border border-emerald-300 font-black text-emerald-950">
               {stats.available}
             </span>
           </div>
@@ -396,6 +302,8 @@ export default function NextoraLayoutViewer({
             <span>sqyds</span>
           </div>
         </div>
+
+
 
         {/* Right: Close button if modal */}
         {onClose && (
@@ -456,21 +364,23 @@ export default function NextoraLayoutViewer({
             <Search className="w-4 h-4" />
           </button>
 
-          {/* 2D / 3D View Switcher */}
+          {/* Map View & 3D View Switcher */}
           <div className="pt-1 mt-1 border-t border-gray-200 flex flex-col gap-1">
+            {/* GIS Map View */}
             <button
               type="button"
-              onClick={() => setViewMode('2d')}
+              onClick={() => setViewMode('map')}
               className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
-                viewMode === '2d' 
+                viewMode === 'map'
                   ? 'bg-[#F58220] text-white font-bold shadow-sm' 
                   : 'text-gray-600 hover:bg-orange-50 hover:text-[#F58220]'
               }`}
-              title="2D Plan View"
+              title="GIS Map View (Interactive OpenStreetMap)"
             >
-              <Layers className="w-4 h-4" />
+              <MapPin className="w-4 h-4" />
             </button>
 
+            {/* 3D Map View */}
             <button
               type="button"
               onClick={() => setViewMode('3d')}
@@ -479,7 +389,7 @@ export default function NextoraLayoutViewer({
                   ? 'bg-[#F58220] text-white font-bold shadow-sm' 
                   : 'text-gray-600 hover:bg-orange-50 hover:text-[#F58220]'
               }`}
-              title="3D Isometric Layout View"
+              title="3D Map View (Isometric Layout on Kadthal GIS Map Terrain)"
             >
               <Box className="w-4 h-4" />
             </button>
@@ -497,7 +407,7 @@ export default function NextoraLayoutViewer({
             +
           </button>
           <span className="text-[9px] font-bold text-center text-gray-500 py-0.5">
-            {Math.round(zoomLevel * 100)}%
+            {viewMode === 'map' ? `z${Math.round(leafletZoomLevel)}` : '3D'}
           </span>
           <button
             type="button"
@@ -584,7 +494,43 @@ export default function NextoraLayoutViewer({
               </select>
             </div>
 
-            {/* Action Buttons: Apply & Reset (Nextora style golden/amber buttons) */}
+            {/* Min & Max Plot Area (Sq.Yards) */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                  Min Area (Yds)
+                </label>
+                <input
+                  type="number"
+                  value={minSqYards}
+                  onChange={(e) => setMinSqYards(e.target.value)}
+                  placeholder="e.g. 183"
+                  className="w-full px-2.5 py-1.5 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-[#0066cc] shadow-xs text-xs"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                  Max Area (Yds)
+                </label>
+                <input
+                  type="number"
+                  value={maxSqYards}
+                  onChange={(e) => setMaxSqYards(e.target.value)}
+                  placeholder="e.g. 350"
+                  className="w-full px-2.5 py-1.5 rounded-xl border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-[#0066cc] shadow-xs text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Matched Count Indicator */}
+            <div className="py-1 px-2.5 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 font-bold text-[11px] flex items-center justify-between">
+              <span>Matching Plots:</span>
+              <span className="font-black px-1.5 py-0.5 rounded bg-white text-blue-700 shadow-xs">
+                {matchedPlotCount} / {plots.length}
+              </span>
+            </div>
+
+            {/* Action Buttons: Apply & Reset */}
             <div className="pt-2 flex items-center gap-2">
               <button
                 type="button"
@@ -606,142 +552,79 @@ export default function NextoraLayoutViewer({
       )}
 
       {/* =========================================================================
-          4. MAIN INTERACTIVE MAP SURFACE (2D CANVAS OR 3D STUDIO)
+          4. MAIN INTERACTIVE LAYOUT SURFACE (GIS MAP VIEW OR 3D MAP STUDIO)
          ========================================================================= */}
       <main 
-        className="flex-1 relative overflow-hidden bg-[#0a0c10] cursor-grab active:cursor-grabbing"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
+        ref={mapSurfaceRef}
+        className={`flex-1 relative overflow-hidden ${
+          viewMode === 'map' ? 'bg-slate-900' : 'bg-slate-950'
+        }`}
       >
-        {viewMode === '2d' ? (
-          <div 
-            style={{
-              transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-              transformOrigin: 'center center'
+
+        {viewMode === 'map' ? (
+          <PlotLayoutMap
+            plotsData={plots}
+            onSelectPlot={(p) => setSelectedPlot(p)}
+            selectedPlot={selectedPlot}
+            appliedFilters={appliedFilters}
+            showRightToolbar={false}
+            externalZoomTrigger={mapZoomTrigger}
+            externalResetTrigger={mapResetTrigger}
+            onZoomChange={handleLeafletZoomChange}
+            mapLayer={mapLayer}
+            onMapLayerChange={setMapLayer}
+            onSwitchTo3D={() => setViewMode('3d')}
+            onEnquire={(p) => {
+              setInquiryPlot(p);
+              setSelectedPlot(null);
+              setIsGetInTouchOpen(true);
             }}
-            className="w-full h-full flex items-center justify-center transition-transform duration-75 select-none py-10"
-          >
-            {/* Authentic CHALLAMPALLY / ALEKYA BRUNDAVANAM DTCP Masterplan Structure */}
-            <ChallampallyMasterplan
-              plotLookup={plotLookup}
-              onSelectPlot={(p) => setSelectedPlot(p)}
-              selectedPlotId={selectedPlot?.id}
-              isPlotHighlighted={isPlotHighlighted}
-            />
-          </div>
+            onBook={(p) => {
+              setInquiryPlot(p);
+              setSelectedPlot(null);
+              setIsGetInTouchOpen(true);
+            }}
+          />
         ) : (
-          <div className="w-full h-full p-4 overflow-auto">
+          <div className="w-full h-full relative">
             <PlotMap3D
               plots={plots}
               onSelectPlot={(p) => setSelectedPlot(p)}
               selectedPlotId={selectedPlot?.id}
+              appliedFilters={appliedFilters}
+              externalZoomTrigger={mapZoomTrigger}
+              externalResetTrigger={mapResetTrigger}
+              currentMapLayer={mapLayer}
+              onMapLayerChange={setMapLayer}
             />
           </div>
         )}
 
         {/* =========================================================================
-            5. NEXTORAMAPS INTERACTIVE PLOT POPUP (#popup)
-            Shows details when any plot is clicked
+            5. NEXTORAMAPS INTERACTIVE PLOT SPECIFICATIONS MODAL
+            Only rendered in 3D view (In map view, the clean Leaflet popup is used)
            ========================================================================= */}
-        {selectedPlot && (
-          <div 
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 w-[92%] sm:w-[460px] bg-white rounded-3xl border border-gray-300 shadow-2xl p-5 text-left animate-in slide-in-from-bottom-3 duration-200"
-            role="dialog"
-            aria-label={`Plot #${selectedPlot.number} Details`}
-          >
-            {/* Popup Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-              <div className="flex items-center gap-2.5">
-                <span className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-sm shadow ${
-                  selectedPlot.status === 'available' ? 'bg-[#10b981]' :
-                  selectedPlot.status === 'booked' ? 'bg-[#2563eb]' : 'bg-[#ef4444]'
-                }`}>
-                  #{selectedPlot.number}
-                </span>
-
-                <div>
-                  <h4 className="text-base font-extrabold text-gray-900 leading-tight">
-                    Plot #{selectedPlot.number}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className={`px-2 py-0.2 rounded-full text-[9px] font-black uppercase ${
-                      selectedPlot.status === 'available' ? 'bg-emerald-100 text-emerald-800' :
-                      selectedPlot.status === 'booked' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {selectedPlot.status}
-                    </span>
-                    <span className="text-[11px] text-gray-500 font-medium">
-                      {selectedPlot.facing} Facing
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Close Button */}
-              <button
-                type="button"
-                onClick={() => setSelectedPlot(null)}
-                className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 cursor-pointer"
-                aria-label="Close plot popup"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Metrics Breakdown Grid */}
-            <div className="grid grid-cols-3 gap-2 py-3 text-xs border-b border-gray-100">
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-gray-500 block uppercase font-bold">Total Area</span>
-                <span className="text-sm font-black text-gray-900">{selectedPlot.sqYards}</span>
-                <span className="text-[10px] text-gray-500 ml-0.5">Sq. Yds</span>
-              </div>
-
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-gray-500 block uppercase font-bold">Dimensions</span>
-                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">
-                  {selectedPlot.dimensions}
-                </span>
-              </div>
-
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] text-gray-500 block uppercase font-bold">Road Access</span>
-                <span className="text-xs font-bold text-gray-900 truncate block mt-0.5">
-                  {selectedPlot.roadWidth}
-                </span>
-              </div>
-            </div>
-
-            {/* Action Buttons for Booking */}
-            <div className="pt-3 flex flex-wrap items-center gap-2">
-              {selectedPlot.status === 'available' ? (
-                <Link
-                  to="/contact"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-[#F58220] hover:bg-[#E07016] text-white shadow transition-colors cursor-pointer"
-                >
-                  <Info className="w-4 h-4" />
-                  <span>Inquire About Plot #{selectedPlot.number}</span>
-                </Link>
-              ) : selectedPlot.status === 'booked' ? (
-                <div className="w-full flex items-center justify-between p-2 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900">
-                  <span>Currently Booked &bull; Advance token registered</span>
-                  <Link
-                    to="/contact"
-                    className="font-bold underline text-blue-800"
-                  >
-                    Inquire / Waitlist
-                  </Link>
-                </div>
-              ) : (
-                <div className="w-full p-2 rounded-xl bg-red-50 border border-red-200 text-xs text-red-900 font-semibold text-center">
-                  Plot Registered & Sold Out Deed
-                </div>
-              )}
-            </div>
-          </div>
+        {selectedPlot && viewMode === '3d' && (
+          <PlotSpecificationsModal
+            plot={selectedPlot}
+            onClose={() => setSelectedPlot(null)}
+            onEnquire={(p) => {
+              setInquiryPlot(p);
+              setSelectedPlot(null);
+              setIsGetInTouchOpen(true);
+            }}
+          />
         )}
+
+        {/* Interactive Get In Touch Modal Form */}
+        <GetInTouchModal
+          isOpen={isGetInTouchOpen}
+          onClose={() => {
+            setIsGetInTouchOpen(false);
+            setInquiryPlot(null);
+          }}
+          initialPlot={inquiryPlot}
+        />
 
         {/* =========================================================================
             6. NEXTORAMAPS BOTTOM-RIGHT BADGE

@@ -1,0 +1,66 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <defs>
+    
+  <pattern id="grass-pattern" width="48" height="48" patternUnits="userSpaceOnUse">
+    <rect width="48" height="48" fill="#c8d7ab" />
+    
+    <!-- Tuft at 12, 18 -->
+    <path d="
+      M 8.5 18 L 15.5 18
+      M 12 18 L 12 11
+      M 12 18 L 9.4 12.8
+      M 12 18 L 14.6 12.8
+      M 10.8 18 L 7.5 14.8
+      M 13.2 18 L 16.5 14.8
+    " stroke="#8ea75c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+  
+    
+    <!-- Tuft at 36, 18 -->
+    <path d="
+      M 32.5 18 L 39.5 18
+      M 36 18 L 36 11
+      M 36 18 L 33.4 12.8
+      M 36 18 L 38.6 12.8
+      M 34.8 18 L 31.5 14.8
+      M 37.2 18 L 40.5 14.8
+    " stroke="#8ea75c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+  
+    
+    <!-- Tuft at 24, 42 -->
+    <path d="
+      M 20.5 42 L 27.5 42
+      M 24 42 L 24 35
+      M 24 42 L 21.4 36.8
+      M 24 42 L 26.6 36.8
+      M 22.8 42 L 19.5 38.8
+      M 25.2 42 L 28.5 38.8
+    " stroke="#8ea75c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+  
+    
+    <!-- Tuft at 0, 42 -->
+    <path d="
+      M -3.5 42 L 3.5 42
+      M 0 42 L 0 35
+      M 0 42 L -2.6 36.8
+      M 0 42 L 2.6 36.8
+      M -1.2 42 L -4.5 38.8
+      M 1.2 42 L 4.5 38.8
+    " stroke="#8ea75c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+  
+    
+    <!-- Tuft at 48, 42 -->
+    <path d="
+      M 44.5 42 L 51.5 42
+      M 48 42 L 48 35
+      M 48 42 L 45.4 36.8
+      M 48 42 L 50.6 36.8
+      M 46.8 42 L 43.5 38.8
+      M 49.2 42 L 52.5 38.8
+    " stroke="#8ea75c" stroke-width="1.25" stroke-linecap="round" fill="none" />
+  
+  </pattern>
+
+  </defs>
+  <rect width="300" height="300" fill="url(#grass-pattern)" />
+</svg>

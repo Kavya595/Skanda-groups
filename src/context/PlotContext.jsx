@@ -5,15 +5,17 @@ import { plotApi } from '../services/plotApi';
 
 const PlotContext = createContext(null);
 
-const STORAGE_KEY_PLOTS = 'skandha_plots_inventory_v1';
-const STORAGE_KEY_PROJECTS = 'skandha_projects_inventory_v2';
+const STORAGE_KEY_PLOTS = 'skandha_plots_inventory_v3';
+const STORAGE_KEY_PROJECTS = 'skandha_projects_inventory_v3';
 const STORAGE_KEY_LOGS = 'skandha_admin_activity_logs_v1';
-const STORAGE_KEY_BOOKINGS = 'skandha_admin_bookings_queue_v1';
+const STORAGE_KEY_BOOKINGS = 'skandha_admin_bookings_queue_v2';
 
 export function PlotProvider({ children }) {
   // 1. Plots state
   const [plots, setPlots] = useState(() => {
     try {
+      localStorage.removeItem('skandha_plots_inventory_v1');
+      localStorage.removeItem('skandha_plots_inventory_v2');
       const saved = localStorage.getItem(STORAGE_KEY_PLOTS);
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -63,14 +65,24 @@ export function PlotProvider({ children }) {
     ];
   });
 
-  // 3. Projects state
+  // 3. Projects state (always authoritative from PROJECTS_DATA)
   const [projects, setProjects] = useState(() => {
     try {
       localStorage.removeItem('skandha_projects_inventory_v1');
+      localStorage.removeItem('skandha_projects_inventory_v2');
       const saved = localStorage.getItem(STORAGE_KEY_PROJECTS);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed.forEach((p, idx) => {
+            if (PROJECTS_DATA[idx]) {
+              p.name = PROJECTS_DATA[idx].name;
+              p.projectFullName = PROJECTS_DATA[idx].projectFullName;
+              p.subTitle = PROJECTS_DATA[idx].subTitle;
+            }
+          });
+          return parsed;
+        }
       }
     } catch {
       // ignore

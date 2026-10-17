@@ -6,7 +6,7 @@ export default function ContactForm() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    project: 'Alekya (Kadthal, Srisailam Highway)',
+    project: 'Skandha Grand Valley (Kadthal, Srisailam Highway)',
     subject: '',
     message: ''
   });
@@ -73,7 +73,7 @@ export default function ContactForm() {
       setFormData({
         fullName: '',
         email: '',
-        project: 'Alekya (Kadthal, Srisailam Highway)',
+        project: 'Skandha Grand Valley (Kadthal, Srisailam Highway)',
         subject: '',
         message: ''
       });
@@ -185,7 +185,7 @@ export default function ContactForm() {
             className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-base sm:text-sm focus:border-[#F58220] transition-colors"
             disabled={isSubmitting}
           >
-            <option value="Alekya (Kadthal, Srisailam Highway)">Alekya (Kadthal, Srisailam Highway)</option>
+            <option value="Skandha Grand Valley (Kadthal, Srisailam Highway)">Skandha Grand Valley (Kadthal, Srisailam Highway)</option>
             <option value="General Corporate Consultation">General Corporate Consultation</option>
             <option value="Partnership & Land Advisory">Partnership & Land Advisory</option>
           </select>

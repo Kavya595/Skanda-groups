@@ -4,7 +4,7 @@ import Lightbox from './Lightbox';
 import { GALLERY_CATEGORIES, GALLERY_ITEMS } from '../data/gallery';
 
 export default function GalleryGrid({ initialLimit = null, showFilters = true }) {
-  const [selectedCategory, setSelectedCategory] = useState('Brundavanam');
+  const [selectedCategory, setSelectedCategory] = useState('Grand Valley');
   const [lightboxIndex, setLightboxIndex] = useState(null);
 
   // Filter items

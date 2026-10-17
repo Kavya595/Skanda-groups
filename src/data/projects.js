@@ -10,9 +10,9 @@ export const PROJECTS_DATA = [
   {
     id: "alekya",
     slug: "alekya",
-    name: "Alekya",
-    projectFullName: "Alekya's Brundavan",
-    subTitle: "Challampally / Alekya Brundavanam",
+    name: "Skandha Grand Valley",
+    projectFullName: "Skandha Grand Valley",
+    subTitle: "Challampally, Kadthal",
     badge: "DTCP & TS RERA Approved",
     status: "Active / Booking Open",
     category: "Gated Plotted Layout",
@@ -21,8 +21,8 @@ export const PROJECTS_DATA = [
     dtcpNo: "TLP NO. 87/2024/H",
     coverImage: "/images/hero-family.jpg",
     brochureUrl: "/brochures/Skandha_Alekya_Brundavan_Brochure.pdf",
-    shortDescription: "Alekya is a premier DTCP & TS RERA approved gated residential layout in Kadthal along Srisailam Highway. Offering 100% Vasthu-compliant open villa plots with 60ft, 40ft, and 33ft BT roads, underground drainage, and spot registration.",
-    overview: "Alekya (Alekya's Brundavan) by Skandha Groups represents modern plotted living located strategically along the high-growth Srisailam Highway corridor in Kadthal. Planned with complete statutory DTCP sanctions and TS RERA registration, Alekya offers peaceful living nestled between serene natural landscapes and Hyderabad's upcoming Future City and Pharma development hubs.",
+    shortDescription: "Skandha Grand Valley is a premier DTCP & TS RERA approved gated residential layout in Kadthal along Srisailam Highway. Offering 100% Vasthu-compliant open villa plots with 60ft, 40ft, and 33ft BT roads, underground drainage, and spot registration.",
+    overview: "Skandha Grand Valley by Skandha Groups represents modern plotted living located strategically along the high-growth Srisailam Highway corridor in Kadthal. Planned with complete statutory DTCP sanctions and TS RERA registration, Skandha Grand Valley offers peaceful living nestled between serene natural landscapes and Hyderabad's upcoming Future City and Pharma development hubs.",
     specs: {
       "DTCP Approval": "TLP NO. 87/2024/H",
       "TS RERA Registration": "PO2400009081 @ KADTHAL",

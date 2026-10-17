@@ -57,7 +57,7 @@ export default function HeroSection() {
               </div>
             </div>
 
-            {/* Primary & Secondary Call to Actions */}
+            {/* Primary Call to Action */}
             <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Link
                 to="/projects"
@@ -65,13 +65,6 @@ export default function HeroSection() {
               >
                 <span>Explore Our Projects</span>
                 <ArrowRight className="w-5 h-5" />
-              </Link>
-              
-              <Link
-                to="/contact"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-[#202124] bg-white border border-[#E5E7EB] hover:border-[#F58220] hover:bg-[#FFF5EC]/30 shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
-              >
-                <span>Contact Corporate Office</span>
               </Link>
             </div>
           </div>
