@@ -1,25 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  MapPin,
   Mail,
-  ShieldCheck,
-  ExternalLink,
+  Facebook,
   Instagram,
+  Linkedin,
   Youtube,
-  MessageCircle,
-  ChevronRight,
-  Download,
-  FileText
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Footer({ settings }) {
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
-  const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
+  const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana - 500079';
   const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
   const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
-
-  const siteAddress = 'Adjoining Srisailam Highway (NH 765), Kadthal Mandal, Ranga Reddy District, Telangana - 509358 (1 Min from Historic Maisigandi Temple)';
 
   const instagramUrl = (settings && settings.socialLinks && settings.socialLinks.instagram && !settings.socialLinks.instagram.endsWith('/skandhagroup'))
     ? settings.socialLinks.instagram
@@ -29,53 +23,57 @@ export default function Footer({ settings }) {
     ? settings.socialLinks.youtube
     : 'https://www.youtube.com/@SkandhaGroups-hyd';
 
-  const whatsappUrl = 'https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots%20at%20Kadthal.';
+  const rawFacebook = settings && settings.socialLinks && settings.socialLinks.facebook;
+  const facebookUrl = (rawFacebook && rawFacebook !== 'https://facebook.com' && rawFacebook !== 'https://facebook.com/skandhagroup')
+    ? rawFacebook
+    : 'https://www.facebook.com/skandhagroup';
+
+  const linkedinUrl = (settings && settings.socialLinks && settings.socialLinks.linkedin)
+    ? settings.socialLinks.linkedin
+    : 'https://www.linkedin.com/company/skandha-group';
 
   const socialLinks = [
-    { name: 'Instagram', icon: Instagram, href: instagramUrl, hoverColor: 'hover:text-[#E4405F]' },
-    { name: 'YouTube', icon: Youtube, href: youtubeUrl, hoverColor: 'hover:text-[#FF0000]' },
-    { name: 'WhatsApp', icon: MessageCircle, href: whatsappUrl, hoverColor: 'hover:text-[#25D366]' }
+    { name: 'Facebook', icon: Facebook, href: facebookUrl },
+    { name: 'Instagram', icon: Instagram, href: instagramUrl },
+    { name: 'LinkedIn', icon: Linkedin, href: linkedinUrl },
+    { name: 'YouTube', icon: Youtube, href: youtubeUrl }
   ];
 
   return (
-    <footer className="bg-[#0b0e14] border-t border-slate-800 text-slate-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 items-start">
-          {/* Column 1: Brand & Socials (4 cols) */}
-          <div className="lg:col-span-4 space-y-4">
+    <footer
+      className="relative text-white bg-cover bg-center bg-no-repeat overflow-hidden"
+      style={{ backgroundImage: "url('/assets/footer_bg.jpg')" }}
+    >
+      {/* Dark overlay for contrast matching reference design */}
+      <div className="absolute inset-0 bg-[#00040a]/85 backdrop-blur-[1px]" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          {/* Column 1: Brand, Tagline, Email & Social Circles (5 cols) */}
+          <div className="lg:col-span-5 space-y-4">
             <Link to="/" className="inline-block">
               <img
-                src="/assets/skandha_logo_white.svg"
+                src="/assets/skandha_logo_official.png"
                 alt="Skandha Group Logo"
-                className="h-16 w-auto object-contain"
+                className="h-16 sm:h-20 w-auto object-contain"
               />
             </Link>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-sm">
-              Discover premium plotted developments in serene, well-connected locations. 10.50-Acre landmark DTCP sanctioned &amp; TS RERA registered community in Kadthal, adjoining Srisailam Highway (NH 765).
+            <p className="text-sm text-slate-300 leading-relaxed max-w-sm">
+              Discover premium plotted developments in serene, well-connected locations.
             </p>
 
-            <div className="space-y-2 text-xs text-slate-300 pt-1">
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-brand-orange shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-brand-orange text-slate-200 transition-colors">
-                  {email}
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-emerald-400 text-slate-200 transition-colors font-medium"
-                >
-                  Direct WhatsApp Sales Desk
-                </a>
-              </div>
+            <div className="flex items-center gap-2.5 text-sm text-slate-200 pt-1">
+              <Mail className="w-4 h-4 text-slate-300 shrink-0" />
+              <a
+                href={`mailto:${email}`}
+                className="hover:text-brand-orange transition-colors"
+              >
+                {email}
+              </a>
             </div>
 
-            {/* Circular Social Icons */}
-            <div className="flex items-center gap-2.5 pt-2">
+            {/* Circular Social Buttons Matching Reference Image */}
+            <div className="flex items-center gap-3 pt-3">
               {socialLinks.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -84,7 +82,7 @@ export default function Footer({ settings }) {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`w-9 h-9 rounded-full bg-[#181c26] border border-slate-700/80 text-slate-300 flex items-center justify-center transition-all duration-200 hover:text-white hover:scale-105 ${item.hoverColor}`}
+                    className="w-9 h-9 rounded-full border border-white/40 text-white flex items-center justify-center transition-all duration-200 hover:border-brand-orange hover:text-brand-orange hover:bg-white/10"
                     aria-label={item.name}
                     title={item.name}
                   >
@@ -93,96 +91,79 @@ export default function Footer({ settings }) {
                 );
               })}
             </div>
-
-            {/* DTCP & RERA Badges */}
-            <div className="flex flex-wrap items-center gap-2 pt-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 bg-emerald-950/70 text-emerald-400 rounded-md border border-emerald-800/60">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                DTCP: {dtcpNo}
-              </span>
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 bg-[#181c26] text-slate-300 rounded-md border border-slate-700">
-                RERA: {reraNo}
-              </span>
-            </div>
           </div>
 
-          {/* Column 2: Head Office (3 cols) */}
-          <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider border-l-2 border-brand-orange pl-2.5">
-              Head Office
-            </h4>
-            <div className="space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{officeAddress}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
+          {/* Column 2: Office Address (Registered Company Location) (4 cols) */}
+          <div className="lg:col-span-4 space-y-3">
+            <h3 className="font-serif text-xl font-bold text-white tracking-wide">
+              Office Address
+            </h3>
+            {/* Orange accent dotted line matching reference */}
+            <div className="flex items-center gap-1.5">
+              <span className="w-10 h-0.5 bg-brand-orange rounded-full" />
+              <span className="w-2 h-0.5 bg-brand-orange/60 rounded-full" />
+              <span className="w-1 h-0.5 bg-brand-orange/40 rounded-full" />
+            </div>
+
+            <div className="space-y-3 text-sm text-slate-200 leading-relaxed pt-1">
+              <p className="font-semibold text-white">
+                Skandha Group Registered Location:
+              </p>
+              <p className="text-slate-300 leading-relaxed">
+                {officeAddress}
+              </p>
+              <div className="flex items-center gap-2 pt-1 text-slate-300">
                 <Mail className="w-4 h-4 text-brand-orange shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-brand-orange text-slate-200 transition-colors">
+                <a
+                  href={`mailto:${email}`}
+                  className="hover:text-brand-orange transition-colors text-slate-200"
+                >
                   {email}
                 </a>
               </div>
             </div>
           </div>
 
-          {/* Column 3: Site / Branch Office (3 cols) */}
+          {/* Column 3: Quick Links & Sanctions (3 cols) */}
           <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider border-l-2 border-brand-orange pl-2.5">
-              Site / Project Office
-            </h4>
-            <div className="space-y-2.5 text-xs text-slate-300">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{siteAddress}</span>
-              </div>
-              <div className="text-[11px] text-slate-400 leading-snug">
-                Adjoining 4-lane NH 765 Srisailam Highway. Daily guided site tours available with cab service.
-              </div>
-              <div className="flex items-center gap-2.5 pt-1">
-                <a
-                  href="/contact"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-white transition-colors"
-                >
-                  <span>View Driving Directions</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Column 4: Quick Links & Brochures (2 cols) */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider border-l-2 border-brand-orange pl-2.5">
+            <h3 className="font-serif text-xl font-bold text-white tracking-wide">
               Quick Links
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-300">
+            </h3>
+            {/* Orange accent dotted line */}
+            <div className="flex items-center gap-1.5">
+              <span className="w-10 h-0.5 bg-brand-orange rounded-full" />
+              <span className="w-2 h-0.5 bg-brand-orange/60 rounded-full" />
+              <span className="w-1 h-0.5 bg-brand-orange/40 rounded-full" />
+            </div>
+
+            <ul className="space-y-2 text-sm text-slate-300 pt-1">
               <li>
-                <Link to="/" className="hover:text-brand-orange transition-colors flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
+                <Link to="/" className="hover:text-brand-orange transition-colors flex items-center gap-1.5">
+                  <span className="text-brand-orange text-xs">▶</span>
                   <span>Home</span>
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-brand-orange transition-colors flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
+                <Link to="/about" className="hover:text-brand-orange transition-colors flex items-center gap-1.5">
+                  <span className="text-brand-orange text-xs">▶</span>
                   <span>About Us</span>
                 </Link>
               </li>
               <li>
-                <Link to="/project" className="hover:text-brand-orange transition-colors flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
-                  <span>Project Overview</span>
+                <Link to="/project" className="hover:text-brand-orange transition-colors flex items-center gap-1.5">
+                  <span className="text-brand-orange text-xs">▶</span>
+                  <span>Featured Projects</span>
                 </Link>
               </li>
               <li>
-                <Link to="/gallery" className="hover:text-brand-orange transition-colors flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
+                <Link to="/gallery" className="hover:text-brand-orange transition-colors flex items-center gap-1.5">
+                  <span className="text-brand-orange text-xs">▶</span>
                   <span>Site Gallery</span>
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-brand-orange transition-colors flex items-center gap-1">
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
+                <Link to="/contact" className="hover:text-brand-orange transition-colors flex items-center gap-1.5">
+                  <span className="text-brand-orange text-xs">▶</span>
                   <span>Contact &amp; Map</span>
                 </Link>
               </li>
@@ -191,38 +172,48 @@ export default function Footer({ settings }) {
                   href="/plots"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-brand-orange font-bold text-orange-400 transition-colors flex items-center gap-1"
+                  className="text-brand-orange hover:text-white transition-colors flex items-center gap-1.5 font-semibold"
                 >
-                  <ChevronRight className="w-3 h-3 text-brand-orange" />
+                  <span className="text-brand-orange text-xs">▶</span>
                   <span>Plot Availability (2D/3D)</span>
                 </a>
               </li>
-              <li>
-                <Link
-                  to="/admin/login"
-                  className="hover:text-emerald-400 text-slate-400 transition-colors flex items-center gap-1"
-                >
-                  <ChevronRight className="w-3 h-3 text-emerald-400" />
-                  <span>Admin Staff Portal</span>
-                </Link>
-              </li>
             </ul>
+
+            <div className="pt-3 flex flex-wrap gap-2 text-xs">
+              <span className="px-2.5 py-1 bg-white/10 rounded border border-white/20 text-slate-200 inline-flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-brand-orange" />
+                DTCP: {dtcpNo}
+              </span>
+              <span className="px-2.5 py-1 bg-white/10 rounded border border-white/20 text-slate-200">
+                RERA: {reraNo}
+              </span>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Strip: Copyright & Legal */}
-        <div className="mt-12 pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+      {/* Bottom Bar: Copyright & Legal Strip Matching Reference */}
+      <div className="relative z-10 bg-[#00050d] border-t border-white/10 py-4 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300">
           <div>
-            &copy; {new Date().getFullYear()} Skandha Group. All Rights Reserved.
+            Copyright &copy; {new Date().getFullYear()} Skandha Group. All Rights Reserved.
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-[11px]">
-            <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
-            <span>&bull;</span>
-            <span className="hover:text-slate-300 cursor-pointer">Terms &amp; Conditions</span>
-            <span>&bull;</span>
-            <span className="text-slate-400">DTCP: {dtcpNo}</span>
-            <span>&bull;</span>
-            <span className="text-slate-400">TS RERA: {reraNo}</span>
+          <div className="flex items-center gap-6">
+            <Link
+              to="/privacy"
+              className="hover:text-white transition-colors flex items-center gap-1.5 text-xs text-slate-300"
+            >
+              <span className="text-brand-orange text-[10px]">▶</span>
+              <span>Privacy Policy</span>
+            </Link>
+            <Link
+              to="/terms"
+              className="hover:text-white transition-colors flex items-center gap-1.5 text-xs text-slate-300"
+            >
+              <span className="text-brand-orange text-[10px]">▶</span>
+              <span>Terms &amp; Conditions</span>
+            </Link>
           </div>
         </div>
       </div>

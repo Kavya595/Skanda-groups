@@ -18,6 +18,7 @@ const siteSettingsSchema = new mongoose.Schema({
   brochurePdfUrl: { type: String, default: '/assets/skandha_brochure.pdf' },
   flyerPdfUrl: { type: String, default: '/assets/skandha_flyer.pdf' },
   socialLinks: {
+    facebook: { type: String, default: '' },
     instagram: { type: String, default: 'https://www.instagram.com/_skandhagroups_/' },
     youtube: { type: String, default: 'https://www.youtube.com/@SkandhaGroups-hyd' }
   },

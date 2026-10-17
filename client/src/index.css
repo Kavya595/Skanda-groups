@@ -297,14 +297,13 @@
   padding: 0;
 }
 
-/* JB Infra Signature Connected 3-Feature Ribbon */
+/* Signature Connected 3-Feature Ribbon */
 .feature-ribbon-wrap {
   display: grid;
   grid-template-columns: 1fr;
-  background-color: #0b0e17;
-  border: 1px solid #1e293b;
-  border-radius: 8px;
-  box-shadow: 0px 20px 45px rgba(0, 0, 0, 0.4), 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  background-color: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0px 20px 45px rgba(7, 36, 95, 0.14), 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   position: relative;
   z-index: 30;
 }
@@ -356,7 +355,7 @@
   transform: rotateY(180deg);
 }
 
-/* Orange Arrow Chevron for middle box on desktop matching JB Infra */
+/* Orange Arrow Chevron for middle box on desktop */
 @media (min-width: 1024px) {
   .feature-ribbon-item:nth-child(2):before {
     content: '';

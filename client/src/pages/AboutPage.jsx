@@ -7,19 +7,18 @@ import {
   Award,
   CheckCircle,
   HeartHandshake,
+  Quote,
   Calendar,
   Sparkles,
   ArrowRight,
-  PhoneCall,
   ChevronRight,
-  Maximize2,
-  X
+  Building
 } from 'lucide-react';
 import EnquiryModal from '../components/EnquiryModal';
+import AboutLogoCrest from '../components/AboutLogoCrest';
 
 export default function AboutPage({ settings }) {
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
@@ -39,7 +38,7 @@ export default function AboutPage({ settings }) {
     },
     {
       title: 'Strategic High-Growth Corridors',
-      desc: 'Our venture is situated along expanding highway corridors, life science hubs, and industrial belts to ensure maximum capital appreciation for investors and homeowners.',
+      desc: 'Our projects are located along expanding highway corridors, life science hubs, and industrial belts to ensure maximum capital appreciation for investors and homeowners.',
       icon: CheckCircle
     },
     {
@@ -50,175 +49,194 @@ export default function AboutPage({ settings }) {
   ];
 
   return (
-    <div className="bg-[#000000] text-slate-100 space-y-20 pb-20">
+    <div className="space-y-20 pb-20">
       {/* ========================================================== */}
-      {/* 1. HERO SECTION                                            */}
+      {/* 1. LUXURY CREST HERO BANNER (MATCHING REFERENCE IMAGE)     */}
       {/* ========================================================== */}
-      <section className="relative bg-gradient-to-b from-[#07090e] via-[#0b0e14] to-[#000000] py-16 sm:py-20 text-white overflow-hidden border-b border-slate-800">
-        <div className="absolute top-0 right-1/3 w-96 h-96 rounded-full bg-brand-orange/15 blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-            <span className="h-px w-8 bg-brand-orange/40" />
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            ABOUT US
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            <span className="h-px w-8 bg-brand-orange/40" />
-          </div>
-
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto text-white">
-            Building Trust Through Legal Precision &amp; Prime Locations
-          </h1>
-
-          <p className="text-sm sm:text-base text-slate-300 font-light leading-relaxed max-w-2xl mx-auto">
-            <strong className="text-white">Skandha Group</strong> is a trusted real-estate development firm based in Hyderabad, specializing in DTCP and RERA approved plotted layouts along Telangana's premier development corridors.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-emerald-950/80 text-emerald-400 rounded-md border border-emerald-800/80">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              DTCP Sanctioned: {dtcpNo}
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-[#121622] text-slate-300 rounded-md border border-slate-700">
-              TS RERA Registered: {reraNo}
-            </span>
-          </div>
-        </div>
-      </section>
+      <AboutLogoCrest isBanner={true} showBadge={true} />
 
       {/* ========================================================== */}
-      {/* 2. 2-COLUMN ABOUT US SECTION                               */}
+      {/* 2. VISION & MISSION WITH IMAGE COLLAGE                     */}
       {/* ========================================================== */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left: Feature Visual with Enlarge Trigger */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          {/* Left Column: Overlapping Architectural Image Collage Matching Reference */}
           <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-800 bg-slate-900 group">
-              <img
-                src="/assets/site_entrance_arch.jpg"
-                alt="Skandha Group Grand Entrance Arch & Security Portal"
-                className="w-full h-[380px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+            {/* Decorative Dot Matrix on Left */}
+            <div className="hidden sm:grid absolute -left-10 top-1/2 -translate-y-1/2 grid-cols-4 gap-2.5 opacity-30 pointer-events-none z-0">
+              {[...Array(28)].map((_, i) => (
+                <span key={i} className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+              ))}
+            </div>
 
-              <div className="absolute top-4 left-4 bg-[#0c0f17]/85 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700">
-                Gated Venture &bull; 24/7 Security
+            <div className="relative z-10 space-y-3">
+              {/* Top Row: Arch Detail + Terrace Garden + Orange 5 Years Card */}
+              <div className="grid grid-cols-12 gap-3 items-stretch">
+                <div className="col-span-3 rounded-lg overflow-hidden shadow-md border-2 border-white bg-slate-100">
+                  <img
+                    src="/assets/about_arch_detail.jpg"
+                    alt="Modern Villa Architecture"
+                    className="w-full h-28 sm:h-36 object-cover"
+                  />
+                </div>
+                <div className="col-span-5 rounded-lg overflow-hidden shadow-md border-2 border-white bg-slate-100">
+                  <img
+                    src="/assets/about_terrace_garden.jpg"
+                    alt="Terrace Garden Pergola"
+                    className="w-full h-28 sm:h-36 object-cover"
+                  />
+                </div>
+                <div className="col-span-4 bg-brand-orange text-white rounded-lg shadow-xl p-4 sm:p-5 flex flex-col items-center justify-center text-center">
+                  <span className="font-serif text-4xl sm:text-5xl font-black leading-none">
+                    5
+                  </span>
+                  <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider mt-1.5 leading-tight text-orange-100">
+                    Years of Experiences
+                  </span>
+                </div>
               </div>
 
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-brand-orange/90 text-white flex items-center justify-center shadow-2xl hover:scale-110 hover:bg-brand-orange transition-all duration-300 group-hover:shadow-orange-500/50"
-                aria-label="Enlarge View"
-              >
-                <Maximize2 className="w-6 h-6" />
-              </button>
-
-              <div className="absolute bottom-4 left-4 right-4 text-white text-xs">
-                <span className="font-bold">Kadthal Venture:</span> Directly adjoining NH 765 Srisailam Highway, 1 minute to Maisigandi Temple.
+              {/* Bottom Main Photo: Grand Entrance Boulevard */}
+              <div className="rounded-xl overflow-hidden shadow-xl border-4 border-white bg-slate-100">
+                <img
+                  src="/assets/about_venture_entrance.jpg"
+                  alt="Skandha Group Grand Entrance Boulevard"
+                  className="w-full h-56 sm:h-72 object-cover object-center"
+                />
               </div>
             </div>
           </div>
 
-          {/* Right: Narrative Details */}
+          {/* Right Column: OUR VISION & OUR MISSION Cards Matching Reference */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-                <span className="h-px w-6 bg-brand-orange/40" />
-                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-                OUR VISION
-                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-                <span className="h-px w-6 bg-brand-orange/40" />
+            {/* OUR VISION */}
+            <div className="flex items-start gap-4 p-2">
+              <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200/80 text-brand-orange flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <HeartHandshake className="w-7 h-7" />
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white leading-tight">
-                We Provide The Beauty of Your Home
-              </h2>
+              <div className="space-y-1.5">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-slate-900 tracking-wide uppercase">
+                  OUR VISION
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
+                  We don’t just build properties&mdash;we craft lifestyles. Every Skandha Group project is designed to blend modern living with affordability, ensuring families thrive in well-connected, secure, and vibrant communities.
+                </p>
+              </div>
             </div>
 
-            <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-light">
-              With <strong className="text-white">Skandha Group</strong>, our vision is to craft peaceful, legally safeguarded plotted communities that harmoniously blend serene residential living with the unprecedented economic growth of Hyderabad's southern development corridor.
-            </p>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Surrounded by historic landmarks like Maisigandi Temple and connected to Hyderabad's upcoming Life Sciences &amp; Mucherla Future City belts, our venture delivers an ideal foundation for constructing a custom dream villa or creating an enduring intergenerational family asset.
-            </p>
+            <div className="border-t border-slate-100" />
 
-            <ul className="space-y-2.5 pt-2 text-xs sm:text-sm text-slate-300">
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-brand-orange" />
-                <span>100% Vasthu Compliant East &amp; West Facing Orientations</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-brand-orange" />
-                <span>Complete Statutory Clearances &amp; Instant Spot Registration</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <ChevronRight className="w-4 h-4 text-brand-orange" />
-                <span>Direct Signal-Free Access to Hyderabad via NH 765 &amp; ORR Exit 14</span>
-              </li>
-            </ul>
-
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <button
-                onClick={() => setIsEnquiryOpen(true)}
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-6 py-3.5 rounded-lg shadow-md hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5"
-              >
-                <Calendar className="w-4 h-4" />
-                <span>Schedule Advisory Consultation</span>
-              </button>
-              <Link
-                to="/project"
-                className="inline-flex items-center gap-2 bg-[#121622] hover:bg-slate-800 text-white border border-slate-700 text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-lg transition-all"
-              >
-                <span>Project Specifications</span>
-                <ArrowRight className="w-3.5 h-3.5 text-brand-orange" />
-              </Link>
+            {/* OUR MISSION */}
+            <div className="flex items-start gap-4 p-2">
+              <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200/80 text-brand-orange flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-slate-900 tracking-wide uppercase">
+                  OUR MISSION
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
+                  To create quality, affordable homes that foster vibrant, connected communities&mdash;where families don't just live, they thrive.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================== */}
-      {/* 3. FOUR FOUNDATIONAL PILLARS                                */}
+      {/* 3. MORE THAN HOMES - A LEGACY OF TRUST & VALUE             */}
       {/* ========================================================== */}
-      <section className="bg-[#07090e] py-20 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-              <span className="h-px w-8 bg-brand-orange/40" />
-              <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-              CORE VALUES
-              <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-              <span className="h-px w-8 bg-brand-orange/40" />
-            </div>
-            <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
-              Why Discerning Buyers Choose Skandha Group
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
-              Our unwavering commitment to legal rigor, transparent pricing, and prompt infrastructure execution.
-            </p>
-          </div>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-[#fbfcff] rounded-3xl border border-slate-200/90 shadow-sm p-8 sm:p-12 lg:p-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+            {/* Left: Heading & Button */}
+            <div className="lg:col-span-5 space-y-5">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest text-brand-orange bg-orange-100/70 px-3 py-1 rounded-sm border border-orange-200/60">
+                Legacy. Transparency. Growth.
+              </span>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {pillars.map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-[#0c0f17] p-7 rounded-2xl border border-slate-800 shadow-sm hover:shadow-xl hover:border-brand-orange/40 transition-all duration-300 flex items-start gap-5 group"
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight">
+                More Than Homes &ndash; A Legacy of Trust &amp; Value
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
+                Delivering fully sanctioned, legally clear plotted developments along Telangana's premier development corridors with prompt execution and customer-first commitment.
+              </p>
+
+              <div>
+                <button
+                  onClick={() => setIsEnquiryOpen(true)}
+                  className="bg-brand-orange hover:bg-orange-600 active:scale-95 text-white font-bold text-xs sm:text-sm uppercase tracking-wider px-8 py-4 rounded-md shadow-lg shadow-orange-500/25 transition-all inline-flex items-center gap-2 cursor-pointer"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-brand-orange flex items-center justify-center shrink-0 group-hover:bg-brand-orange group-hover:text-white transition-colors shadow-xs">
-                    <Icon className="w-7 h-7" />
+                  <span>Explore Ventures</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right: 2x2 Stats Grid Matching Reference Image */}
+            <div className="lg:col-span-7 grid grid-cols-2 divide-x divide-y divide-slate-100 bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+              {/* Stat 1: 5+ Years of Excellence */}
+              <div className="p-6 sm:p-8 flex items-start gap-4 group">
+                <div className="w-12 h-12 rounded-full border-2 border-orange-200 bg-orange-50/70 text-brand-orange flex items-center justify-center shrink-0 shadow-xs group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange transition-all duration-300">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none">
+                    5<span className="text-brand-orange">+</span>
                   </div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-serif text-xl font-bold text-white group-hover:text-brand-orange transition-colors">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-                      {item.desc}
-                    </p>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1.5">
+                    Years of Excellence
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+              {/* Stat 2: 2.5k+ Acres Developed */}
+              <div className="p-6 sm:p-8 flex items-start gap-4 group">
+                <div className="w-12 h-12 rounded-full border-2 border-orange-200 bg-orange-50/70 text-brand-orange flex items-center justify-center shrink-0 shadow-xs group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange transition-all duration-300">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none">
+                    2.5k<span className="text-brand-orange">+</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1.5">
+                    Acres Developed
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 3: 25k+ Happy Customers */}
+              <div className="p-6 sm:p-8 flex items-start gap-4 group">
+                <div className="w-12 h-12 rounded-full border-2 border-orange-200 bg-orange-50/70 text-brand-orange flex items-center justify-center shrink-0 shadow-xs group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange transition-all duration-300">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none">
+                    25k<span className="text-brand-orange">+</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1.5">
+                    Happy Customers
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 4: 100%+ Legal Compliance */}
+              <div className="p-6 sm:p-8 flex items-start gap-4 group">
+                <div className="w-12 h-12 rounded-full border-2 border-orange-200 bg-orange-50/70 text-brand-orange flex items-center justify-center shrink-0 shadow-xs group-hover:bg-brand-orange group-hover:text-white group-hover:border-brand-orange transition-all duration-300">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="font-serif text-3xl sm:text-4xl font-extrabold text-slate-900 leading-none">
+                    100%<span className="text-brand-orange">+</span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1.5">
+                    legal compliance
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -229,58 +247,50 @@ export default function AboutPage({ settings }) {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Head Office Card */}
-          <div className="p-8 rounded-3xl bg-[#0c0f17] border border-slate-800 shadow-sm space-y-4">
+          <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center gap-3">
-              <img
-                src="/assets/skandha_logo_white.svg"
-                alt="Skandha Group"
-                className="h-16 w-auto object-contain"
-              />
+              <div className="bg-black px-4 py-2.5 rounded-xl inline-block shadow-sm">
+                <img
+                  src="/assets/skandha_logo_official.png"
+                  alt="Skandha Group"
+                  className="h-11 w-auto object-contain"
+                />
+              </div>
             </div>
-            <h3 className="font-serif text-xl font-bold text-white">
+            <h3 className="font-serif text-xl font-bold text-slate-900">
               Corporate Headquarters
             </h3>
-            <div className="space-y-2 text-xs sm:text-sm text-slate-300">
+            <div className="space-y-2 text-xs sm:text-sm text-slate-700">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{officeAddress}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-brand-orange shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-brand-orange font-semibold text-slate-200">
+                <a href={`mailto:${email}`} className="hover:text-brand-orange font-semibold">
                   {email}
                 </a>
               </div>
-              <div className="flex items-center gap-2.5 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setIsEnquiryOpen(true)}
-                  className="inline-flex items-center gap-2 text-brand-orange hover:text-white font-semibold transition-colors"
-                >
-                  <PhoneCall className="w-4 h-4 text-brand-orange shrink-0" />
-                  <span>Request Site Desk Callback</span>
-                </button>
-              </div>
             </div>
-            <div className="p-4 bg-orange-950/40 border border-orange-800/60 rounded-xl text-xs text-orange-200 leading-relaxed">
+            <div className="p-4 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-950 leading-relaxed">
               <strong>Spot Registration Commitment:</strong> Transparent documentation with on-site surveyed boundary pegs, clear Vasthu alignments, and spot registration.
             </div>
           </div>
 
           {/* Project Site Card */}
-          <div className="p-8 rounded-3xl bg-[#0c0f17] border border-slate-800 shadow-sm space-y-4">
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-md border border-emerald-800/80">
+          <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-3 py-1 rounded-md border border-emerald-200">
               <MapPin className="w-3.5 h-3.5" />
               <span>Project Site Office</span>
             </div>
-            <h3 className="font-serif text-xl font-bold text-white">
+            <h3 className="font-serif text-xl font-bold text-slate-900">
               Kadthal Venture &bull; Srisailam Highway
             </h3>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Adjoining 4-lane NH 765 Srisailam Highway, Kadthal Mandal, Ranga Reddy District, Telangana - 509358. Just 1 minute drive from Maisigandi Temple.
             </p>
-            <div className="p-4 bg-[#121622] border border-slate-800 rounded-xl space-y-2 text-xs text-slate-300">
-              <div className="font-bold text-white">Daily Guided Site Tours:</div>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs text-slate-700">
+              <div className="font-bold text-slate-900">Daily Guided Site Tours:</div>
               <p>Complimentary escorted site visits available daily with cab pickup from Hyderabad.</p>
             </div>
             <div className="pt-2">
@@ -295,31 +305,6 @@ export default function AboutPage({ settings }) {
           </div>
         </div>
       </section>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setIsModalOpen(false)}
-        >
-          <div
-            className="relative max-w-4xl max-h-[90vh] bg-[#0c0f17] border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl overflow-hidden space-y-3"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 z-10 bg-slate-800/80 hover:bg-slate-700 text-white p-2 rounded-full shadow transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <img
-              src="/assets/site_entrance_arch.jpg"
-              alt="Entrance Arch"
-              className="w-full max-h-[75vh] object-contain rounded-2xl"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Enquiry Modal */}
       <EnquiryModal

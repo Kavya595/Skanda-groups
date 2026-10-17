@@ -61,21 +61,21 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#0c0f17] rounded-2xl max-w-lg w-full shadow-2xl border border-slate-800 text-white overflow-hidden relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 overflow-hidden relative">
         {/* Header */}
-        <div className="bg-[#121622] px-6 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-orange-50 via-white to-orange-50 px-6 py-4 border-b border-orange-100 flex items-center justify-between">
           <div>
-            <h3 className="font-serif font-bold text-lg text-white">
+            <h3 className="font-serif font-bold text-lg text-slate-900">
               {prefilledPlot ? `Enquire for Plot #${prefilledPlot.plotNumber}` : "Enquire with Skandha Group"}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Direct consultation from official Skandha Group sales advisors
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
             aria-label="Close dialog"
           >
             <X className="w-5 h-5" />
@@ -85,22 +85,22 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
         {/* Success View */}
         {successResult ? (
           <div className="p-8 text-center space-y-5">
-            <div className="w-14 h-14 bg-emerald-950/80 border border-emerald-800 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle className="w-8 h-8" />
             </div>
             <div>
-              <h4 className="text-xl font-bold text-white">Enquiry Confirmed!</h4>
-              <p className="text-sm text-slate-300 mt-2">
+              <h4 className="text-xl font-bold text-slate-900">Enquiry Confirmed!</h4>
+              <p className="text-sm text-slate-600 mt-2">
                 Thank you! Your verified details have been securely logged into our system. Our team will contact you shortly.
               </p>
             </div>
 
             {successResult.whatsappUrl && (
-              <div className="bg-[#121622] border border-slate-700 rounded-xl p-4 text-left space-y-3">
-                <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-left space-y-3">
+                <div className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">
                   Instant Connection Available
                 </div>
-                <p className="text-xs text-slate-300">
+                <p className="text-xs text-slate-700">
                   Would you like to connect directly via WhatsApp to receive layout brochures, pricing breakdown, and site visit schedules instantly?
                 </p>
                 <button
@@ -115,7 +115,7 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
 
             <button
               onClick={onClose}
-              className="text-xs text-slate-400 hover:text-white underline font-medium"
+              className="text-xs text-slate-500 hover:text-slate-800 underline font-medium"
             >
               Done / Close Window
             </button>
@@ -136,35 +136,35 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
             </div>
 
             {prefilledPlot && (
-              <div className="bg-orange-950/40 border border-orange-800/60 rounded-xl p-3 text-xs text-slate-300 flex flex-wrap gap-x-4 gap-y-1">
+              <div className="bg-orange-50/70 border border-orange-200/80 rounded-xl p-3 text-xs text-slate-700 flex flex-wrap gap-x-4 gap-y-1">
                 <div>
-                  <span className="text-slate-400">Selected Plot:</span>{' '}
+                  <span className="text-slate-500">Selected Plot:</span>{' '}
                   <strong className="text-brand-orange">#{prefilledPlot.plotNumber}</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400">Area:</span>{' '}
+                  <span className="text-slate-500">Area:</span>{' '}
                   <strong>{prefilledPlot.areaSqYds} Sq.Yds</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400">Facing:</span>{' '}
+                  <span className="text-slate-500">Facing:</span>{' '}
                   <strong>{prefilledPlot.facing}</strong>
                 </div>
                 <div>
-                  <span className="text-slate-400">Dimensions:</span>{' '}
+                  <span className="text-slate-500">Dimensions:</span>{' '}
                   <strong>{prefilledPlot.dimensions}</strong>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="p-3 bg-red-950/60 border border-red-800 text-red-300 text-xs rounded-lg">
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Full Name <span className="text-brand-orange">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Full Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -172,13 +172,13 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
                 placeholder="e.g. Ramesh Kumar"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Email Address <span className="text-brand-orange">*</span>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Email Address <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -186,33 +186,32 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
                 placeholder="ramesh@example.com"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Phone / WhatsApp <span className="text-brand-orange">*</span>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Phone / WhatsApp (Optional)
                 </label>
                 <input
                   type="tel"
-                  required
                   placeholder="e.g. 9876543210"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Preferred Contact
                 </label>
                 <select
                   value={formData.preferredContactMethod}
                   onChange={(e) => setFormData({ ...formData, preferredContactMethod: e.target.value })}
-                  className="w-full px-3 py-2 text-sm bg-[#121622] border border-slate-700 text-white rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all"
                 >
                   <option value="whatsapp">WhatsApp Consultation</option>
                   <option value="email">Email Detailed Brochure</option>
@@ -222,7 +221,7 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Message or Specific Questions
               </label>
               <textarea
@@ -230,7 +229,7 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
                 placeholder="Ask about site visit, registration process, or payment schedules..."
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none"
+                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none"
               ></textarea>
             </div>
 
@@ -241,9 +240,9 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
                 required
                 checked={formData.consent}
                 onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
-                className="mt-1 rounded text-brand-orange focus:ring-orange-500 border-slate-700 bg-[#121622]"
+                className="mt-1 rounded text-brand-orange focus:ring-orange-500 border-slate-300"
               />
-              <label htmlFor="consentCheck" className="text-xs text-slate-400 leading-snug">
+              <label htmlFor="consentCheck" className="text-xs text-slate-600 leading-snug">
                 I authorize Skandha Group to contact me regarding project details, verified DTCP approvals, and site availability.
               </label>
             </div>

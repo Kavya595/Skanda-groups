@@ -1,564 +1,433 @@
 import React, { useState } from 'react';
 import {
-  MapPin,
   Mail,
+  Building,
+  Clock,
   Send,
   CheckCircle2,
-  MessageCircle,
-  ShieldCheck,
-  Navigation,
-  Compass,
-  Clock,
-  Car,
-  Plane,
-  Building,
-  Sparkles,
+  AlertCircle,
   ExternalLink,
-  PhoneCall,
-  Calendar,
-  ChevronDown
+  MessageCircle
 } from 'lucide-react';
 import { submitLead, trackActivityEvent } from '../api/client';
 
 export default function ContactPage({ settings }) {
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
-    phone: '',
-    preferredContactMethod: 'whatsapp',
-    message: '',
-    consent: true,
-    hp_website: ''
+    project: 'Brundavanam (Kadthal, Srisailam Highway)',
+    subject: '',
+    message: ''
   });
 
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [result, setResult] = useState(null);
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
-  const [activeFaqCategory, setActiveFaqCategory] = useState('All');
+  const [status, setStatus] = useState(null); // 'success' | 'error' | null
+  const [statusMessage, setStatusMessage] = useState('');
+  const [whatsappUrl, setWhatsappUrl] = useState('');
 
-  const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079';
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
-  const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
-  const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
+  const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana - 500079';
 
-  const faqs = [
-    {
-      category: 'Legal & Approvals',
-      q: "Is this venture approved by DTCP and registered under TS RERA?",
-      a: "Yes. The venture is officially sanctioned by the Directorate of Town and Country Planning (DTCP) under layout permit TLP NO. 87/2024/H and registered with the Telangana State Real Estate Regulatory Authority (TS RERA) under registration PO2400009081. All 96 plots hold 100% clear legal title, guaranteeing instant spot registration without encumbrance."
-    },
-    {
-      category: 'Plots & Vasthu',
-      q: "What plot dimensions and orientations are available in the project?",
-      a: "The project features 96 surveyed residential villa plots ranging from 183 Sq.Yards up to 672 Sq.Yards (1,647 to 6,048 Sq.Ft). The entire layout has been engineered in strict adherence to 100% Vasthu principles, with East-facing and West-facing plot alignments as well as auspicious corner locations."
-    },
-    {
-      category: 'Bank Loans',
-      q: "Are housing and plotted development bank loans pre-approved for this venture?",
-      a: "Yes. Due to full statutory DTCP clearances and RERA certification, pre-approved bank loans up to 70% to 75% are available through leading banks including State Bank of India (SBI), HDFC Bank, and ICICI Bank. Our dedicated customer team assists buyers with seamless loan sanction paperwork."
-    },
-    {
-      category: 'Infrastructure',
-      q: "What on-site infrastructure and amenities are being developed?",
-      a: "The venture features a proposed 60'-0\" wide arterial road connecting directly toward Maisigandi Temple, 33'-0\" wide internal blacktop avenues, comprehensive underground sanitary drainage, overhead water storage tank, electrical lines with dedicated street lights, an Ac. 0.758 landscaped children's park with jogging pathways, boundary wall with 24/7 security cabin, and 2 full years of complimentary site maintenance."
-    },
-    {
-      category: 'Location & Growth',
-      q: "Where is the venture situated and how is connectivity to Hyderabad?",
-      a: "The layout directly adjoins the 4-lane Srisailam Highway (NH 765) in Kadthal, just a 1-minute drive to the famous Maisigandi Maisamma Temple. It offers direct signal-free access to Hyderabad via Outer Ring Road (Exit 14) and Rajiv Gandhi International Airport (Shamshabad)."
-    },
-    {
-      category: 'Location & Growth',
-      q: "What is the economic growth driver in the Kadthal corridor?",
-      a: "Kadthal is situated at the center of South Hyderabad's mega economic expansion, neighboring the upcoming Mucherla Future City (Life Sciences, AI City & Skills University), the massive Hyderabad Pharma City corridor, and the proposed Regional Ring Road (RRR), driving rapid long-term land appreciation."
-    },
-    {
-      category: 'Site Visits',
-      q: "How can I schedule a physical site visit or select a plot?",
-      a: "Skandha Group organizes daily guided site visits directly to the Kadthal project. You can submit an online enquiry, or chat with our verified advisors on WhatsApp to schedule a complimentary visit with comfortable cab pickup."
+  const validate = () => {
+    const errs = {};
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      errs.fullName = 'Please enter your full name (at least 2 characters).';
     }
-  ];
+    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errs.email = 'Please provide a valid email address.';
+    }
+    if (!formData.subject.trim()) {
+      errs.subject = 'Please enter an inquiry subject.';
+    }
+    if (!formData.message.trim() || formData.message.trim().length < 10) {
+      errs.message = 'Please write a brief message (minimum 10 characters).';
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
-  const faqCategories = ['All', 'Legal & Approvals', 'Plots & Vasthu', 'Infrastructure', 'Bank Loans', 'Location & Growth', 'Site Visits'];
-
-  const filteredFaqs = activeFaqCategory === 'All'
-    ? faqs
-    : faqs.filter(f => f.category === activeFaqCategory);
-
-  const connectivityHighlights = [
-    { title: 'Maisigandi Temple', duration: '1 Min Drive', desc: 'Direct access via proposed 60ft arterial layout road', icon: Sparkles },
-    { title: 'Srisailam Highway (NH 765)', duration: '2 Min Drive', desc: '4-lane high-speed corridor connecting directly to Hyderabad', icon: Car },
-    { title: 'Kadthal Town & Municipality', duration: '3 Min Drive', desc: 'Established administrative hub with schools, banking & retail', icon: Building },
-    { title: 'Mucherla Future City & AI Hub', duration: '10 Min Drive', desc: 'Telangana mega economic corridor & Life Sciences development zone', icon: Building },
-    { title: 'ORR Exit 14 & Wonderla', duration: '15 Min Drive', desc: 'Outer Ring Road arterial junction for rapid city transit', icon: Navigation },
-    { title: 'RGIA Shamshabad Airport', duration: '20 Min Drive', desc: 'Direct signal-free connectivity via Srisailam Highway & ORR', icon: Plane }
-  ];
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    if (!validate()) return;
+
     setLoading(true);
+    setStatus(null);
 
     try {
-      const res = await submitLead(formData);
+      const res = await submitLead({
+        name: formData.fullName,
+        email: formData.email,
+        message: `[${formData.project} - ${formData.subject}] ${formData.message}`,
+        preferredContactMethod: 'email',
+        consent: true
+      });
+
       if (res.success) {
-        setResult(res);
+        setStatus('success');
+        setStatusMessage('Thank you for reaching out! Your inquiry has been routed to our corporate advisory team. We will review your requirements and respond shortly.');
         trackActivityEvent('enquiry_submitted', null, { source: 'contact_page' });
         if (res.whatsappUrl) {
-          try {
-            window.open(res.whatsappUrl, '_blank', 'noopener,noreferrer');
-          } catch {
-            // Fallback if browser blocks automatic popups
-          }
+          setWhatsappUrl(res.whatsappUrl);
         }
+        setFormData({
+          fullName: '',
+          email: '',
+          project: 'Brundavanam (Kadthal, Srisailam Highway)',
+          subject: '',
+          message: ''
+        });
       } else {
-        setError(res.error || 'Failed to submit enquiry');
+        setStatus('error');
+        setStatusMessage(res.error || 'Failed to submit inquiry. Please try again or email us directly.');
       }
     } catch (err) {
-      setError(err.message || 'Error sending enquiry');
+      setStatus('error');
+      setStatusMessage(err.message || 'Error transmitting your message. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleWhatsAppRedirect = () => {
-    if (result && result.whatsappUrl) {
-      window.open(result.whatsappUrl, '_blank', 'noopener,noreferrer');
-    }
-  };
-
   return (
-    <div className="bg-[#000000] text-slate-100 space-y-16 pb-20">
+    <div className="bg-white">
       {/* ========================================================== */}
-      {/* 1. HERO SECTION                                            */}
+      {/* 1. TOP HERO HEADER (MATCHING skanda-groups.vercel.app)     */}
       {/* ========================================================== */}
-      <section className="relative bg-gradient-to-b from-[#07090e] via-[#0b0e14] to-[#000000] py-16 sm:py-20 text-white overflow-hidden border-b border-slate-800">
-        <div className="absolute top-0 right-1/4 w-96 h-96 rounded-full bg-brand-orange/15 blur-[120px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-            <span className="h-px w-8 bg-brand-orange/40" />
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            LOCATION &amp; CONTACT
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            <span className="h-px w-8 bg-brand-orange/40" />
+      <section className="bg-gradient-to-b from-[#FFF5EC] to-white py-16 lg:py-20 border-b border-[#E5E7EB]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#F58220]/30 text-xs font-bold text-[#F58220] uppercase tracking-wider mb-4 shadow-xs">
+            <Mail className="w-4 h-4 text-[#F58220]" />
+            <span>Direct Client Services &amp; Corporate Desk</span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight max-w-4xl mx-auto text-white">
-            Locate Our Kadthal Project
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-[#202124] tracking-tight leading-tight font-serif">
+            Connect with Skandha Groups
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 font-light leading-relaxed max-w-2xl mx-auto">
-            Situated adjoining Srisailam Highway (NH 765) at Kadthal, right in the high-growth orbit of Mucherla Future City. Connect with Skandha Group advisors or schedule a guided site tour.
+          <p className="text-base sm:text-lg text-[#6B7280] mt-4 leading-relaxed font-light">
+            Have questions regarding our developments, statutory standards, or corporate consultations? Our advisory team is ready to assist you.
           </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-3 text-xs text-slate-300">
-            <a
-              href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Skandha%20Group%20plots%20at%20Kadthal."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-emerald-400 transition-colors inline-flex items-center gap-2 font-medium"
-            >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
-              <span>WhatsApp Sales Desk</span>
-            </a>
-            <span>&bull;</span>
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-brand-orange" />
-              <span>{email}</span>
-            </div>
-          </div>
         </div>
       </section>
 
       {/* ========================================================== */}
-      {/* 2. CONNECTIVITY METRICS RIBBON                             */}
+      {/* 2. MAIN CONTENT GRID (OFFICE DETAILS + INQUIRY FORM)       */}
       {/* ========================================================== */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {connectivityHighlights.map((item, idx) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={idx}
-                className="bg-[#0c0f17] p-4 rounded-2xl border border-slate-800 shadow-xs hover:border-brand-orange/40 hover:shadow-md transition-all duration-300 group"
-              >
-                <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 text-brand-orange flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
-                  <Icon className="w-4 h-4" />
-                </div>
-                <div className="text-xs font-bold text-white leading-snug line-clamp-1">
-                  {item.title}
-                </div>
-                <div className="text-sm font-extrabold text-brand-orange mt-0.5">
-                  {item.duration}
-                </div>
-                <div className="text-[11px] text-slate-400 mt-1 leading-tight line-clamp-2">
-                  {item.desc}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ========================================================== */}
-      {/* 3. INTERACTIVE PROJECT LOCATION MAP                        */}
-      {/* ========================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">
-                <span className="h-px w-6 bg-brand-orange/40" />
-                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-                OFFICIAL CONNECTIVITY
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">
-                Project Location &amp; Driving Directions
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                Adjoining 4-lane Srisailam Highway (NH 765), Kadthal, Telangana &mdash; Just 1 minute drive from Maisigandi Temple.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <a
-                href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal+Telangana"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-xl shadow-md transition-all active:scale-95"
-              >
-                <Navigation className="w-4 h-4" />
-                <span>Open in Google Maps / Directions</span>
-              </a>
-            </div>
-          </div>
-
-          {/* Clean Interactive Google Map Viewer */}
-          <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#07090e] min-h-[440px]">
-            <iframe
-              title="Google Maps Location"
-              src="https://maps.google.com/maps?q=Kadthal%20Maisigandi%20Temple%20Telangana&t=m&z=12&output=embed&iwloc=near"
-              className="w-full h-[480px] border-0"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================== */}
-      {/* 4. OFFICE DETAILS & ENQUIRY FORM                            */}
-      {/* ========================================================== */}
-      <section id="contact-form" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* Left Column: Office Contacts */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-                <span className="h-px w-6 bg-brand-orange/40" />
-                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-                OFFICE LOCATIONS
-                <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-                <span className="h-px w-6 bg-brand-orange/40" />
-              </div>
-              <h2 className="font-serif text-3xl font-extrabold text-white leading-tight">
-                Corporate Office &amp; Site Desk
-              </h2>
-            </div>
-
-            {/* Head Office Card */}
-            <div className="p-6 rounded-2xl bg-[#0c0f17] border border-slate-800 shadow-sm space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-brand-orange flex items-center gap-2">
-                <Building className="w-4 h-4" />
-                <span>Corporate Headquarters</span>
-              </div>
-              <div className="flex items-start gap-2.5 text-xs text-slate-300">
-                <MapPin className="w-4 h-4 text-brand-orange shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{officeAddress}</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-xs text-slate-300">
-                <Mail className="w-4 h-4 text-brand-orange shrink-0" />
-                <a href={`mailto:${email}`} className="hover:text-brand-orange">
-                  {email}
-                </a>
-              </div>
-              <div className="flex items-center gap-2.5 pt-1">
-                <a
-                  href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20Skandha%20Group%20plots%20at%20Kadthal."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 hover:text-white transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Direct WhatsApp Channel</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Site Office Card */}
-            <div className="p-6 rounded-2xl bg-[#0c0f17] border border-slate-800 shadow-sm space-y-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
-                <span>Project Site Office &bull; Kadthal</span>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Adjoining Srisailam Highway (NH 765), Kadthal Mandal, Ranga Reddy District, Telangana - 509358 (1 Min from Maisigandi Temple).
-              </p>
-              <div className="flex items-center gap-2 text-xs font-bold text-brand-orange">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Open 7 Days a Week: 9:30 AM &ndash; 6:00 PM</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Lead Form */}
-          <div className="lg:col-span-7 bg-[#0c0f17] rounded-3xl border border-slate-800 p-6 sm:p-8 shadow-xl">
-            <div className="space-y-2 pb-4 border-b border-slate-800">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full">
-                <Calendar className="w-3.5 h-3.5" />
-                <span>Enquire or Book Visit</span>
-              </div>
-              <h3 className="font-serif text-2xl font-bold text-white">
-                Connect With Skandha Group
-              </h3>
-              <p className="text-xs text-slate-400">
-                Submit your enquiry. Our official advisory desk will confirm your scheduled visit and provide full plot pricing via WhatsApp.
-              </p>
-            </div>
-
-            {result ? (
-              <div className="py-10 text-center space-y-4">
-                <div className="w-14 h-14 bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-bold text-white">Enquiry Confirmed!</h4>
-                <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto">
-                  Thank you! Your details have been securely logged. Our dedicated relationship manager will reach out shortly.
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Left Column: Office Details */}
+            <div className="lg:col-span-5 space-y-6 text-left">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#F58220]">
+                  Get In Touch
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#202124] mt-1 font-serif">
+                  Visit Our Corporate Office
+                </h2>
+                <p className="text-sm text-[#6B7280] mt-2 leading-relaxed">
+                  We welcome buyers and channel partners to our Hastinapuram headquarters for personalized consultations.
                 </p>
-                {result.whatsappUrl && (
-                  <button
-                    onClick={handleWhatsAppRedirect}
-                    className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold px-5 py-3 rounded-xl shadow-md transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    <span>Open WhatsApp Chat Directly</span>
-                  </button>
-                )}
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 pt-5">
-                {error && (
-                  <div className="p-3 bg-red-950/60 border border-red-800 rounded-xl text-xs text-red-300">
-                    {error}
+
+              {/* Card 1: Registered Office */}
+              <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs hover:border-[#F58220] transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#FFF5EC] text-[#F58220] flex items-center justify-center shrink-0">
+                    <Building className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold uppercase text-[#202124] tracking-wider">
+                      Registered Office
+                    </h3>
+                    <address className="not-italic text-sm text-[#6B7280] mt-1.5 leading-relaxed">
+                      # 8-7-91/17/1, 4th Floor Bata Building,<br />
+                      Beside Naveena Hospital, Main Road,<br />
+                      Hastinapuram, Hyderabad, Telangana - 500079
+                    </address>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Email Inquiries */}
+              <div className="p-6 rounded-2xl bg-white border border-[#E5E7EB] shadow-xs hover:border-[#F58220] transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#FFF5EC] text-[#F58220] flex items-center justify-center shrink-0">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold uppercase text-[#202124] tracking-wider">
+                      Email Inquiries
+                    </h3>
+                    <p className="text-xs text-[#6B7280] mt-1">
+                      For corporate proposals, partnerships, and legal queries:
+                    </p>
+                    <a
+                      href={`mailto:${email}`}
+                      className="inline-block mt-2 text-sm font-bold text-[#F58220] hover:underline"
+                    >
+                      {email}
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Corporate Office Hours */}
+              <div className="p-6 rounded-2xl bg-[#F7F7F7] border border-[#E5E7EB]">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-200 text-[#202124] flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold uppercase text-[#202124] tracking-wider">
+                      Corporate Office Hours
+                    </h3>
+                    <p className="text-xs text-[#6B7280] mt-1 leading-relaxed">
+                      Monday &ndash; Sunday: 9:30 AM to 6:30 PM (Site Visits 7 Days a Week)
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Inquiry Form */}
+            <div className="lg:col-span-7">
+              <div className="bg-white rounded-3xl border border-[#E5E7EB] p-6 sm:p-10 shadow-lg">
+                <div className="mb-8">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#F58220]">
+                    Schedule a Consultation
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-extrabold text-[#202124] mt-1 font-serif">
+                    Send Us an Inquiry
+                  </h3>
+                  <p className="text-sm text-[#6B7280] mt-2">
+                    Fill out the form below to receive personalized property consultation or speak with our corporate advisory team.
+                  </p>
+                </div>
+
+                {/* Success Alert */}
+                {status === 'success' && (
+                  <div className="mb-8 p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-start gap-3">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
+                    <div className="text-xs sm:text-sm">
+                      <h4 className="font-bold text-emerald-950">Inquiry Received</h4>
+                      <p className="mt-1 leading-relaxed">{statusMessage}</p>
+                      {whatsappUrl && (
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs px-4 py-2 rounded-lg transition-all shadow-sm"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          <span>Chat on WhatsApp Directly</span>
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                <input
-                  type="text"
-                  name="hp_website"
-                  value={formData.hp_website}
-                  onChange={e => setFormData({ ...formData, hp_website: e.target.value })}
-                  className="hidden"
-                  tabIndex={-1}
-                  autoComplete="off"
-                />
+                {/* Error Alert */}
+                {status === 'error' && (
+                  <div className="mb-8 p-5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start gap-3">
+                    <AlertCircle className="w-6 h-6 text-rose-600 shrink-0 mt-0.5" />
+                    <div className="text-xs sm:text-sm">
+                      <h4 className="font-bold text-rose-950">Submission Error</h4>
+                      <p className="mt-1 leading-relaxed">{statusMessage}</p>
+                    </div>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-300">
-                      Full Name <span className="text-brand-orange">*</span>
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Full Name */}
+                  <div>
+                    <label htmlFor="fullName" className="block text-xs font-bold uppercase tracking-wider text-[#202124] mb-1.5">
+                      Full Name <span className="text-[#F58220]">*</span>
                     </label>
                     <input
                       type="text"
-                      required
-                      value={formData.name}
-                      onChange={e => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter your full name"
-                      className="w-full px-4 py-3 rounded-xl bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange transition-colors"
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      placeholder="e.g. Ramesh Reddy"
+                      className={`w-full px-4 py-3 rounded-xl border text-base sm:text-sm transition-colors outline-none ${
+                        errors.fullName ? 'border-red-400 bg-red-50/30 focus:border-red-500' : 'border-[#E5E7EB] bg-white focus:border-[#F58220]'
+                      }`}
+                      disabled={loading}
                     />
+                    {errors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{errors.fullName}</p>
+                    )}
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-300">
-                      Phone Number <span className="text-brand-orange">*</span>
+                  {/* Email */}
+                  <div>
+                    <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider text-[#202124] mb-1.5">
+                      Email Address <span className="text-[#F58220]">*</span>
                     </label>
                     <input
-                      type="tel"
-                      required
-                      value={formData.phone}
-                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="10-digit mobile number"
-                      className="w-full px-4 py-3 rounded-xl bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange transition-colors"
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="e.g. ramesh@example.com"
+                      className={`w-full px-4 py-3 rounded-xl border text-base sm:text-sm transition-colors outline-none ${
+                        errors.email ? 'border-red-400 bg-red-50/30 focus:border-red-500' : 'border-[#E5E7EB] bg-white focus:border-[#F58220]'
+                      }`}
+                      disabled={loading}
                     />
+                    {errors.email && (
+                      <p className="mt-1 text-xs text-red-600">{errors.email}</p>
+                    )}
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-300">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="name@example.com"
-                    className="w-full px-4 py-3 rounded-xl bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange transition-colors"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-300">
-                    Preferred Communication Channel
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-                      { id: 'call', label: 'Phone Call', icon: PhoneCall },
-                      { id: 'email', label: 'Email', icon: Mail }
-                    ].map(method => {
-                      const Icon = method.icon;
-                      const isSelected = formData.preferredContactMethod === method.id;
-                      return (
-                        <button
-                          key={method.id}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, preferredContactMethod: method.id })}
-                          className={`p-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
-                            isSelected
-                              ? 'bg-orange-500/20 border-brand-orange text-brand-orange font-bold'
-                              : 'bg-[#121622] border-slate-700 text-slate-300 hover:bg-slate-800'
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          <span>{method.label}</span>
-                        </button>
-                      );
-                    })}
+                  {/* Project of Interest */}
+                  <div>
+                    <label htmlFor="project" className="block text-xs font-bold uppercase tracking-wider text-[#202124] mb-1.5">
+                      Project of Interest
+                    </label>
+                    <select
+                      id="project"
+                      name="project"
+                      value={formData.project}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 rounded-xl border border-[#E5E7EB] bg-white text-base sm:text-sm focus:border-[#F58220] transition-colors outline-none"
+                      disabled={loading}
+                    >
+                      <option value="Brundavanam (Kadthal, Srisailam Highway)">
+                        Brundavanam (Kadthal, Srisailam Highway)
+                      </option>
+                      <option value="General Corporate Consultation">
+                        General Corporate Consultation
+                      </option>
+                      <option value="Partnership & Land Advisory">
+                        Partnership &amp; Land Advisory
+                      </option>
+                    </select>
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-300">
-                    Message or Plot Requirements
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.message}
-                    onChange={e => setFormData({ ...formData, message: e.target.value })}
-                    placeholder="Let us know what plot dimensions, orientations, or visit dates you prefer..."
-                    className="w-full px-4 py-3 rounded-xl bg-[#121622] border border-slate-700 text-white placeholder:text-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange transition-colors resize-none"
-                  />
-                </div>
+                  {/* Subject */}
+                  <div>
+                    <label htmlFor="subject" className="block text-xs font-bold uppercase tracking-wider text-[#202124] mb-1.5">
+                      Subject <span className="text-[#F58220]">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      placeholder="e.g. Plot Availability &amp; Free Site Visit Transport"
+                      className={`w-full px-4 py-3 rounded-xl border text-base sm:text-sm transition-colors outline-none ${
+                        errors.subject ? 'border-red-400 bg-red-50/30 focus:border-red-500' : 'border-[#E5E7EB] bg-white focus:border-[#F58220]'
+                      }`}
+                      disabled={loading}
+                    />
+                    {errors.subject && (
+                      <p className="mt-1 text-xs text-red-600">{errors.subject}</p>
+                    )}
+                  </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {loading ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      <span>Send Enquiry &bull; Connect on WhatsApp</span>
-                    </>
-                  )}
-                </button>
+                  {/* Message */}
+                  <div>
+                    <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wider text-[#202124] mb-1.5">
+                      Message <span className="text-[#F58220]">*</span>
+                    </label>
+                    <textarea
+                      id="message"
+                      name="message"
+                      rows={4}
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Please mention your preferred plot size (Sq. Yds), orientation (East/West/Corner), or preferred date for a guided site visit..."
+                      className={`w-full px-4 py-3 rounded-xl border text-base sm:text-sm transition-colors outline-none ${
+                        errors.message ? 'border-red-400 bg-red-50/30 focus:border-red-500' : 'border-[#E5E7EB] bg-white focus:border-[#F58220]'
+                      }`}
+                      disabled={loading}
+                    />
+                    {errors.message && (
+                      <p className="mt-1 text-xs text-red-600">{errors.message}</p>
+                    )}
+                  </div>
 
-                <p className="text-[11px] text-slate-400 text-center pt-1">
-                  DTCP: {dtcpNo} &bull; TS RERA: {reraNo}. Instant spot registration with clear legal titles.
-                </p>
-              </form>
-            )}
+                  {/* Submit Button */}
+                  <div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl font-bold text-white bg-[#F58220] hover:bg-[#E07016] shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-60 cursor-pointer"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Processing Inquiry...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>Submit Inquiry</span>
+                          <Send className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================== */}
-      {/* 5. FREQUENTLY ASKED QUESTIONS (FAQ ACCORDION)              */}
+      {/* 3. CORPORATE OFFICE LOCATION MAP (MATCHING VERCEL SITE)    */}
       {/* ========================================================== */}
-      <section id="faqs" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 scroll-mt-24">
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-orange">
-            <span className="h-px w-6 bg-brand-orange/40" />
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            FREQUENTLY ASKED QUESTIONS
-            <span className="w-1.5 h-1.5 rounded-sm bg-brand-orange" />
-            <span className="h-px w-6 bg-brand-orange/40" />
-          </div>
-          <h2 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
-            Everything You Need to Know
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Transparent answers regarding DTCP &amp; TS RERA approvals, plot dimensions, bank financing, and Kadthal location advantages.
-          </p>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {faqCategories.map(cat => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => {
-                setActiveFaqCategory(cat);
-                setOpenFaqIndex(0);
-              }}
-              className={`text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg transition-all ${
-                activeFaqCategory === cat
-                  ? 'bg-brand-orange text-white shadow-xs'
-                  : 'bg-[#0c0f17] text-slate-300 hover:bg-slate-800 border border-slate-800'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Accordion List */}
-        <div className="space-y-3.5">
-          {filteredFaqs.map((faq, idx) => {
-            const isOpen = openFaqIndex === idx;
-            return (
-              <div
-                key={faq.q}
-                className={`bg-[#0c0f17] rounded-xl border transition-all duration-200 overflow-hidden ${
-                  isOpen
-                    ? 'border-brand-orange shadow-md ring-1 ring-orange-500/20'
-                    : 'border-slate-800 hover:border-slate-700'
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                  className="w-full px-5 sm:px-6 py-4 text-left flex items-center justify-between gap-4 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-brand-orange shrink-0" />
-                    <span className="text-sm sm:text-base font-bold text-white leading-snug">
-                      {faq.q}
-                    </span>
-                  </div>
-                  <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                      isOpen
-                        ? 'bg-orange-500/20 text-brand-orange rotate-180'
-                        : 'bg-slate-900 text-slate-400 border border-slate-800'
-                    }`}
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </button>
-
-                {isOpen && (
-                  <div className="px-5 sm:px-6 pb-5 pt-1 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/80 bg-black/40">
-                    <p>{faq.a}</p>
-                  </div>
-                )}
+      <section className="pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl overflow-hidden border border-[#E5E7EB] shadow-md bg-gray-100">
+            <div className="p-6 bg-white border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-[#202124]">
+                  Corporate Office Location Map
+                </h3>
+                <p className="text-xs text-[#6B7280] mt-0.5">
+                  Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad
+                </p>
               </div>
-            );
-          })}
+
+              <a
+                href="https://maps.google.com/?q=Hastinapuram,Hyderabad,Telangana"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-bold text-[#F58220] hover:underline inline-flex items-center gap-1"
+              >
+                <span>Open in Google Maps</span>
+                <span>&rarr;</span>
+              </a>
+            </div>
+
+            <div className="aspect-[21/9] sm:aspect-[21/7] w-full min-h-[360px]">
+              <iframe
+                title="Skandha Groups Office Location"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3809.112999464619!2d78.5362947!3d17.3421251!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcba23a6338bdfb%3A0x6b10070bc0e914df!2sHastinapuram%2C%20Hyderabad%2C%20Telangana!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          </div>
         </div>
       </section>
     </div>

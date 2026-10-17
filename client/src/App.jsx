@@ -59,13 +59,15 @@ function PublicLayout({ settings }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#000000] text-slate-100 relative selection:bg-orange-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-white relative selection:bg-orange-100 selection:text-orange-900">
       <ScrollProgress />
       <Navbar settings={settings} />
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/project" element={<ProjectPage />} />
+          <Route path="/projects" element={<ProjectPage />} />
+          <Route path="/brundavanam" element={<ProjectPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/about" element={<AboutPage settings={settings} />} />
           <Route path="/contact" element={<ContactPage settings={settings} />} />

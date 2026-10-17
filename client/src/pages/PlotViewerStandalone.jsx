@@ -597,11 +597,11 @@ export default function PlotViewerStandalone({ settings }) {
           isScrolledPastMap ? 'opacity-0 invisible pointer-events-none' : 'opacity-100 visible'
         }`}>
           <div className="bg-white/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-slate-200/90 shadow-xl pointer-events-auto flex items-center gap-3">
-            <a href="/" className="flex items-center group" title="Return to main website">
+            <a href="/" className="flex items-center group bg-black px-3.5 py-2 rounded-xl shadow-xs" title="Return to main website">
               <img
-                src="/assets/skandha_logo.svg"
+                src="/assets/skandha_logo_official.png"
                 alt="Skandha Group"
-                className="h-9 sm:h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </a>
 
@@ -986,11 +986,11 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="scroll-mt-24 space-y-5">
               <div className="flex items-start gap-3.5 sm:gap-5 md:items-center md:justify-between">
                 <div className="shrink-0">
-                  <div className="block p-2 sm:p-3.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all group">
+                  <div className="block p-2.5 sm:p-3 rounded-2xl bg-black border border-slate-800 shadow-xs hover:shadow-md transition-all group">
                     <img
                       alt="Skandha Group"
-                      src="/assets/skandha_logo.svg"
-                      className="object-contain h-12 w-12 sm:h-16 sm:w-16 md:h-18 md:w-auto max-w-[85px] sm:max-w-[140px] md:max-w-[190px] transition-transform group-hover:scale-105"
+                      src="/assets/skandha_logo_official.png"
+                      className="object-contain h-12 w-auto sm:h-14 md:h-16 transition-transform group-hover:scale-105"
                     />
                   </div>
                 </div>
@@ -1630,13 +1630,13 @@ export default function PlotViewerStandalone({ settings }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsEnquiryOpen(true)}
+                  <a
+                    href="mailto:contact@skandhagroup.com"
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors shadow-xs"
                   >
-                    <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Request Callback</span>
-                  </button>
+                    <Mail className="w-3.5 h-3.5 text-brand-orange" />
+                    <span>Email Sales Desk</span>
+                  </a>
                   <a
                     href="https://wa.me/919100031199?text=Hi%2C%20I%20am%20interested%20in%20visiting%20Skandha%20Group%20plots%20at%20Kadthal."
                     target="_blank"
@@ -1849,9 +1849,9 @@ export default function PlotViewerStandalone({ settings }) {
             <div className="space-y-4 md:col-span-1">
               <div className="flex items-center gap-3">
                 <img
-                  src="/assets/skandha_logo_white.svg"
+                  src="/assets/skandha_logo_official.png"
                   alt="Skandha Group"
-                  className="h-10 w-auto object-contain"
+                  className="h-16 w-auto object-contain"
                 />
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">

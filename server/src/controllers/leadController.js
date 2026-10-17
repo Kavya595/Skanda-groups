@@ -44,7 +44,7 @@ export async function submitLead(req, res) {
 
     // Build the secure WhatsApp link without exposing raw destination number to marketing UI text
     const settings = await SiteSettings.findOne();
-    const rawNumber = (settings && settings.whatsappNumber) ? settings.whatsappNumber : (process.env.DEFAULT_WHATSAPP_NUMBER || '919100031199');
+    const rawNumber = (settings && settings.whatsappNumber) ? settings.whatsappNumber : (process.env.DEFAULT_WHATSAPP_NUMBER || '919876543210');
     // Sanitize phone number (strip spaces, +, hyphens)
     const sanitizedNumber = rawNumber.replace(/[^\d]/g, '');
 

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="reraEmerald" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f0fdf4" />
+      <stop offset="60%" stop-color="#bbf7d0" />
+      <stop offset="100%" stop-color="#16a34a" />
+    </radialGradient>
+    <linearGradient id="reraBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#15803d" />
+      <stop offset="50%" stop-color="#16a34a" />
+      <stop offset="100%" stop-color="#14532d" />
+    </linearGradient>
+    <filter id="reraShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Outer Ring -->
+  <g filter="url(#reraShadow)">
+    <circle cx="100" cy="100" r="92" fill="#0f172a" />
+    <circle cx="100" cy="100" r="88" fill="url(#reraBorder)" stroke="#22c55e" stroke-width="2" />
+    <circle cx="100" cy="100" r="82" fill="#090d16" />
+  </g>
+
+  <!-- Inner Ribbon Ring -->
+  <circle cx="100" cy="100" r="74" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,2" />
+  <circle cx="100" cy="100" r="69" fill="url(#reraEmerald)" />
+
+  <!-- Outer Ring Text (Circular RERA Authority) -->
+  <path id="reraTextCircleTop" d="M 32,100 A 68,68 0 0,1 168,100" fill="none" />
+  <text fill="#ffffff" font-family="'Inter', sans-serif" font-size="8" font-weight="800" letter-spacing="1.8">
+    <textPath href="#reraTextCircleTop" startOffset="50%" text-anchor="middle">
+      REAL ESTATE REGULATORY AUTHORITY
+    </textPath>
+  </text>
+
+  <path id="reraTextCircleBottom" d="M 168,100 A 68,68 0 0,1 32,100" fill="none" />
+  <text fill="#22c55e" font-family="'Inter', sans-serif" font-size="8.5" font-weight="900" letter-spacing="2">
+    <textPath href="#reraTextCircleBottom" startOffset="50%" text-anchor="middle">
+      GOVT. OF TELANGANA • TS RERA
+    </textPath>
+  </text>
+
+  <!-- Center Shield / Badge -->
+  <g transform="translate(100, 100)">
+    <!-- Shield / Home Icon -->
+    <path d="M-8,-44 L0,-50 L8,-44 L8,-34 L-8,-34 Z" fill="#15803d" />
+
+    <!-- Central Approval Box -->
+    <rect x="-48" y="-22" width="96" height="24" rx="4" fill="#0f172a" stroke="#15803d" stroke-width="1.5" />
+    <text x="0" y="-6" fill="#ffffff" font-family="'Inter', sans-serif" font-size="14" font-weight="900" letter-spacing="1.5" text-anchor="middle">
+      TS RERA
+    </text>
+
+    <!-- Subtext REGISTERED -->
+    <rect x="-46" y="5" width="92" height="15" rx="3" fill="#16a34a" />
+    <text x="0" y="16" fill="#ffffff" font-family="'Inter', sans-serif" font-size="8.5" font-weight="900" letter-spacing="1.5" text-anchor="middle">
+      REGISTERED
+    </text>
+
+    <!-- Registration Number -->
+    <text x="0" y="32" fill="#0f172a" font-family="'Inter', sans-serif" font-size="7.5" font-weight="800" letter-spacing="0.5" text-anchor="middle">
+      REG: PO2400009081
+    </text>
+  </g>
+</svg>
