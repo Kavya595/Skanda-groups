@@ -103,11 +103,13 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
-  const animRate = useRef(2.0); // Slower, continuous gliding walk feel for zoom transitions
+  const animRate = useRef(1.35); // Slow, continuous gliding walk feel for zoom transitions
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
+  const currentLook = useRef(new THREE.Vector3(-9, 0, 6));
   const lastAzimuthRef = useRef(0);
   const wheelOutAccum = useRef(0);
+  const prevPresetRef = useRef(cameraPreset);
 
   // Expose smooth, slow gliding zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -124,22 +126,24 @@ function CameraController({
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
         if (currentDist > 12) {
-          const factor = 0.86; // Small, gentle step
+          const factor = 0.88; // Small, gentle step (no abrupt large jumps)
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
             Math.max(6, target.y + (currentPos.y - target.y) * factor),
             target.z + (currentPos.z - target.z) * factor
           );
           targetLook.current.copy(target);
-          animRate.current = 1.9; // Slow, continuous walk/glide speed
+          currentLook.current.copy(target);
+          animRate.current = 1.35; // Slow, continuous walk/glide speed
           animatingRef.current = true;
         }
       }
     },
     zoomOut: () => {
-      // User requirement: "can come out from walk view manually just minimizing"
+      // User requirement: "can comeout of the walk from all of a sudden just slowly minmize and can come out from that view like that implement"
       if (cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') {
         if (onExitWalk) {
+          animRate.current = 1.15; // Slow, gentle drone ascent pull-out
           onExitWalk();
           return;
         }
@@ -149,14 +153,15 @@ function CameraController({
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
         if (currentDist < 260) {
-          const factor = 1.16; // Small, gentle step
+          const factor = 1.14; // Small, gentle step
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
             target.y + (currentPos.y - target.y) * factor,
             target.z + (currentPos.z - target.z) * factor
           );
           targetLook.current.copy(target);
-          animRate.current = 1.9; // Slow, continuous walk/glide speed
+          currentLook.current.copy(target);
+          animRate.current = 1.35; // Slow, continuous walk/glide speed
           animatingRef.current = true;
         }
       }
@@ -164,7 +169,10 @@ function CameraController({
     reset: () => {
       targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
-      animRate.current = 3.2;
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.8;
       animatingRef.current = true;
     }
   }));
@@ -226,34 +234,48 @@ function CameraController({
       isDragging.current = false;
     };
 
-    // User requirement: "can come out from walk view manually just minimizing"
+    // Smooth Slow Wheel Interaction for Walk Mode:
+    // Scroll forward (deltaY < 0) -> slow, steady walk forward down the street.
+    // Scroll backward (deltaY > 0) -> walk backward.
+    // Deliberate continuous backward scroll at start of road -> gently minimize and pull out of walk into overview.
     const handleWheel = (e) => {
       e.preventDefault();
-      // If user is zooming out (scrolling wheel down/backward or pinch out)
+
       if (e.deltaY > 0) {
-        wheelOutAccum.current += e.deltaY;
-        if (wheelOutAccum.current > 120 || progRef.current <= 0.01) {
-          wheelOutAccum.current = 0;
-          if (onExitWalk) {
-            onExitWalk();
+        if (progRef.current <= 0.02) {
+          wheelOutAccum.current += e.deltaY;
+          if (wheelOutAccum.current > 320) {
+            wheelOutAccum.current = 0;
+            animRate.current = 1.15; // Slow, graceful drone ascent
+            if (onExitWalk) {
+              onExitWalk();
+            }
+            return;
           }
-          return;
+        } else {
+          wheelOutAccum.current = 0;
+          const moveStep = -0.025; // Gentle backward step
+          const nextProg = Math.max(0, progRef.current + moveStep);
+          progRef.current = nextProg;
+          if (onWalkProgressChange) {
+            onWalkProgressChange(nextProg);
+          }
         }
       } else {
         wheelOutAccum.current = 0;
-      }
-
-      const moveStep = -Math.sign(e.deltaY) * 0.035;
-      const nextProg = Math.max(0, Math.min(1, progRef.current + moveStep));
-      progRef.current = nextProg;
-      if (onWalkProgressChange) {
-        onWalkProgressChange(nextProg);
+        const moveStep = 0.025; // Gentle forward step
+        const nextProg = Math.min(1, progRef.current + moveStep);
+        progRef.current = nextProg;
+        if (onWalkProgressChange) {
+          onWalkProgressChange(nextProg);
+        }
       }
     };
 
-    // Keyboard ESC key to instantly exit walk view and return to overview
+    // Keyboard ESC key to smoothly exit walk view and return to overview
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' || e.key === 'Esc') {
+        animRate.current = 1.15;
         if (onExitWalk) {
           onExitWalk();
         }
@@ -262,6 +284,7 @@ function CameraController({
 
     // Double-click on ground to return to 3D layout overview
     const handleDblClick = () => {
+      animRate.current = 1.15;
       if (onExitWalk) {
         onExitWalk();
       }
@@ -283,8 +306,9 @@ function CameraController({
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.hypot(dx, dy);
         // User pinching inward to zoom out/minimize
-        if (touchStartDist - dist > 50) {
+        if (touchStartDist - dist > 70) {
           touchStartDist = 0;
+          animRate.current = 1.15;
           if (onExitWalk) {
             onExitWalk();
           }
@@ -315,33 +339,61 @@ function CameraController({
 
   // Preset Camera Transitions for Overview, Park, TopDown, and Highway
   useEffect(() => {
+    const isExitingWalk =
+      prevPresetRef.current === 'roadWalk' ||
+      prevPresetRef.current === 'park' ||
+      prevPresetRef.current === 'parkGround';
+
     if (cameraPreset === 'roadWalk') {
       animatingRef.current = false;
     } else if (cameraPreset === 'park' || cameraPreset === 'parkGround') {
       // Ground perspective inside Ac. 0.758 park
       targetPos.current.set(-73, 2.0, -14);
       targetLook.current.set(-71, 1.2, -34);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.35;
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
       // Top-Down orthographic/overhead view
       targetPos.current.set(-9, 210, 6);
       targetLook.current.set(-9, 0, 6);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.5;
       animatingRef.current = true;
     } else if (cameraPreset === 'mapView') {
       // 3D Regional Map View matching Plots99 Image (media_1792061116841_a13f2ed9.png)
       targetPos.current.set(0, 360, 460);
       targetLook.current.set(0, 0, 0);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.4;
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
       targetPos.current.set(78, 22, 22);
       targetLook.current.set(50, 0, -4);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.4;
       animatingRef.current = true;
     } else {
       // Overview preset (default: ~37° isometric perspective matching Plots99 Image 2)
       targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      // If coming out of walk or park view, use slow, gentle rising drone pull-out rate
+      animRate.current = isExitingWalk ? 1.15 : 1.4;
       animatingRef.current = true;
     }
+
+    prevPresetRef.current = cameraPreset;
   }, [cameraPreset]);
 
   useFrame((_, delta) => {
@@ -385,14 +437,31 @@ function CameraController({
       if (controlsRef.current) {
         controlsRef.current.target.set(lx, ly, lz);
       }
-    } else if (animatingRef.current && controlsRef.current) {
-      const rate = animRate.current || 2.0;
-      const step = Math.min(delta * rate, 1);
-      camera.position.lerp(targetPos.current, step);
-      controlsRef.current.target.lerp(targetLook.current, step);
-      controlsRef.current.update();
+      currentLook.current.set(lx, ly, lz);
+    } else if (animatingRef.current) {
+      const rate = animRate.current || 1.35;
+      // Cap step at 0.07 so frame hiccups or low FPS never cause sudden visual snap
+      const step = Math.min(delta * rate, 0.07);
 
-      if (camera.position.distanceTo(targetPos.current) < 0.12) {
+      camera.position.lerp(targetPos.current, step);
+      currentLook.current.lerp(targetLook.current, step);
+      camera.lookAt(currentLook.current);
+
+      if (controlsRef.current) {
+        controlsRef.current.target.copy(currentLook.current);
+      }
+
+      const distPos = camera.position.distanceTo(targetPos.current);
+      const distLook = currentLook.current.distanceTo(targetLook.current);
+
+      if (distPos < 0.25 && distLook < 0.25) {
+        camera.position.copy(targetPos.current);
+        currentLook.current.copy(targetLook.current);
+        camera.lookAt(targetLook.current);
+        if (controlsRef.current) {
+          controlsRef.current.target.copy(targetLook.current);
+          controlsRef.current.update();
+        }
         animatingRef.current = false;
         if (onResetComplete) onResetComplete();
       }
@@ -403,12 +472,12 @@ function CameraController({
     <OrbitControls
       ref={controlsRef}
       target={[-9, 0, 6]}
-      enabled={cameraPreset !== 'roadWalk'}
+      enabled={cameraPreset !== 'roadWalk' && !animatingRef.current}
       enableRotate={true}
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
-      zoomSpeed={0.32}
+      zoomSpeed={0.24}
       mouseButtons={{
         LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,
@@ -420,10 +489,10 @@ function CameraController({
       }}
       minPolarAngle={Math.PI / 12}
       maxPolarAngle={Math.PI / 2.15}
-      minDistance={10}
-      maxDistance={320}
+      minDistance={12}
+      maxDistance={280}
       enableDamping={true}
-      dampingFactor={0.045}
+      dampingFactor={0.04}
     />
   );
 }
