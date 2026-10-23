@@ -32,7 +32,7 @@ export const SITE_GEO = {
   center: [16.9530689, 78.4918425], // [lat, lng] Exact Google Maps pin requested by user (16.9530689, 78.4918425)
   pin: [16.9530689, 78.4918425],
   zoom: 17, // User explicitly specified &z=17
-  minZoom: 7.0, // Smooth manual zoom out allows viewing whole state and regional maps where layout is a small particle
+  minZoom: 12.0, // Smooth manual zoom out allows viewing regional map where layout is a small particle
   maxZoom: 20.5, // Prevents over-extending too large on zoom in
   locality: "Chellampalle, Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",

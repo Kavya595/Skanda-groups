@@ -192,7 +192,7 @@ function CameraController({
         const offset = new THREE.Vector3().subVectors(camera.position, target);
         const dist = offset.length();
         // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
-        if (dist < 45000) {
+        if (dist < 2800) {
           // Direct, smooth backward zoom step (28% outward)
           offset.multiplyScalar(1.28);
           camera.position.copy(target).add(offset);
@@ -614,34 +614,11 @@ function CameraController({
         TWO: THREE.TOUCH.DOLLY_PAN
       }}
       minDistance={8}
-      maxDistance={45000}
+      maxDistance={2800}
       enableDamping={true}
       dampingFactor={0.08}
     />
   );
-}
-
-// Module-level shared geometry caches for Plot3D (Instantaneous loading across all 96 plots)
-const boxGeomCache = new Map();
-const boxEdgesCache = new Map();
-const customExtrudeCache = new Map();
-const customEdgesCache = new Map();
-
-function getCachedBoxGeometry(w, h, d) {
-  const key = `${Math.round(w * 100)}_${Math.round(h * 100)}_${Math.round(d * 100)}`;
-  if (!boxGeomCache.has(key)) {
-    boxGeomCache.set(key, new THREE.BoxGeometry(w, h, d));
-  }
-  return boxGeomCache.get(key);
-}
-
-function getCachedBoxEdgesGeometry(w, h, d) {
-  const key = `${Math.round(w * 100)}_${Math.round(h * 100)}_${Math.round(d * 100)}`;
-  if (!boxEdgesCache.has(key)) {
-    const box = getCachedBoxGeometry(w, h, d);
-    boxEdgesCache.set(key, new THREE.EdgesGeometry(box));
-  }
-  return boxEdgesCache.get(key);
 }
 
 // 3D Volumetric Plot Tile with physical Height, Width, Depth and Plinth Base
@@ -706,24 +683,17 @@ export function Plot3D({
 
   const customExtrudeGeom = useMemo(() => {
     if (!customShape) return null;
-    const key = `${plot.plotNumber}_${Math.round(tileHeight * 100)}`;
-    if (!customExtrudeCache.has(key)) {
-      customExtrudeCache.set(key, new THREE.ExtrudeGeometry(customShape, { depth: tileHeight, bevelEnabled: false }));
-    }
-    return customExtrudeCache.get(key);
-  }, [customShape, tileHeight, plot.plotNumber]);
+    return new THREE.ExtrudeGeometry(customShape, { depth: tileHeight, bevelEnabled: false });
+  }, [customShape, tileHeight]);
 
   const customEdgesGeom = useMemo(() => {
     if (!customExtrudeGeom) return null;
-    const key = `${plot.plotNumber}`;
-    if (!customEdgesCache.has(key)) {
-      customEdgesCache.set(key, new THREE.EdgesGeometry(customExtrudeGeom));
-    }
-    return customEdgesCache.get(key);
-  }, [customExtrudeGeom, plot.plotNumber]);
+    return new THREE.EdgesGeometry(customExtrudeGeom);
+  }, [customExtrudeGeom]);
 
-  const boxGeom = useMemo(() => getCachedBoxGeometry(tileW, tileHeight, tileD), [tileW, tileHeight, tileD]);
-  const boxEdgesGeom = useMemo(() => getCachedBoxEdgesGeometry(tileW, tileHeight, tileD), [tileW, tileHeight, tileD]);
+  const boxEdgesGeom = useMemo(() => {
+    return new THREE.EdgesGeometry(new THREE.BoxGeometry(tileW, tileHeight, tileD));
+  }, [tileW, tileHeight, tileD]);
 
   return (
     <group position={[cx, posY, cz]}>
@@ -757,7 +727,6 @@ export function Plot3D({
       ) : (
         <>
           <mesh
-            geometry={boxGeom}
             onClick={handleClick}
             onPointerOver={(e) => {
               e.stopPropagation();
@@ -768,6 +737,7 @@ export function Plot3D({
               setHovered(false);
             }}
           >
+            <boxGeometry args={[tileW, tileHeight, tileD]} />
             {/* +X (Right side) */}
             <meshStandardMaterial attach="material-0" color={isSelected ? '#C2410C' : '#CBD5E1'} roughness={0.7} />
             {/* -X (Left side) */}
@@ -1762,100 +1732,79 @@ export function GrandEntranceArch({ position = [70, 0, -47], rotation = [0, 0, 0
 
 
 
-// ============================================================================
-// CONTINUOUS WHOLE-MAP REGIONAL TERRAIN & HIGH-RESOLUTION GOOGLE MAP ENGINE
-// ============================================================================
-
-// Authoritative 100-Kilometer Macro Regional Map Renderer
-// Pre-paints full regional geography (Hyderabad, ORR Exit 14, RGIA Airport, Srisailam Highway NH-765,
-// Kadthal Municipality, Toll Plaza, Pharma City, Maisigandamma Temple, Amangal, Kalwakurthy)
-function paintMacroRegionalMap(ctx, width, height) {
-  // 1. Natural Continental Base in authentic Google Maps countryside tone
-  ctx.fillStyle = '#E5ECE2';
+// Authoritative Regional Kadthal & Srisailam Highway Map Renderer
+// Pre-paints topography with NH-765 4-lane expressway, Kadthal municipality, toll plaza, and 100' road
+function paintRegionalKadthalMap(ctx, width, height) {
+  // 1. Natural Land Base
+  ctx.fillStyle = '#E5EAE0';
   ctx.fillRect(0, 0, width, height);
 
-  // 2. Rural Agricultural Farmland Cadastral Mosaic across mandals
-  const farmTones = ['#DFE8D7', '#D8E3CF', '#E3ECE0', '#CFDEC4', '#E8EFE3', '#D5E4CA'];
-  const gridRows = 24;
-  const gridCols = 24;
-  const cellW = width / gridCols;
-  const cellH = height / gridRows;
-
-  for (let r = 0; r < gridRows; r++) {
-    for (let c = 0; c < gridCols; c++) {
-      const x = c * cellW;
-      const y = r * cellH;
-      ctx.fillStyle = farmTones[(r * 7 + c * 11) % farmTones.length];
-      ctx.fillRect(x + 1.5, y + 1.5, cellW - 3, cellH - 3);
+  // 2. Agricultural Farmland Patchwork (Natural cadastral patterns)
+  const farmTones = ['#DFE6D6', '#E2E9D8', '#D8E2CE', '#E8EFE2', '#D3DFC8'];
+  for (let r = 0; r < 16; r++) {
+    for (let c = 0; c < 16; c++) {
+      const x = (c / 16) * width;
+      const y = (r / 16) * height;
+      const w = width / 16;
+      const h = height / 16;
+      ctx.fillStyle = farmTones[(r * 5 + c * 3) % farmTones.length];
+      ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
     }
   }
 
-  // 3. Reserve Forest Tracts & Protected Green Belts (Amrabad Foothills & Agro Reserves)
-  ctx.fillStyle = '#B2CCA1';
+  // 3. Green Reserve Forests & Agro Green Tracts
+  ctx.fillStyle = '#B4CCA4';
   ctx.beginPath();
-  ctx.ellipse(450, 420, 280, 160, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(520, 480, 260, 160, -0.2, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.ellipse(1620, 1420, 340, 210, 0.25, 0, Math.PI * 2);
+  ctx.ellipse(1560, 1420, 320, 200, 0.3, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.beginPath();
-  ctx.ellipse(1540, 720, 200, 240, 0.15, 0, Math.PI * 2);
+  ctx.ellipse(1480, 780, 180, 220, 0.1, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#9FB98E';
-  ctx.beginPath();
-  ctx.ellipse(620, 1580, 260, 170, -0.3, 0, Math.PI * 2);
-  ctx.fill();
+  // 4. Natural Water Bodies (Cheruvu / Lakes)
+  ctx.fillStyle = '#9AC3E6';
+  ctx.strokeStyle = '#6E9EC9';
+  ctx.lineWidth = 3;
 
-  // 4. Natural Water Bodies (Lakes / Cheruvu)
-  ctx.fillStyle = '#9AC6E8';
-  ctx.strokeStyle = '#73A5CB';
-  ctx.lineWidth = 2.5;
-
-  // Chellampalle Cheruvu (near site)
   ctx.beginPath();
-  ctx.ellipse(1180, 910, 85, 50, -0.2, 0, Math.PI * 2);
+  ctx.ellipse(1440, 980, 115, 70, -0.25, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // Kadthal Lake (West of Kadthal Town)
   ctx.beginPath();
-  ctx.ellipse(920, 780, 95, 60, 0.3, 0, Math.PI * 2);
+  ctx.ellipse(780, 640, 95, 55, 0.35, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
 
-  // Regional reservoir (South-East)
-  ctx.beginPath();
-  ctx.ellipse(1450, 1260, 130, 80, -0.15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
+  ctx.fillStyle = '#2B5784';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Chellampalle Lake', 1370, 985);
+  ctx.fillText('Kadthal Lake', 735, 645);
 
-  ctx.fillStyle = '#1E3A8A';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.fillText('Kadthal Cheruvu', 860, 785);
-  ctx.fillText('Chellampalle Lake', 1130, 915);
-
-  // 5. Connecting Arterial & Regional Highways
-  // (A) Bangalore to Shadnagar Highway Corridor (East-West link road)
-  ctx.strokeStyle = '#475569';
+  // 5. Connecting Arterial & Regional Roads
+  // Bangalore to Shadnagar Road (Crossing East-West south of site)
+  ctx.strokeStyle = '#64748B';
   ctx.lineWidth = 14;
   ctx.beginPath();
   ctx.moveTo(0, 1260);
-  ctx.lineTo(width, 1260);
+  ctx.lineTo(2048, 1260);
   ctx.stroke();
 
   ctx.strokeStyle = '#FCD34D';
   ctx.lineWidth = 2.5;
   ctx.stroke();
 
-  // (B) 60' Arterial Approach Road leading directly from Srisailam Highway to Site
+  // 60' Arterial Road (East-West through Site)
   ctx.strokeStyle = '#334155';
   ctx.lineWidth = 12;
   ctx.beginPath();
-  ctx.moveTo(820, 867);
-  ctx.lineTo(1050, 867);
+  ctx.moveTo(850, 840);
+  ctx.lineTo(1600, 840);
   ctx.stroke();
 
   ctx.strokeStyle = '#FFFFFF';
@@ -1864,305 +1813,150 @@ function paintMacroRegionalMap(ctx, width, height) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // (C) Outer Ring Road (ORR Expressway - Hyderabad North Corridor at py=168)
-  ctx.strokeStyle = '#0F172A';
-  ctx.lineWidth = 28;
-  ctx.beginPath();
-  ctx.moveTo(0, 175);
-  ctx.quadraticCurveTo(width / 2, 160, width, 175);
-  ctx.stroke();
-
-  // ORR Double Median & Dividers
-  ctx.strokeStyle = '#10B981';
-  ctx.lineWidth = 3.5;
-  ctx.stroke();
-
-  // 6. Major 4-Lane National Highway Corridor: Srisailam Highway (NH-765)
-  // Continuous North-to-South Spine connecting Hyderabad & ORR directly to Kadthal & Srisailam
+  // 6. Srisailam Highway (NH-765 - Major 4-Lane National Highway Corridor)
   ctx.strokeStyle = '#1E293B';
-  ctx.lineWidth = 24;
+  ctx.lineWidth = 22;
   ctx.beginPath();
-  ctx.moveTo(1009, 0);
-  ctx.lineTo(1009, 168); // ORR Exit 14 interchange
-  ctx.quadraticCurveTo(1040, 500, 1079, 820); // Down to Kadthal Toll Plaza
-  ctx.lineTo(1050, 867); // Venture entrance junction
-  ctx.quadraticCurveTo(1090, 1000, 1126, 1118); // Amangal
-  ctx.quadraticCurveTo(1070, 1350, 1032, 1556); // Kalwakurthy
-  ctx.lineTo(1032, height); // To Srisailam
+  ctx.moveTo(1280, 0);
+  ctx.quadraticCurveTo(1275, 840, 1265, 2048);
   ctx.stroke();
 
   // Double Yellow Median Divider
   ctx.strokeStyle = '#F59E0B';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(1007, 0);
-  ctx.quadraticCurveTo(1038, 500, 1077, 820);
-  ctx.lineTo(1048, 867);
-  ctx.quadraticCurveTo(1088, 1000, 1124, 1118);
-  ctx.quadraticCurveTo(1068, 1350, 1030, 1556);
-  ctx.lineTo(1030, height);
+  ctx.moveTo(1278, 0);
+  ctx.quadraticCurveTo(1273, 840, 1263, 2048);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1282, 0);
+  ctx.quadraticCurveTo(1277, 840, 1267, 2048);
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(1011, 0);
-  ctx.quadraticCurveTo(1042, 500, 1081, 820);
-  ctx.lineTo(1052, 867);
-  ctx.quadraticCurveTo(1092, 1000, 1128, 1118);
-  ctx.quadraticCurveTo(1072, 1350, 1034, 1556);
-  ctx.lineTo(1034, height);
-  ctx.stroke();
-
-  // White Dashed Lane Dividers (2 lanes in each direction)
+  // White Dashed Lane Dividers (2 lanes each direction)
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 2;
   ctx.setLineDash([14, 14]);
   ctx.beginPath();
-  ctx.moveTo(1003, 0);
-  ctx.quadraticCurveTo(1034, 500, 1073, 820);
-  ctx.lineTo(1044, 867);
-  ctx.quadraticCurveTo(1084, 1000, 1120, 1118);
-  ctx.quadraticCurveTo(1064, 1350, 1026, 1556);
-  ctx.lineTo(1026, height);
+  ctx.moveTo(1273, 0);
+  ctx.quadraticCurveTo(1268, 840, 1258, 2048);
   ctx.stroke();
-
   ctx.beginPath();
-  ctx.moveTo(1015, 0);
-  ctx.quadraticCurveTo(1046, 500, 1085, 820);
-  ctx.lineTo(1056, 867);
-  ctx.quadraticCurveTo(1096, 1000, 1132, 1118);
-  ctx.quadraticCurveTo(1076, 1350, 1038, 1556);
-  ctx.lineTo(1038, height);
+  ctx.moveTo(1287, 0);
+  ctx.quadraticCurveTo(1282, 840, 1272, 2048);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // 7. 100 Feet Approach Road from Srisailam Highway into Alekhya Brundavan
+  // 7. 100 Feet Road Corridor (connecting Srisailam Highway to SITE)
   ctx.strokeStyle = '#0F172A';
-  ctx.lineWidth = 18;
+  ctx.lineWidth = 16;
   ctx.beginPath();
-  ctx.moveTo(1050, 867);
-  ctx.lineTo(950, 867);
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
   ctx.stroke();
 
   ctx.strokeStyle = '#FEF08A';
-  ctx.lineWidth = 2.5;
-  ctx.setLineDash([8, 8]);
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
   ctx.beginPath();
-  ctx.moveTo(1050, 867);
-  ctx.lineTo(950, 867);
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // 8. Maisigandamma Temple Road & Route Direction Arrow
-  // Temple branch road from Srisailam Highway
-  ctx.strokeStyle = '#475569';
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(1070, 800);
-  ctx.lineTo(1068, 765);
-  ctx.stroke();
-
-  // Maisigandamma Temple Location & Directional Route Badge
-  ctx.fillStyle = '#7C2D12';
-  ctx.fillRect(1060, 742, 270, 32);
-  ctx.strokeStyle = '#F97316';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1060, 742, 270, 32);
+  // 8. Road Typography along East Road
+  ctx.save();
+  ctx.translate(1300, 580);
+  ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('🛕 Maisigandamma Temple ➔ (Route)', 1068, 763);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
+  ctx.restore();
 
-  // 9. Location Landmark Badges & Real Estate Venture Anchors
-  // (A) Alekhya Brundavan Site Highlight Pin
-  ctx.fillStyle = '#065F46';
-  ctx.fillRect(820, 848, 120, 38);
-  ctx.strokeStyle = '#34D399';
-  ctx.lineWidth = 2.5;
-  ctx.strokeRect(820, 848, 120, 38);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('📍 ALEKHYA', 835, 865);
-  ctx.font = '10px sans-serif';
-  ctx.fillStyle = '#A7F3D0';
-  ctx.fillText('BRUNDAVAN', 838, 878);
+  ctx.save();
+  ctx.translate(1300, 1520);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬇ TO 4TH PHASE', 0, 0);
+  ctx.restore();
 
-  // (B) Kadthal Municipality & Mandal Hq
+  // 9. Location Landmark Badges
+  // (A) Kadthal Municipality & Mandal Hq
   ctx.fillStyle = '#0F172A';
-  ctx.fillRect(780, 760, 240, 34);
+  ctx.fillRect(660, 460, 260, 36);
   ctx.strokeStyle = '#64748B';
   ctx.lineWidth = 2;
-  ctx.strokeRect(780, 760, 240, 34);
+  ctx.strokeRect(660, 460, 260, 36);
   ctx.fillStyle = '#E2E8F0';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('🏛️ Kadthal Town & Municipality', 790, 782);
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏛️ Kadthal Town & Municipality', 670, 484);
 
-  // (C) Kadthal Toll Plaza
+  // (B) Kadthal Toll Plaza
   ctx.fillStyle = '#0F172A';
-  ctx.fillRect(1090, 804, 220, 32);
+  ctx.fillRect(1150, 420, 240, 36);
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1150, 420, 240, 36);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🛣️ Kadthal Toll Plaza (4 mins)', 1165, 444);
+
+  // (C) Green Pharma City Corridor
+  ctx.fillStyle = '#064E3B';
+  ctx.fillRect(1420, 360, 310, 48);
+  ctx.strokeStyle = '#10B981';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1420, 360, 310, 48);
+  ctx.fillStyle = '#A7F3D0';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏭 Green Pharma City Corridor', 1430, 382);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#D1FAE5';
+  ctx.fillText('Hyderabad Pharma City (19,000+ Acres)', 1430, 400);
+
+  // (D) Bangalore to Shadnagar Highway Connector
+  ctx.fillStyle = '#1E293B';
+  ctx.fillRect(80, 1238, 280, 32);
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(80, 1238, 280, 32);
+  ctx.fillStyle = '#CBD5E1';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('🛣️ Bangalore to Shadnagar Road', 90, 1260);
+
+  // (E) 100' Road Badge
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(1150, 795, 120, 26);
   ctx.strokeStyle = '#F59E0B';
   ctx.lineWidth = 1.5;
-  ctx.strokeRect(1090, 804, 220, 32);
+  ctx.strokeRect(1150, 795, 120, 26);
   ctx.fillStyle = '#FEF08A';
   ctx.font = 'bold 11px sans-serif';
-  ctx.fillText('🛣️ Kadthal Toll Plaza (NH-765)', 1100, 825);
+  ctx.fillText("100' Road to Site", 1156, 812);
 
-  // (D) Hyderabad Pharma City (19,000+ Acres World Hub)
-  ctx.fillStyle = '#064E3B';
-  ctx.fillRect(1160, 665, 300, 44);
-  ctx.strokeStyle = '#10B981';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1160, 665, 300, 44);
-  ctx.fillStyle = '#A7F3D0';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.fillText('🏭 Green Pharma City Corridor', 1170, 686);
-  ctx.font = '10px sans-serif';
-  ctx.fillStyle = '#D1FAE5';
-  ctx.fillText('Hyderabad Pharma City (19,000+ Acres)', 1170, 701);
-
-  // (E) Outer Ring Road (ORR Exit 14 - Tukkuguda / Airport interchange)
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(840, 148, 330, 34);
-  ctx.strokeStyle = '#10B981';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(840, 148, 330, 34);
+  // (F) 60' Road Access Label
+  ctx.fillStyle = '#047857';
+  ctx.fillRect(870, 796, 215, 30);
   ctx.fillStyle = '#FFFFFF';
   ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('🛣️ ORR Exit 14 & Rajiv Gandhi Airport (RGIA)', 848, 170);
-
-  // (F) Directional Highway Anchors
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(890, 24, 240, 28);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('⬆ TO HYDERABAD CITY & ORR', 902, 43);
-
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(920, 1980, 220, 28);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 12px sans-serif';
-  ctx.fillText('⬇ TO KALWAKURTHY & SRISAILAM', 928, 1999);
-
-  // (G) Amangal Town Anchor
-  ctx.fillStyle = '#1E293B';
-  ctx.fillRect(1135, 1105, 170, 28);
-  ctx.fillStyle = '#CBD5E1';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.fillText('🏘️ Amangal Municipality', 1142, 1124);
-
-  // (H) 100' Approach Road to Site
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(955, 835, 110, 24);
-  ctx.strokeStyle = '#F59E0B';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(955, 835, 110, 24);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 10px sans-serif';
-  ctx.fillText("100' Road to Site", 960, 851);
+  ctx.fillText("PROP. 60'-0\" WIDE ROAD", 882, 816);
 }
 
-// Module-level cached textures for 3D continuous terrain
-let macroRegionalTextureCache = null;
-let localGoogleMapTextureCache = null;
-let regionalGoogleTilesLoaded = false;
-let localGoogleTilesLoaded = false;
+// Module-level cached texture for 3D regional map
+let regionalMapTextureCache = null;
+let googleTilesLoaded = false;
 
-// Tier 1: 100-Kilometer Macro Regional Map Texture
-export function getMacroRegionalTexture() {
+export function getRegionalMapTexture() {
   if (typeof document === 'undefined') return null;
-  if (macroRegionalTextureCache) return macroRegionalTextureCache;
-
-  const cvs = document.createElement('canvas');
-  cvs.width = 2048;
-  cvs.height = 2048;
-  const ctx = cvs.getContext('2d');
-  paintMacroRegionalMap(ctx, 2048, 2048);
-
-  const tex = new THREE.CanvasTexture(cvs);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.generateMipmaps = true;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.needsUpdate = true;
-  macroRegionalTextureCache = tex;
-
-  // Background Google Maps zoom 11 tiles (5x5 grid covering 93.5 km x 93 km)
-  if (!regionalGoogleTilesLoaded) {
-    regionalGoogleTilesLoaded = true;
-    const zoom = 11;
-    const minTx = 1468;
-    const minTy = 924;
-    const count = 5;
-    const tilePx = 2048 / count; // 409.6 px per tile
-    let pending = count * count;
-
-    for (let dy = 0; dy < count; dy++) {
-      for (let dx = 0; dx < count; dx++) {
-        const tx = minTx + dx;
-        const ty = minTy + dy;
-        const cx = dx * tilePx;
-        const cy = dy * tilePx;
-
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-          try {
-            // Draw real Google Maps tile with natural opacity beneath highway and vector labels
-            ctx.save();
-            ctx.globalAlpha = 0.65;
-            ctx.drawImage(img, cx, cy, tilePx, tilePx);
-            ctx.restore();
-          } catch (e) {}
-          pending--;
-          if (pending === 0) {
-            // Re-apply crisp highway corridor & landmark labels on top of imported Google tiles
-            paintMacroRegionalMap(ctx, 2048, 2048);
-            tex.needsUpdate = true;
-          }
-        };
-        img.onerror = () => {
-          pending--;
-          if (pending === 0) {
-            tex.needsUpdate = true;
-          }
-        };
-        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
-      }
-    }
-  }
-
-  return tex;
-}
-
-// Backwards-compatible export
-export const getRegionalMapTexture = getMacroRegionalTexture;
-
-// Tier 2: Local High-Resolution Google Map Inset with Feathered Edges (Immediate Surroundings)
-export function getLocalGoogleMapTexture() {
-  if (typeof document === 'undefined') return null;
-  if (localGoogleMapTextureCache) return localGoogleMapTextureCache;
+  if (regionalMapTextureCache) return regionalMapTextureCache;
 
   const cvs = document.createElement('canvas');
   cvs.width = 1024;
   cvs.height = 1024;
   const ctx = cvs.getContext('2d');
-
-  // Pre-paint clean local terrain base matching Google Maps tone
-  ctx.fillStyle = '#E5ECE2';
-  ctx.fillRect(0, 0, 1024, 1024);
-
-  // Pre-paint local 60' arterial road
-  ctx.strokeStyle = '#334155';
-  ctx.lineWidth = 22;
-  ctx.beginPath();
-  ctx.moveTo(0, 480);
-  ctx.lineTo(1024, 480);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#FFFFFF';
-  ctx.lineWidth = 3;
-  ctx.setLineDash([12, 12]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.scale(0.5, 0.5);
+  paintRegionalKadthalMap(ctx, 2048, 2048);
 
   const tex = new THREE.CanvasTexture(cvs);
   tex.wrapS = THREE.ClampToEdgeWrapping;
@@ -2171,45 +1965,31 @@ export function getLocalGoogleMapTexture() {
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
   tex.needsUpdate = true;
-  localGoogleMapTextureCache = tex;
+  regionalMapTextureCache = tex;
 
-  // Background Google Maps zoom 15 tiles (4x4 grid covering 4.68 km around site)
-  if (!localGoogleTilesLoaded) {
-    localGoogleTilesLoaded = true;
+  // Background Google Maps roadmap tiles load centered on 16.9530689, 78.4918425
+  if (!googleTilesLoaded) {
+    googleTilesLoaded = true;
     const zoom = 15;
     const minTx = 23527;
     const minTy = 14816;
-    const count = 4;
-    const tilePx = 1024 / count; // 256 px per tile
-    let pending = count * count;
+    let pending = 16;
 
-    for (let dy = 0; dy < count; dy++) {
-      for (let dx = 0; dx < count; dx++) {
+    for (let dy = 0; dy < 4; dy++) {
+      for (let dx = 0; dx < 4; dx++) {
         const tx = minTx + dx;
         const ty = minTy + dy;
-        const cx = dx * tilePx;
-        const cy = dy * tilePx;
+        const cx = dx * 512;
+        const cy = dy * 512;
 
         const img = new Image();
         img.crossOrigin = 'anonymous';
         img.onload = () => {
           try {
-            ctx.drawImage(img, cx, cy, tilePx, tilePx);
+            ctx.drawImage(img, cx, cy, 512, 512);
           } catch (e) {}
           pending--;
           if (pending === 0) {
-            // Apply radial feathered alpha border so edges dissolve seamlessly into macro regional map
-            // Zero sharp square edges visible anywhere!
-            const radGradient = ctx.createRadialGradient(512, 512, 340, 512, 512, 508);
-            radGradient.addColorStop(0, 'rgba(0,0,0,1)');
-            radGradient.addColorStop(0.72, 'rgba(0,0,0,1)');
-            radGradient.addColorStop(1, 'rgba(0,0,0,0)');
-
-            ctx.globalCompositeOperation = 'destination-in';
-            ctx.fillStyle = radGradient;
-            ctx.fillRect(0, 0, 1024, 1024);
-            ctx.globalCompositeOperation = 'source-over';
-
             tex.needsUpdate = true;
           }
         };
@@ -2227,7 +2007,7 @@ export function getLocalGoogleMapTexture() {
   return tex;
 }
 
-// Clean Master Plan 3D Ground with Continuous Whole Map and Layout-Shaped Grass Ground (Zero square shape)
+// Clean Master Plan 3D Ground with Regional Map and Layout-Shaped Grass Ground (Zero square shape)
 export function CleanMasterPlanTerrain({ cameraPreset }) {
   // Fast procedural Bermuda grass turf texture for layout ground
   const parcelGrassTexture = useMemo(() => {
@@ -2241,11 +2021,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return tex;
   }, []);
 
-  // Tier 1: 100-Kilometer Macro Regional Google Map Texture
-  const macroRegionalTexture = useMemo(() => getMacroRegionalTexture(), []);
-
-  // Tier 2: Local High-Resolution Google Map Texture (Feathered Radial Edge)
-  const localGoogleMapTexture = useMemo(() => getLocalGoogleMapTexture(), []);
+  // Regional vector map texture covering Kadthal, Srisailam Highway NH-765, and site approach
+  const regionalMapTexture = useMemo(() => getRegionalMapTexture(), []);
 
   // Exact Layout Shape (matching DTCP brochure perimeter cuts and steps, NOT a square)
   const layoutParcelShape = useMemo(() => {
@@ -2270,64 +2047,46 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return shape;
   }, []);
 
-  // 100-Kilometer Regional Plane Dimensions & Geographic Offset from (0,0)
-  const regionalW = 93515;
-  const regionalD = 93055;
-  const regionalCenterX = -586.7;
-  const regionalCenterZ = 7178.6;
-
-  // Local Google Map Inset (4.68 km around site at 16.9530689, 78.4918425)
-  const localW = 4676;
-  const localD = 4651;
-  const localShiftX = 582.2;
-  const localShiftZ = 148.9;
+  // Geographic plane size: 2048px * 2.285m/px = 4680m
+  const groundSize = 4680;
+  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) at 16.9530689, 78.4918425
+  const shiftX = 582.7;
+  const shiftZ = 149.7;
 
   return (
     <group>
-      {/* 1. Extended Continental Horizon Base (Covers whole visible universe to 300km) */}
-      <mesh position={[0, -0.6, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[300000, 300000]} />
-        <meshBasicMaterial color="#E6ECE2" />
+      {/* 1. Extended Horizon Ground Plane */}
+      <mesh position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[35000, 35000]} />
+        <meshBasicMaterial color="#E5EAE0" />
       </mesh>
 
-      {/* 2. Full 100-Kilometer Continuous Macro Regional Google Map (Hyderabad, ORR, Airport, Srisailam Highway, Kadthal, Pharma City) */}
-      <mesh position={[regionalCenterX, -0.04, regionalCenterZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[regionalW, regionalD]} />
+      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Srisailam Highway NH-765, Kadthal Town, Pharma City) */}
+      <mesh position={[shiftX, -0.015, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[groundSize, groundSize]} />
         <meshBasicMaterial
-          map={macroRegionalTexture || undefined}
+          map={regionalMapTexture || undefined}
           color="#FFFFFF"
         />
       </mesh>
 
-      {/* 3. Local High-Resolution Google Map Inset with Feathered Edges (Immediate Surroundings with ZERO sharp square borders) */}
-      <mesh position={[localShiftX, -0.015, localShiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[localW, localD]} />
-        <meshBasicMaterial
-          map={localGoogleMapTexture || undefined}
-          color="#FFFFFF"
-          transparent={true}
-          opacity={0.98}
-        />
-      </mesh>
-
-      {/* 4. Surrounding Natural Green Grass Buffer following the EXACT LAYOUT SHAPE (No square box!) */}
+      {/* 3. Surrounding Natural Green Grass Buffer following the EXACT LAYOUT SHAPE (No square box!) */}
       <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[layoutGrassBufferShape]} />
         <meshStandardMaterial
-          color="#82C966"
+          color="#7EC86E"
           roughness={0.82}
           metalness={0.02}
         />
       </mesh>
 
-      {/* 5. Immediate Venture Layout Ground with Lush Turf Texture following the EXACT LAYOUT SHAPE */}
-      <mesh position={[0, 0.022, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 4. Immediate Venture Layout Ground with Lush Turf Texture following the EXACT LAYOUT SHAPE */}
+      <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[layoutParcelShape]} />
         <meshStandardMaterial
           map={parcelGrassTexture || undefined}
-          color="#5EB745"
-          roughness={0.76}
-          metalness={0.02}
+          color="#68BA56"
+          roughness={0.78}
         />
       </mesh>
 
@@ -2462,7 +2221,7 @@ const Layout3DView = React.forwardRef(function Layout3DView({
         shadows={false}
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
         style={{ touchAction: 'none', width: '100%', height: '100%' }}
-        camera={{ position: [-9, 85, 120], fov: 42, near: 0.8, far: 180000 }}
+        camera={{ position: [-9, 85, 120], fov: 42, near: 0.8, far: 45000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
       >
         <color attach="background" args={[bgColor]} />
