@@ -590,7 +590,8 @@ export default function PlotViewerStandalone({ settings }) {
         {/* ========================================================== */}
         <div
           ref={mapSectionRef}
-          className="fixed top-0 left-0 w-full z-0 overflow-hidden h-[75vh] select-none bg-[#E5ECE3]"
+          className="fixed top-0 left-0 w-full z-0 overflow-hidden h-[75vh] select-none touch-none bg-[#E5ECE3]"
+          style={{ touchAction: 'none' }}
         >
         {/* Floating Top Header (Branding & Search) */}
         <header className={`absolute top-3 left-3 right-3 z-30 flex flex-wrap items-center justify-between gap-3 pointer-events-none transition-all duration-300 ${
@@ -745,7 +746,7 @@ export default function PlotViewerStandalone({ settings }) {
         </aside>
 
         {/* Map Canvas (3D or 2D) */}
-        <div className="w-full h-full">
+        <div className="w-full h-full touch-none" style={{ touchAction: 'none' }}>
           {loading ? (
             <div className="w-full h-full flex items-center justify-center bg-[#DFEFE0]">
               <div className="text-center space-y-2">
