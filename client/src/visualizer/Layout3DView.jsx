@@ -1872,12 +1872,12 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return tex;
   }, [canvas]);
 
-  // Load 4x4 Zoom 15 tiles centered on Kadthal & Brundavan (lat: 16.9555, lng: 78.5125)
+  // Load 4x4 Zoom 15 tiles centered on Kadthal & Chellampalle site (lat: 16.953069, lng: 78.491842)
   useEffect(() => {
     if (!canvas || !texture) return;
     const ctx = canvas.getContext('2d');
     const zoom = 15;
-    const minTx = 23528;
+    const minTx = 23527;
     const minTy = 14816;
 
     for (let dy = 0; dy < 4; dy++) {

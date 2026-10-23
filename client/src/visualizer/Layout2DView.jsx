@@ -10,7 +10,7 @@ import {
   statusColors
 } from './masterPlanData';
 
-// Real Google Maps Roadmap tile provider (Zero API Key Required)
+// Real Google Maps Roadmap & Satellite tile providers (Zero API Key Required)
 export const GOOGLE_MAP_LAYER = {
   url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
   attribution: '&copy; Google Maps &bull; Kadthal, Srisailam Highway',
@@ -18,11 +18,18 @@ export const GOOGLE_MAP_LAYER = {
   maxZoom: 21
 };
 
-export const MAP_LAYERS = {
-  google: GOOGLE_MAP_LAYER
+export const GOOGLE_SATELLITE_LAYER = {
+  url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+  attribution: '&copy; Google Satellite &bull; Kadthal, Srisailam Highway',
+  subdomains: ['0', '1', '2', '3'],
+  maxZoom: 21
 };
 
-
+export const MAP_LAYERS = {
+  satellite: GOOGLE_SATELLITE_LAYER,
+  roadmap: GOOGLE_MAP_LAYER,
+  google: GOOGLE_MAP_LAYER
+};
 
 const Layout2DView = React.forwardRef(function Layout2DView({
   plots = [],
@@ -35,8 +42,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const plotLayersRef = useRef({});
   const onSelectPlotRef = useRef(onSelectPlot);
+
+  // Default to satellite view matching user's Google Maps link and aerial view
+  const [mapType, setMapType] = useState('satellite');
 
   // Keep onSelectPlotRef updated without triggering map re-initialization
   useEffect(() => {
@@ -45,12 +56,19 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
 
+  // Dynamically switch base layer between Satellite and Roadmap
+  useEffect(() => {
+    if (!mapInstanceRef.current || !tileLayerRef.current) return;
+    const targetLayer = mapType === 'roadmap' ? GOOGLE_MAP_LAYER : GOOGLE_SATELLITE_LAYER;
+    tileLayerRef.current.setUrl(targetLayer.url);
+  }, [mapType]);
+
   // Expose imperative methods for external toolbar
   React.useImperativeHandle(ref, () => ({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
     reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
-    setMapType: () => {}
+    setMapType: (type) => setMapType(type)
   }));
 
   // 1. Initialize Leaflet Map and Permanent Base Master Plan Layers (Surrounding Greenery, Boundary, Roads, Park)
@@ -72,12 +90,14 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     mapInstanceRef.current = map;
 
-    // Add base tile layer (Google Maps roadmap)
-    L.tileLayer(GOOGLE_MAP_LAYER.url, {
-      attribution: GOOGLE_MAP_LAYER.attribution,
-      subdomains: GOOGLE_MAP_LAYER.subdomains,
-      maxZoom: GOOGLE_MAP_LAYER.maxZoom
+    // Add base tile layer (Google Satellite by default)
+    const initialLayer = mapType === 'roadmap' ? GOOGLE_MAP_LAYER : GOOGLE_SATELLITE_LAYER;
+    const tileLayer = L.tileLayer(initialLayer.url, {
+      attribution: initialLayer.attribution,
+      subdomains: initialLayer.subdomains,
+      maxZoom: initialLayer.maxZoom
     }).addTo(map);
+    tileLayerRef.current = tileLayer;
 
     // Track zoom updates for responsive typography scaling
     const updateZoom = () => setCurrentZoom(map.getZoom());
@@ -250,36 +270,42 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (H) Authentic Flyer Regional Landmarks situated on map (Zero API Key Required)
+    // (H) Authentic Regional Landmarks situated on map (Matching Google Maps exact location)
     const flyerLandmarks = [
       {
-        pos: [16.9538, 78.5170],
+        pos: [16.9545, 78.5145], // Sri Maisigandi Maisamma Temple (East near Srisailam Highway)
         title: "Maisigandi Ramalingeswara Temple",
         badge: "🛕 Maisigandi Temple (1 min)",
         style: "background: #78350F; color: #FEF08A; border: 1.5px solid #F59E0B;"
       },
       {
-        pos: [16.9850, 78.4900],
+        pos: [16.9723, 78.5098], // Kadthal Toll Plaza on NH-765 Srisailam Highway
+        title: "Kadthal Toll Plaza (NH-765)",
+        badge: "🛣️ Kadthal Toll Plaza (NH-765)",
+        style: "background: #0F172A; color: #FEF08A; border: 1.5px solid #F59E0B;"
+      },
+      {
+        pos: [16.9605, 78.4938], // Big Daddy Resort (North-East of site)
+        title: "Big Daddy Resort",
+        badge: "🌴 Big Daddy Resort",
+        style: "background: #064E3B; color: #A7F3D0; border: 1.5px solid #10B981;"
+      },
+      {
+        pos: [16.9610, 78.4870], // Vampuguda (North-West of site)
+        title: "Vampuguda",
+        badge: "🏡 Vampuguda",
+        style: "background: #1E293B; color: #CBD5E1; border: 1px solid #475569;"
+      },
+      {
+        pos: [16.9850, 78.4900], // Kadthal Town & Mandal Hq
         title: "Kadthal Town & Mandal Hq",
         badge: "🏛️ Kadthal Municipality",
         style: "background: #0F172A; color: #E2E8F0; border: 1.5px solid #64748B;"
       },
       {
-        pos: [16.9720, 78.5300],
-        title: "Green Pharma City Corridor",
-        badge: "🏭 Pharma City SEZ (Hetero • Bharat Biotech)",
-        style: "background: #064E3B; color: #A7F3D0; border: 1.5px solid #10B981;"
-      },
-      {
-        pos: [16.9380, 78.5080],
-        title: "Bangalore to Shadnagar Highway Connector",
-        badge: "🛣️ Bangalore to Shadnagar Road",
-        style: "background: #1E293B; color: #CBD5E1; border: 1px solid #475569;"
-      },
-      {
-        pos: [16.9780, 78.5135],
+        pos: [16.9780, 78.5135], // Towards Hyderabad & ORR Exit 14 via Srisailam Highway
         title: "To Hyderabad & ORR Exit 14",
-        badge: "⬆ Srisailam Highway &bull; To ORR Exit 14 & RGIA Airport",
+        badge: "⬆ Srisailam Highway &bull; To ORR Exit 14 & Hyderabad",
         style: "background: #B45309; color: #FFFFFF; border: 1px solid #FDE68A;"
       }
     ];
@@ -979,10 +1005,41 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           pointer-events: none !important;
         }
       `}</style>
+
+      {/* Floating Satellite / Roadmap Layer Selector */}
+      <div className="absolute top-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-md p-1 rounded-2xl border border-slate-700/80 shadow-2xl flex items-center gap-1">
+        <button
+          type="button"
+          onClick={() => setMapType('satellite')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            mapType === 'satellite'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-300 hover:text-white'
+          }`}
+          title="Switch to Google Satellite View"
+        >
+          <span>🛰️</span>
+          <span>Satellite</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMapType('roadmap')}
+          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            mapType === 'roadmap'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-300 hover:text-white'
+          }`}
+          title="Switch to Google Roadmap View"
+        >
+          <span>🗺️</span>
+          <span>Map</span>
+        </button>
+      </div>
+
       {/* Leaflet Map DOM Target */}
       <div
         ref={mapContainerRef}
-        className="w-full h-full bg-[#E5ECE3] z-0"
+        className="w-full h-full bg-[#1A1F18] z-0"
         style={{ cursor: 'grab' }}
       />
     </div>

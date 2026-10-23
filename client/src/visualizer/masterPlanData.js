@@ -24,15 +24,16 @@ export const LAYOUT_BOUNDS = {
 
 /**
  * Real-World Geographic Alignment at Kadthal, Srisailam Highway (NH-765)
- * Location: Maisigandi Temple Road, Kadthal, Ranga Reddy Dist, Telangana
+ * Location: Chellampalle, Maisigandi Temple Road, Kadthal, Ranga Reddy Dist, Telangana
+ * Exact Google Maps Coordinates: 16°57'11.1"N 78°29'30.6"E (16.953069, 78.491842)
  * DTCP Approval: TLP NO. 87/2024/H | TS RERA: PO2400009081
  */
 export const SITE_GEO = {
-  center: [16.9555, 78.5125], // [lat, lng] Kadthal Maisigandi Temple Road, Srisailam Highway
+  center: [16.953069, 78.491842], // [lat, lng] Exact Google Maps pin (16°57'11.1"N, 78°29'30.6"E)
   zoom: 18,
   minZoom: 10,
   maxZoom: 21,
-  locality: "Kadthal, Srisailam Highway, Hyderabad",
+  locality: "Chellampalle, Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",
   state: "Telangana"
 };
@@ -725,14 +726,14 @@ export const REGIONAL_LANDMARKS = [
     categoryLabel: 'Project Site',
     distance: '0 km',
     time: '0 min',
-    direction: 'At Site (Kadthal)',
-    coordinates: [16.9555, 78.5125],
+    direction: 'At Site (Chellampalle, Kadthal)',
+    coordinates: [16.953069, 78.491842],
     threePos: [0, 0, 0],
     icon: '🏡',
     color: '#16A34A',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
     desc: "DTCP & TS RERA Sanctioned Gated Layout (96 Plots, Ac. 0.758 Park, Srisailam Highway).",
-    mapsUrl: 'https://www.google.com/maps?q=16.9555,78.5125'
+    mapsUrl: 'https://www.google.com/maps/place/16%C2%B057%2711.1%22N+78%C2%B029%2730.6%22E/@16.953069,78.491842,17z'
   },
   {
     id: 'LM-MAISIGANDI',
@@ -740,16 +741,16 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Maisigandi Temple',
     category: 'SPIRITUAL',
     categoryLabel: 'Spiritual Landmark',
-    distance: '0.8 km',
-    time: '1 min',
-    direction: 'West (via 60ft Road)',
-    coordinates: [16.9602, 78.5085],
-    threePos: [-120, 0, -45],
+    distance: '1.2 km',
+    time: '2 mins',
+    direction: 'East (via 60ft Road to NH-765)',
+    coordinates: [16.9545, 78.5145],
+    threePos: [110, 0, -45],
     icon: '🛕',
     color: '#F59E0B',
     badgeColor: 'bg-amber-100 text-amber-800 border-amber-300',
-    desc: 'Famous revered temple directly adjoining the proposed 60-ft layout approach road.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=16.9602,78.5085'
+    desc: 'Famous revered temple directly adjoining the 60-ft layout approach road and Srisailam Highway.',
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=16.9545,78.5145'
   },
   {
     id: 'LM-KADTHAL',
@@ -757,16 +758,16 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Kadthal Town Center',
     category: 'TOWN',
     categoryLabel: 'Township & Transit',
-    distance: '1.8 km',
-    time: '3 mins',
-    direction: 'North (via NH-765)',
+    distance: '3.2 km',
+    time: '5 mins',
+    direction: 'North-East (via NH-765)',
     coordinates: [16.9715, 78.5135],
-    threePos: [-5, 0, -110],
+    threePos: [65, 0, -110],
     icon: '🏪',
     color: '#3B82F6',
     badgeColor: 'bg-blue-100 text-blue-800 border-blue-300',
     desc: 'Bustling commercial hub with markets, banking, clinics, schools, and frequent TSRTC bus connectivity.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=16.9715,78.5135'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=16.9715,78.5135'
   },
   {
     id: 'LM-PYRAMID',
@@ -774,16 +775,16 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Maha Pyramid',
     category: 'SPIRITUAL',
     categoryLabel: 'Spiritual Wonder',
-    distance: '3.5 km',
-    time: '5 mins',
-    direction: 'North-West',
+    distance: '3.8 km',
+    time: '6 mins',
+    direction: 'North',
     coordinates: [16.9750, 78.4950],
-    threePos: [-95, 0, -125],
+    threePos: [15, 0, -125],
     icon: '🧘',
     color: '#8B5CF6',
     badgeColor: 'bg-purple-100 text-purple-800 border-purple-300',
     desc: "World's largest meditational pyramid attracting thousands of visitors and tourists globally.",
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=16.9750,78.4950'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=16.9750,78.4950'
   },
   {
     id: 'LM-RRR',
@@ -791,16 +792,16 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Regional Ring Road (RRR)',
     category: 'HIGHWAY',
     categoryLabel: 'Mega Expressway',
-    distance: '4.5 km',
-    time: '6 mins',
+    distance: '5.2 km',
+    time: '7 mins',
     direction: 'North (NH-765 Interchange)',
     coordinates: [16.9950, 78.5140],
-    threePos: [0, 0, -170],
+    threePos: [45, 0, -170],
     icon: '🌐',
     color: '#10B981',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
     desc: 'Transformative 330km mega expressway project encircling Hyderabad, boosting capital value exponentially.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=16.9950,78.5140'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=16.9950,78.5140'
   },
   {
     id: 'LM-PHARMACITY',
@@ -808,8 +809,8 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Pharma City & Future City',
     category: 'ECONOMIC',
     categoryLabel: 'Economic & AI Hub',
-    distance: '14.2 km',
-    time: '14 mins',
+    distance: '15.5 km',
+    time: '15 mins',
     direction: 'North-East',
     coordinates: [17.0650, 78.5600],
     threePos: [110, 0, -210],
@@ -817,7 +818,7 @@ export const REGIONAL_LANDMARKS = [
     color: '#EC4899',
     badgeColor: 'bg-pink-100 text-pink-800 border-pink-300',
     desc: 'Government flagship 19,000-acre industrial and AI megaproject generating lakhs of high-value employment.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=17.0650,78.5600'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=17.0650,78.5600'
   },
   {
     id: 'LM-WONDERLA',
@@ -825,8 +826,8 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Wonderla Amusement Park',
     category: 'AMUSEMENT',
     categoryLabel: 'Entertainment',
-    distance: '22 km',
-    time: '20 mins',
+    distance: '23 km',
+    time: '21 mins',
     direction: 'North along Srisailam Hwy',
     coordinates: [17.1890, 78.6010],
     threePos: [140, 0, -260],
@@ -834,7 +835,7 @@ export const REGIONAL_LANDMARKS = [
     color: '#EAB308',
     badgeColor: 'bg-yellow-100 text-yellow-800 border-yellow-300',
     desc: "Hyderabad's premier world-class theme and water amusement park destination.",
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=17.1890,78.6010'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=17.1890,78.6010'
   },
   {
     id: 'LM-ORR',
@@ -842,8 +843,8 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'ORR Exit 14 (Tukkuguda)',
     category: 'HIGHWAY',
     categoryLabel: 'City Expressway Junction',
-    distance: '24.5 km',
-    time: '22 mins',
+    distance: '25 km',
+    time: '23 mins',
     direction: 'North direct via NH-765',
     coordinates: [17.1850, 78.5200],
     threePos: [20, 0, -280],
@@ -851,7 +852,7 @@ export const REGIONAL_LANDMARKS = [
     color: '#06B6D4',
     badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-300',
     desc: 'High-speed signal-free interchange linking Srisailam Highway directly to Gachibowli, Financial District, and Hitec City.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=17.1850,78.5200'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=17.1850,78.5200'
   },
   {
     id: 'LM-RGIA',
@@ -859,8 +860,8 @@ export const REGIONAL_LANDMARKS = [
     shortName: 'Hyderabad Airport (RGIA)',
     category: 'TRANSIT',
     categoryLabel: 'International Airport',
-    distance: '28.5 km',
-    time: '26 mins',
+    distance: '29 km',
+    time: '27 mins',
     direction: 'North-West (Shamshabad)',
     coordinates: [17.2403, 78.4294],
     threePos: [-110, 0, -310],
@@ -868,7 +869,7 @@ export const REGIONAL_LANDMARKS = [
     color: '#0EA5E9',
     badgeColor: 'bg-sky-100 text-sky-800 border-sky-300',
     desc: 'Rapid seamless commute to Shamshabad International Airport via ORR & 4-lane Highway.',
-    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.9555,78.5125&destination=17.2403,78.4294'
+    mapsUrl: 'https://www.google.com/maps/dir/?api=1&origin=16.953069,78.491842&destination=17.2403,78.4294'
   }
 ];
 

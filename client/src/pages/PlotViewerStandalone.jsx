@@ -2213,7 +2213,7 @@ export default function PlotViewerStandalone({ settings }) {
 
               <div className="flex items-center gap-2 shrink-0">
                 <a
-                  href="https://maps.google.com/?q=Maisigandi+Temple+Kadthal"
+                  href="https://www.google.com/maps/place/16%C2%B057%2711.1%22N+78%C2%B029%2730.6%22E/@16.953069,78.491842,17z"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-xs"
