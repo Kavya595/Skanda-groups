@@ -944,7 +944,9 @@ export default function AdminPlots() {
                               {/* Inspect on 2D Map */}
                               <button
                                 onClick={() => {
-                                  const found = allPlots.find(p => p.plotNumber === plot.plotNumber) || plot;
+                                  if (allPlots.length === 0) loadAllPlots();
+                                  const pool = allPlots.length > 0 ? allPlots : getEnrichedPlots();
+                                  const found = pool.find(p => p.plotNumber === plot.plotNumber) || plot;
                                   setSelectedPlot(found);
                                   setViewMode('2d');
                                 }}
@@ -957,7 +959,9 @@ export default function AdminPlots() {
                               {/* Inspect on 3D Master Plan */}
                               <button
                                 onClick={() => {
-                                  const found = allPlots.find(p => p.plotNumber === plot.plotNumber) || plot;
+                                  if (allPlots.length === 0) loadAllPlots();
+                                  const pool = allPlots.length > 0 ? allPlots : getEnrichedPlots();
+                                  const found = pool.find(p => p.plotNumber === plot.plotNumber) || plot;
                                   setSelectedPlot(found);
                                   setViewMode('3d');
                                 }}

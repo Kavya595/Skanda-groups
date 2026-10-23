@@ -690,6 +690,10 @@ export function Plot3D({
     return new THREE.EdgesGeometry(customExtrudeGeom);
   }, [customExtrudeGeom]);
 
+  const boxEdgesGeom = useMemo(() => {
+    return new THREE.EdgesGeometry(new THREE.BoxGeometry(tileW, tileHeight, tileD));
+  }, [tileW, tileHeight, tileD]);
+
   return (
     <group position={[cx, posY, cz]}>
       {/* 3D Volumetric Foundation Plinth Box with Height, Width, and Depth */}
@@ -748,8 +752,7 @@ export function Plot3D({
           </mesh>
 
           {/* Crisp 3D Demarcation Bevel Edges highlighting Height, Width, Depth */}
-          <lineSegments>
-            <edgesGeometry args={[new THREE.BoxGeometry(tileW, tileHeight, tileD)]} />
+          <lineSegments geometry={boxEdgesGeom}>
             <lineBasicMaterial
               color={isSelected || isSearchedMatch ? '#FFFFFF' : '#64748B'}
               linewidth={isSelected || isSearchedMatch ? 3 : 1.5}
@@ -834,107 +837,42 @@ export function Plot3D({
   );
 }
 
-// Authoritative Plots99 Avenue Palm Tree (Exact match to User's Uploaded Images 1 & 2: low human-scale, leaves drooping downward)
-export function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
-  // 6 radial main frond angles matching user reference photos (media_1791978949814_743b6c5a.png & media_1791978967243_dc66c9dd.png)
-  const frondAngles = [0, 60, 120, 180, 240, 300];
-  // 4 secondary outer drooping fronds for natural fullness
-  const secondaryFrondAngles = [30, 90, 210, 270];
-  // 8 fibrous collar stubs
-  const stubAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+// Shared Static Geometries & Materials for Avenue Palms (Zero GC allocations on mount)
+const palmPlanterGeom = new THREE.RingGeometry(0.16, 0.32, 12);
+const palmPlanterMat = new THREE.MeshStandardMaterial({ color: '#94A3B8', roughness: 0.8 });
+const palmTrunkGeom = new THREE.CylinderGeometry(0.075, 0.098, 1.76, 8);
+const palmTrunkMat = new THREE.MeshStandardMaterial({ color: '#948B7E', roughness: 0.82 });
+const palmCollarGeom = new THREE.CylinderGeometry(0.11, 0.08, 0.18, 8);
+const palmCollarMat = new THREE.MeshStandardMaterial({ color: '#C8AF58', roughness: 0.7 });
+const palmFrondGeom = new THREE.BoxGeometry(1.6, 0.02, 0.48);
+const palmFrondMat1 = new THREE.MeshStandardMaterial({ color: '#6BA322', roughness: 0.55 });
+const palmFrondMat2 = new THREE.MeshStandardMaterial({ color: '#7DBB28', roughness: 0.55 });
+const palmFrondAngles = [0, 60, 120, 180, 240, 300];
 
+// Authoritative Plots99 Avenue Palm Tree (Exact match to User Images 1 & 2: low human-scale, drooping fronds)
+export function Plots99AvenuePalm({ position = [0, 0, 0], scale = 1.0 }) {
   return (
     <group position={position} scale={scale}>
       {/* 1. Circular Stone Planter Base in Sidewalk */}
-      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.16, 0.32, 16]} />
-        <meshStandardMaterial color="#94A3B8" roughness={0.8} />
-      </mesh>
-      <mesh position={[0, 0.025, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.16, 12]} />
-        <meshBasicMaterial color="#33251A" />
-      </mesh>
+      <mesh geometry={palmPlanterGeom} material={palmPlanterMat} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} />
 
-      {/* 2. Slender, Human-Scale Straight Ash-Grey Palm Trunk (~1.75m tall, matching Images 1 & 2) */}
-      <mesh position={[0, 0.88, 0]}>
-        <cylinderGeometry args={[0.075, 0.098, 1.76, 12]} />
-        <meshStandardMaterial color="#948B7E" roughness={0.82} />
-      </mesh>
+      {/* 2. Slender, Human-Scale Straight Ash-Grey Palm Trunk */}
+      <mesh geometry={palmTrunkGeom} material={palmTrunkMat} position={[0, 0.88, 0]} />
 
-      {/* 3. Fibrous Trimmed Frond Stubs Collar (Yellow/tan fibers at top of trunk) */}
-      <mesh position={[0, 1.76, 0]}>
-        <cylinderGeometry args={[0.11, 0.08, 0.18, 10]} />
-        <meshStandardMaterial color="#C8AF58" roughness={0.7} />
-      </mesh>
-      {stubAngles.map((ang, idx) => (
-        <mesh
-          key={`stub-${idx}`}
-          position={[
-            Math.sin((ang * Math.PI) / 180) * 0.09,
-            1.78 + (idx % 2) * 0.03,
-            Math.cos((ang * Math.PI) / 180) * 0.09
-          ]}
-          rotation={[0.28, (ang * Math.PI) / 180, 0]}
-        >
-          <cylinderGeometry args={[0.018, 0.028, 0.14, 6]} />
-          <meshStandardMaterial color="#D4BA6A" roughness={0.65} />
-        </mesh>
-      ))}
+      {/* 3. Fibrous Trimmed Frond Stubs Collar */}
+      <mesh geometry={palmCollarGeom} material={palmCollarMat} position={[0, 1.76, 0]} />
 
-      {/* 4. Crown Node */}
-      <mesh position={[0, 1.84, 0]}>
-        <sphereGeometry args={[0.08, 8, 8]} />
-        <meshStandardMaterial color="#557D24" roughness={0.6} />
-      </mesh>
-
-      {/* 5. Broad Arched Tropical Banana / Palm Fronds Drooping Downward (Exact match to User Images 1 & 2) */}
-      {/* Primary Tier: 6 Broad Cascading Fronds */}
-      {frondAngles.map((ang, idx) => {
+      {/* 4. 6 Broad Tropical Fronds Drooping Gracefully Downward */}
+      {palmFrondAngles.map((ang, idx) => {
         const rad = (ang * Math.PI) / 180;
         return (
-          <group key={`frond-${idx}`} position={[0, 1.84, 0]} rotation={[0, rad, 0]}>
-            {/* Segment 1: Inner Leaf extending slightly outward */}
-            <mesh position={[0.52, -0.05, 0]} rotation={[0, 0, -0.22]} scale={[1.05, 0.02, 0.52]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#6BA322" roughness={0.55} />
-            </mesh>
-            {/* Segment 2: Mid Leaf curving downward */}
-            <mesh position={[1.28, -0.26, 0]} rotation={[0, 0, -0.46]} scale={[0.98, 0.018, 0.58]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#7DBB28" roughness={0.55} />
-            </mesh>
-            {/* Segment 3: Drooping Leaf Tip hanging low towards ~1.2m off ground */}
-            <mesh position={[1.92, -0.58, 0]} rotation={[0, 0, -0.74]} scale={[0.82, 0.016, 0.44]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#8BC92F" roughness={0.55} />
-            </mesh>
-            {/* Central Frond Rib */}
-            <mesh position={[1.18, -0.28, 0]} rotation={[0, 0, -0.42]} scale={[2.25, 0.028, 0.028]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#426E15" roughness={0.5} />
-            </mesh>
-          </group>
-        );
-      })}
-
-      {/* Secondary Tier: 4 Lower Drooping Fronds for Full Realistic Foliage */}
-      {secondaryFrondAngles.map((ang, idx) => {
-        const rad = (ang * Math.PI) / 180;
-        return (
-          <group key={`sec-frond-${idx}`} position={[0, 1.80, 0]} rotation={[0, rad, 0]}>
-            <mesh position={[0.48, -0.08, 0]} rotation={[0, 0, -0.32]} scale={[0.95, 0.018, 0.48]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#5E931C" roughness={0.55} />
-            </mesh>
-            <mesh position={[1.16, -0.36, 0]} rotation={[0, 0, -0.62]} scale={[0.88, 0.016, 0.52]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#70AA22" roughness={0.55} />
-            </mesh>
-            <mesh position={[1.72, -0.72, 0]} rotation={[0, 0, -0.88]} scale={[0.74, 0.014, 0.38]}>
-              <boxGeometry args={[1, 1, 1]} />
-              <meshStandardMaterial color="#7FBA28" roughness={0.55} />
-            </mesh>
-          </group>
+          <mesh
+            key={`frond-${idx}`}
+            geometry={palmFrondGeom}
+            material={idx % 2 === 0 ? palmFrondMat1 : palmFrondMat2}
+            position={[Math.cos(rad) * 0.72, 1.74 - (idx % 2) * 0.06, Math.sin(rad) * 0.72]}
+            rotation={[-0.32 * Math.sin(rad), -rad, -0.42]}
+          />
         );
       })}
     </group>
@@ -974,44 +912,30 @@ export function getGrassTurfTexture() {
   if (grassTurfTextureCache) return grassTurfTextureCache;
 
   const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 512;
+  canvas.width = 256;
+  canvas.height = 256;
   const ctx = canvas.getContext('2d');
 
   // 1. Lush Bermuda turf green base
   ctx.fillStyle = '#6AA81A';
-  ctx.fillRect(0, 0, 512, 512);
+  ctx.fillRect(0, 0, 256, 256);
 
-  // 2. Alternating subtle lawn mowing stripes
-  const stripeW = 64;
-  for (let x = 0; x < 512; x += stripeW * 2) {
+  // 2. Subtle lawn mowing stripes
+  for (let x = 0; x < 256; x += 64) {
     ctx.fillStyle = 'rgba(126, 196, 32, 0.16)';
-    ctx.fillRect(x, 0, stripeW, 512);
+    ctx.fillRect(x, 0, 32, 256);
   }
 
-  // 3. Dense individual grass blades & turf stipples
-  const bladeColors = [
-    '#528A13', // shadow root blade
-    '#68A618', // natural grass body
-    '#76B820', // vibrant sunlit blade
-    '#86CC28', // fresh spring tip
-    '#44750F'  // deep thatch green
-  ];
-
-  for (let i = 0; i < 32000; i++) {
-    const gx = Math.random() * 512;
-    const gy = Math.random() * 512;
-    const len = Math.random() * 4.5 + 2.5;
-    const bw = Math.random() * 1.6 + 0.8;
-    const tilt = (Math.random() - 0.5) * 0.35;
-
-    ctx.save();
-    ctx.translate(gx, gy);
-    ctx.rotate(tilt);
-    ctx.fillStyle = bladeColors[Math.floor(Math.random() * bladeColors.length)];
-    ctx.fillRect(-bw / 2, -len, bw, len);
-    ctx.restore();
+  // 3. Ultra-fast procedural stippling via direct pixel buffer (<2ms)
+  const imgData = ctx.getImageData(0, 0, 256, 256);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const noise = (Math.random() - 0.5) * 32;
+    data[i] = Math.min(255, Math.max(0, data[i] + noise * 0.7));
+    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.4));
   }
+  ctx.putImageData(imgData, 0, 0);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.wrapS = THREE.RepeatWrapping;
@@ -1403,116 +1327,72 @@ export function BlockBordersAndAvenueTrees() {
   );
 }
 
+// Shared High-Resolution Bitumen & Cobblestone Textures with module-level caching
+let asphaltTextureCache = null;
+export function getAsphaltTexture() {
+  if (typeof document === 'undefined') return null;
+  if (asphaltTextureCache) return asphaltTextureCache;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#16191E';
+  ctx.fillRect(0, 0, 256, 256);
+  const imgData = ctx.getImageData(0, 0, 256, 256);
+  const d = imgData.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const rnd = Math.random();
+    if (rnd > 0.82) {
+      d[i] = 42; d[i + 1] = 48; d[i + 2] = 58;
+    } else if (rnd > 0.45) {
+      d[i] = 16; d[i + 1] = 18; d[i + 2] = 22;
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(10, 10);
+  asphaltTextureCache = texture;
+  return texture;
+}
+
+let cobblestoneTextureCache = null;
+export function getCobblestoneTexture() {
+  if (typeof document === 'undefined') return null;
+  if (cobblestoneTextureCache) return cobblestoneTextureCache;
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#1C222A';
+  ctx.fillRect(0, 0, 256, 256);
+  const stoneColors = ['#758393', '#8B99A9', '#63707F', '#9BAAB9', '#586472', '#7E8C9C'];
+  const rows = 8;
+  const cols = 6;
+  const cellH = 256 / rows;
+  const cellW = 256 / cols;
+  for (let r = 0; r < rows; r++) {
+    const rowOffset = (r % 2) * (cellW * 0.48);
+    for (let c = -1; c <= cols + 1; c++) {
+      const cx = c * cellW + rowOffset;
+      const cy = r * cellH;
+      ctx.fillStyle = stoneColors[(r * 5 + c * 7 + 100) % stoneColors.length];
+      ctx.fillRect(cx + 2, cy + 2, cellW - 4, cellH - 4);
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(6, 6);
+  cobblestoneTextureCache = texture;
+  return texture;
+}
+
 // Connected Road Network with Realistic Deep Asphalt, Raised Cobblestone Curbs, and Printed Road Names (Matching Image 4 & 5)
 export function ConnectedRoadNetwork({ onRoadClick }) {
-  // High-Resolution Deep Bitumen Asphalt Texture with aggregate specks
-  const asphaltTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-
-    // Rich deep asphalt tarmac base (matching Image 4 & 5)
-    ctx.fillStyle = '#16191E';
-    ctx.fillRect(0, 0, 512, 512);
-
-    // Fine mineral grit and bitumen aggregates
-    for (let i = 0; i < 18000; i++) {
-      const x = Math.random() * 512;
-      const y = Math.random() * 512;
-      const size = Math.random() * 1.8 + 0.4;
-      const rnd = Math.random();
-      if (rnd > 0.72) {
-        ctx.fillStyle = '#2A303A'; // medium stone aggregate
-      } else if (rnd > 0.35) {
-        ctx.fillStyle = '#0F1115'; // deep black bitumen
-      } else {
-        ctx.fillStyle = '#383F4C'; // light quartz glint
-      }
-      ctx.fillRect(x, y, size, size);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(10, 10);
-    return texture;
-  }, []);
-
-  // Organic Polygonal Flagstone / Cobblestone Paver Texture matching media_1791965028424_4ab01446.png
-  const cobblestoneTexture = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const ctx = canvas.getContext('2d');
-
-    // Dark charcoal mortar joint background
-    ctx.fillStyle = '#1C222A';
-    ctx.fillRect(0, 0, 512, 512);
-
-    // Natural stone tones from photo (cool slate, granite, ash greys)
-    const stoneColors = [
-      '#758393', '#8B99A9', '#63707F', '#9BAAB9', '#586472',
-      '#7E8C9C', '#8492A2', '#6C7988', '#92A1B1', '#606C7A'
-    ];
-
-    const rows = 14;
-    const cols = 10;
-    const cellH = 512 / rows;
-    const cellW = 512 / cols;
-
-    for (let r = 0; r < rows; r++) {
-      const rowOffset = (r % 2) * (cellW * 0.48);
-      for (let c = -1; c <= cols + 1; c++) {
-        // Natural jitter for organic cobblestone shapes
-        const seed = r * 13 + c * 37;
-        const jx = Math.sin(seed * 0.7) * (cellW * 0.18);
-        const jy = Math.cos(seed * 0.9) * (cellH * 0.18);
-        const cx = c * cellW + rowOffset + jx;
-        const cy = r * cellH + jy;
-        const radX = cellW * 0.44;
-        const radY = cellH * 0.42;
-
-        ctx.save();
-        ctx.beginPath();
-        // 8-point irregular polygon with rounded corners for organic flagstone
-        const pts = 8;
-        for (let i = 0; i < pts; i++) {
-          const ang = (i / pts) * Math.PI * 2;
-          const rMod = 0.86 + 0.22 * Math.sin(ang * 3 + seed);
-          const px = cx + Math.cos(ang) * radX * rMod;
-          const py = cy + Math.sin(ang) * radY * rMod;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-
-        // Fill natural stone color
-        ctx.fillStyle = stoneColors[(Math.abs(r * 5 + c * 7)) % stoneColors.length];
-        ctx.fill();
-
-        // 3D sunlit bevel highlight on stone top edge
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-        ctx.lineWidth = 1.6;
-        ctx.stroke();
-
-        // Dark mortar edge line
-        ctx.strokeStyle = 'rgba(20, 25, 32, 0.85)';
-        ctx.lineWidth = 2.0;
-        ctx.stroke();
-
-        ctx.restore();
-      }
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(6, 6);
-    return texture;
-  }, []);
+  const asphaltTexture = useMemo(() => getAsphaltTexture(), []);
+  const cobblestoneTexture = useMemo(() => getCobblestoneTexture(), []);
 
   return (
     <group>
@@ -1849,196 +1729,10 @@ export function GrandEntranceArch({ position = [70, 0, -47], rotation = [0, 0, 0
   );
 }
 
-// Authoritative Regional Kadthal & Srisailam Highway Map Renderer
-// Pre-paints authentic topography matching official flyer (NH-765, 100' road, Maisigandi Temple, Kadthal, Pharma City)
-function paintRegionalKadthalMap(ctx, width, height) {
-  // 1. Natural Land Base
-  ctx.fillStyle = '#E5EAE0';
-  ctx.fillRect(0, 0, width, height);
 
-  // 2. Agricultural Farmland Patchwork (Natural cadastral patterns)
-  const farmTones = ['#DFE6D6', '#E2E9D8', '#D8E2CE', '#E8EFE2', '#D3DFC8'];
-  for (let r = 0; r < 16; r++) {
-    for (let c = 0; c < 16; c++) {
-      const x = (c / 16) * width;
-      const y = (r / 16) * height;
-      const w = width / 16;
-      const h = height / 16;
-      ctx.fillStyle = farmTones[(r * 5 + c * 3) % farmTones.length];
-      ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
-    }
-  }
 
-  // 3. Green Reserve Forests & Agro Green Tracts
-  ctx.fillStyle = '#B4CCA4';
-  ctx.beginPath();
-  ctx.ellipse(520, 480, 260, 160, -0.2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.ellipse(1560, 1420, 320, 200, 0.3, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.ellipse(1480, 780, 180, 220, 0.1, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 4. Natural Water Bodies (Cheruvu / Lakes)
-  ctx.fillStyle = '#9AC3E6';
-  ctx.strokeStyle = '#6E9EC9';
-  ctx.lineWidth = 3;
-
-  // Maisigandi Cheruvu (Lake)
-  ctx.beginPath();
-  ctx.ellipse(1440, 980, 115, 70, -0.25, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  // Kadthal Cheruvu (Lake)
-  ctx.beginPath();
-  ctx.ellipse(780, 640, 95, 55, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#2B5784';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Maisigandi Cheruvu', 1370, 985);
-  ctx.fillText('Kadthal Lake', 735, 645);
-
-  // 5. Connecting Arterial & Regional Roads
-  // Bangalore to Shadnagar Road (Crossing East-West south of site)
-  ctx.strokeStyle = '#64748B';
-  ctx.lineWidth = 14;
-  ctx.beginPath();
-  ctx.moveTo(0, 1260);
-  ctx.lineTo(2048, 1260);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#FCD34D';
-  ctx.lineWidth = 2.5;
-  ctx.stroke();
-
-  // 60' Maisigandi Temple Road (East-West through Site)
-  ctx.strokeStyle = '#334155';
-  ctx.lineWidth = 12;
-  ctx.beginPath();
-  ctx.moveTo(850, 840);
-  ctx.lineTo(1600, 840);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#FFFFFF';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 8]);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // 6. Srisailam Highway (NH-765 - Major 4-Lane National Highway Corridor)
-  ctx.strokeStyle = '#1E293B';
-  ctx.lineWidth = 22;
-  ctx.beginPath();
-  ctx.moveTo(1280, 0);
-  ctx.quadraticCurveTo(1275, 840, 1265, 2048);
-  ctx.stroke();
-
-  // Double Yellow Median Divider
-  ctx.strokeStyle = '#F59E0B';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(1278, 0);
-  ctx.quadraticCurveTo(1273, 840, 1263, 2048);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(1282, 0);
-  ctx.quadraticCurveTo(1277, 840, 1267, 2048);
-  ctx.stroke();
-
-  // 7. 100 Feet Road Corridor (Official Flyer: connecting Srisailam Highway to SITE)
-  ctx.strokeStyle = '#0F172A';
-  ctx.lineWidth = 16;
-  ctx.beginPath();
-  ctx.moveTo(1275, 840);
-  ctx.lineTo(1210, 840);
-  ctx.stroke();
-
-  ctx.strokeStyle = '#FEF08A';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([6, 6]);
-  ctx.beginPath();
-  ctx.moveTo(1275, 840);
-  ctx.lineTo(1210, 840);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // 8. Road Typography along East Road
-  ctx.save();
-  ctx.translate(1300, 580);
-  ctx.rotate(Math.PI / 2);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
-  ctx.restore();
-
-  ctx.save();
-  ctx.translate(1300, 1520);
-  ctx.rotate(Math.PI / 2);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬇ TO 4TH PHASE', 0, 0);
-  ctx.restore();
-
-  // 9. Flyer Location Landmark Badges
-  // (A) Kadthal Municipality & Mandal Hq
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(660, 460, 260, 36);
-  ctx.strokeStyle = '#64748B';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(660, 460, 260, 36);
-  ctx.fillStyle = '#E2E8F0';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('🏛️ Kadthal Town & Municipality', 670, 484);
-
-  // (C) Green Pharma City Corridor
-  ctx.fillStyle = '#064E3B';
-  ctx.fillRect(1420, 360, 310, 48);
-  ctx.strokeStyle = '#10B981';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1420, 360, 310, 48);
-  ctx.fillStyle = '#A7F3D0';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('🏭 Green Pharma City Corridor', 1430, 382);
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = '#D1FAE5';
-  ctx.fillText('Bharat Biotech • Hetero • MSN • Dr. Reddy\'s', 1430, 400);
-
-  // (D) Bangalore to Shadnagar Highway Connector
-  ctx.fillStyle = '#1E293B';
-  ctx.fillRect(80, 1238, 280, 32);
-  ctx.strokeStyle = '#475569';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(80, 1238, 280, 32);
-  ctx.fillStyle = '#CBD5E1';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.fillText('🛣️ Bangalore to Shadnagar Road', 90, 1260);
-
-  // (E) 100' Road Badge
-  ctx.fillStyle = '#0F172A';
-  ctx.fillRect(1150, 795, 120, 26);
-  ctx.strokeStyle = '#F59E0B';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(1150, 795, 120, 26);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.fillText("100' Road to Site", 1156, 812);
-}
-
-// Module-level caches for 3D Regional Ground Canvas and Texture
-let regionalCanvasCache = null;
-let regionalTextureCache = null;
-
-// Clean Master Plan 3D Ground with Real Regional Kadthal Map matching Plots99 Image (media_1792062220917_c559dd0d.png)
+// Clean Master Plan 3D Ground with Pure Seamless Grass Terrain (Instant load with zero network latency)
 export function CleanMasterPlanTerrain({ cameraPreset }) {
-  const [tilesLoaded, setTilesLoaded] = useState(0);
-
   // Dedicated procedural Bermuda grass turf texture for the venture parcel
   const parcelGrassTexture = useMemo(() => {
     const base = getGrassTurfTexture();
@@ -2051,190 +1745,23 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return tex;
   }, []);
 
-  // Initialize 2048x2048 canvas covering ~4.68 km at zoom 15 (~2.28 meters/pixel)
-  const canvas = useMemo(() => {
-    if (typeof document === 'undefined') return null;
-    if (regionalCanvasCache) return regionalCanvasCache;
-
-    const cvs = document.createElement('canvas');
-    cvs.width = 2048;
-    cvs.height = 2048;
-    const ctx = cvs.getContext('2d');
-    paintRegionalKadthalMap(ctx, 2048, 2048);
-    regionalCanvasCache = cvs;
-    return cvs;
-  }, []);
-
-  const texture = useMemo(() => {
-    if (!canvas) return null;
-    if (regionalTextureCache) return regionalTextureCache;
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    tex.generateMipmaps = true;
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.needsUpdate = true;
-    regionalTextureCache = tex;
-    return tex;
-  }, [canvas]);
-
-  // Load 4x4 Zoom 15 tiles centered on Kadthal & Chellampalle site (lat: 16.953069, lng: 78.491842)
-  useEffect(() => {
-    if (!canvas || !texture) return;
-    const ctx = canvas.getContext('2d');
-    const zoom = 15;
-    const minTx = 23527;
-    const minTy = 14816;
-
-    for (let dy = 0; dy < 4; dy++) {
-      for (let dx = 0; dx < 4; dx++) {
-        const tx = minTx + dx;
-        const ty = minTy + dy;
-        const cx = dx * 512;
-        const cy = dy * 512;
-
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-
-        img.onload = () => {
-          try {
-            ctx.drawImage(img, cx, cy, 512, 512);
-            texture.needsUpdate = true;
-            setTilesLoaded((c) => c + 1);
-          } catch (e) {
-            console.warn('Map tile draw warning:', e);
-          }
-        };
-
-        img.onerror = () => {
-          const fallback = new Image();
-          fallback.crossOrigin = 'anonymous';
-          fallback.onload = () => {
-            try {
-              ctx.drawImage(fallback, cx, cy, 512, 512);
-              texture.needsUpdate = true;
-              setTilesLoaded((c) => c + 1);
-            } catch (e) {}
-          };
-          // Fallback to direct CartoDB Voyager mirror (CORS enabled)
-          fallback.src = `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tx}/${ty}.png`;
-        };
-
-        // Primary: Backend tile proxy serving Google Maps roadmap tiles with CORS headers
-        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
-      }
-    }
-  }, [canvas, texture]);
-
-  // Dedicated Venture Green Parcel Shape (User requirement: "put it in a place where some clean area grass around it like that highlight in map only")
-  const ventureParcelShape = useMemo(() => {
-    const shape = new THREE.Shape();
-    const pts = [
-      [-132, -72],
-      [-120, -84],
-      [-60, -86],
-      [0, -82],
-      [55, -78],
-      [88, -66],
-      [98, -20],
-      [104, 18],
-      [96, 70],
-      [68, 86],
-      [18, 92],
-      [-35, 90],
-      [-88, 88],
-      [-118, 76],
-      [-134, 20],
-      [-134, -35]
-    ];
-    pts.forEach(([x, z], idx) => {
-      if (idx === 0) shape.moveTo(x, -z);
-      else shape.lineTo(x, -z);
-    });
-    shape.closePath();
-    return shape;
-  }, []);
-
-  // Perimeter border line for the dedicated venture parcel
-  const parcelBorderPoints = useMemo(() => {
-    const pts = [
-      [-132, -72],
-      [-120, -84],
-      [-60, -86],
-      [0, -82],
-      [55, -78],
-      [88, -66],
-      [98, -20],
-      [104, 18],
-      [96, 70],
-      [68, 86],
-      [18, 92],
-      [-35, 90],
-      [-88, 88],
-      [-118, 76],
-      [-134, 20],
-      [-134, -35]
-    ].map(([x, z]) => new THREE.Vector3(x, 0.012, z));
-    pts.push(new THREE.Vector3(-132, 0.012, -72));
-    return pts;
-  }, []);
-
-  // Perimeter shade trees around the estate parcel
-  const parcelTrees = useMemo(() => {
-    return [
-      [-130, -50], [-116, -80], [-70, -84], [-10, -80], [45, -76], [80, -64],
-      [96, -20], [102, 10], [94, 62], [65, 82], [15, 88], [-35, 86],
-      [-80, 84], [-112, 72], [-130, 20], [-130, -25]
-    ];
-  }, []);
-
-  // Exact DTCP layout compound base shape matching brochure cuts
-  const compoundShape = useMemo(() => {
-    const shape = new THREE.Shape();
-    SITE_BOUNDARY_LOCAL.forEach(([x, z], idx) => {
-      // In Three.js, rotating [-PI/2, 0, 0] maps 2D (x, y) to 3D (x, 0, -y). So y = -z.
-      if (idx === 0) shape.moveTo(x, -z);
-      else shape.lineTo(x, -z);
-    });
-    shape.closePath();
-    return shape;
-  }, []);
-
-  // Perimeter fencing points tracing the exact brochure cuts
-  const fencePoints = useMemo(() => {
-    const pts = SITE_BOUNDARY_LOCAL.map(([x, z]) => new THREE.Vector3(x, 0.035, z));
-    pts.push(new THREE.Vector3(SITE_BOUNDARY_LOCAL[0][0], 0.035, SITE_BOUNDARY_LOCAL[0][1]));
-    return pts;
-  }, []);
-
-  // Geographic plane size: 2048px * 2.285m/px = 4680m
-  const groundSize = 4680;
-  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) and Srisailam Highway (X: 75)
-  const shiftX = 581.5;
-  const shiftZ = 149.2;
-
   return (
     <group>
       {/* 1. Extended Horizon Ground Plane */}
       <mesh position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[35000, 35000]} />
-        <meshBasicMaterial color="#E5EAE0" />
+        <meshBasicMaterial color="#E5ECE3" />
       </mesh>
 
-      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Google Maps Roadmap: Srisailam Highway NH-765, Kadthal) */}
-      <mesh position={[shiftX, -0.015, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[groundSize, groundSize]} />
-        <meshBasicMaterial
-          map={texture || undefined}
-          color="#FFFFFF"
-        />
+      {/* 2. Outer Landscape Green Belt (1200m x 1000m) */}
+      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[1200, 1000]} />
+        <meshStandardMaterial color="#A3D99C" roughness={0.92} />
       </mesh>
 
-      {/* 3. Natural Seamless Green Grass Field around and under the Venture (No harsh boundary lines) */}
-      <mesh position={[-5, 0.015, 8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[260, 220]} />
+      {/* 3. Surrounding Natural Green Grass Field (360m x 320m) matching 'grass around it' */}
+      <mesh position={[-5, 0.01, 8]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[360, 320]} />
         <meshStandardMaterial
           color="#9BD89E"
           roughness={0.88}
@@ -2242,7 +1769,17 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         />
       </mesh>
 
-      {/* 6. Subtle Ground Landmark Rings for Venture Location */}
+      {/* 4. Immediate Venture Lawn Surface with Lush Turf Texture (260m x 220m) */}
+      <mesh position={[-5, 0.016, 8]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[260, 220]} />
+        <meshStandardMaterial
+          map={parcelGrassTexture || undefined}
+          color="#8FD192"
+          roughness={0.82}
+        />
+      </mesh>
+
+      {/* 5. Subtle Ground Landmark Rings for Venture Center */}
       <group position={[-9, 0.025, 6]}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
           <ringGeometry args={[14, 18, 32]} />
@@ -2254,7 +1791,7 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         </mesh>
       </group>
 
-      {/* 7. 4th Phase road opening markers matching brochure */}
+      {/* 6. 4th Phase road opening markers matching brochure */}
       {[
         [-61.5, 53.5], // Road V0 opening to 4th Phase
         [-32.5, 65.5], // Road V1 opening to 4th Phase

@@ -115,12 +115,29 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
-    // (A) Natural Green Grass Base for Venture Ground
-    L.polygon(SITE_BOUNDARY_GEO, {
+    // (A1) Surrounding Natural Grass Terrain (Seamless green landscape around venture matching 3D)
+    const grassSurroundLocal = [
+      [-160, -120],
+      [150, -120],
+      [150, 130],
+      [-160, 130]
+    ];
+    const grassSurroundGeo = grassSurroundLocal.map(([x, z]) => localToLatLng(x, z));
+
+    L.polygon(grassSurroundGeo, {
       color: 'transparent',
       weight: 0,
       fillColor: '#86EFAC',
-      fillOpacity: 0.3,
+      fillOpacity: 0.35,
+      interactive: false
+    }).addTo(staticGroup);
+
+    // (A2) Venture Inner Ground Turf Base
+    L.polygon(SITE_BOUNDARY_GEO, {
+      color: 'transparent',
+      weight: 0,
+      fillColor: '#4ADE80',
+      fillOpacity: 0.25,
       interactive: false
     }).addTo(staticGroup);
 

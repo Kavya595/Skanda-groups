@@ -685,7 +685,13 @@ export function getEnrichedPlots(overridePlots = null) {
             [(x1 + 95) * 6.0, (z0 + 58) * 5.6],
             [(x1 + 95) * 6.0, (z1 + 58) * 5.6],
             [(x0 + 95) * 6.0, (z1 + 58) * 5.6]
-          ]
+          ],
+      // Authoritative layout attributes from brochure plan (cannot be overwritten by stale DB fields)
+      block: def.block,
+      dimensions: def.dimensions,
+      facing: def.facing,
+      isCorner: def.isCorner,
+      roadWidth: def.roadWidth
     };
   });
 }
