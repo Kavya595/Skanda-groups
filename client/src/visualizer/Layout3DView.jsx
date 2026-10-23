@@ -268,13 +268,10 @@ function CameraController({
         onWalkProgressChange(nextProg);
       }
 
-      // Drag left/right to look around - CLAMPED TO PREVENT 360 SPIN (User requirement: "dont flip 360 digrees")
+      // Keep view strictly facing forward along road without 360-degree rotation (User requirement: "dont implement to move 360 degrees layout")
       const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
-      const baseYaw = road.forwardYaw;
-      yawRef.current = Math.max(baseYaw - 1.25, Math.min(baseYaw + 1.25, yawRef.current - dx * 0.0035));
-
-      // Natural vertical pitch clamped to eye level (cannot flip upside down)
-      pitchRef.current = Math.max(-0.18, Math.min(0.20, pitchRef.current - dy * 0.0006));
+      yawRef.current = road.forwardYaw;
+      pitchRef.current = -0.02;
     };
 
     const handlePointerUp = () => {
@@ -485,13 +482,9 @@ function CameraController({
         progRef.current = nextProg;
         if (onWalkProgressChange) onWalkProgressChange(nextProg);
       }
-      // Turn left/right clamped to road corridor (User requirement: "dont flip 360 digrees")
-      if (keysPressed.current.left) {
-        yawRef.current = Math.min(baseYaw + 1.25, yawRef.current + delta * 0.75);
-      }
-      if (keysPressed.current.right) {
-        yawRef.current = Math.max(baseYaw - 1.25, yawRef.current - delta * 0.75);
-      }
+      // Keep view facing straight forward along road without 360-degree turning (User requirement: "dont implement to move 360 degrees layout")
+      yawRef.current = road.forwardYaw;
+      pitchRef.current = -0.02;
 
       // Direct Responsive Road Walk Camera Control
       let tx, ty = road.cameraHeight, tz;
@@ -510,11 +503,11 @@ function CameraController({
       camera.position.y += (ty - camera.position.y) * factor;
       camera.position.z += (tz - camera.position.z) * factor;
 
-      // Compute look direction from yaw and pitch
+      // Compute look direction directly forward down the avenue
       const lookDist = 18;
-      const lx = camera.position.x + Math.sin(yawRef.current) * Math.cos(pitchRef.current) * lookDist;
-      const ly = camera.position.y + Math.sin(pitchRef.current) * lookDist;
-      const lz = camera.position.z - Math.cos(yawRef.current) * Math.cos(pitchRef.current) * lookDist;
+      const lx = camera.position.x + Math.sin(road.forwardYaw) * Math.cos(-0.02) * lookDist;
+      const ly = camera.position.y + Math.sin(-0.02) * lookDist;
+      const lz = camera.position.z - Math.cos(road.forwardYaw) * Math.cos(-0.02) * lookDist;
       camera.lookAt(lx, ly, lz);
 
       if (controlsRef.current) {
@@ -579,27 +572,24 @@ function CameraController({
       ref={controlsRef}
       target={[-9, 0, 6]}
       enabled={cameraPreset !== 'roadWalk' && !animatingRef.current}
-      enableRotate={true}
+      enableRotate={false}
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
       zoomSpeed={0.16}
       mouseButtons={{
-        LEFT: THREE.MOUSE.ROTATE,
+        LEFT: THREE.MOUSE.PAN,
         MIDDLE: THREE.MOUSE.DOLLY,
         RIGHT: THREE.MOUSE.PAN
       }}
       touches={{
-        ONE: THREE.TOUCH.ROTATE,
+        ONE: THREE.TOUCH.PAN,
         TWO: THREE.TOUCH.DOLLY_PAN
       }}
-      // Fixed Architectural Viewing Arc (User requirement: "dont flip 360 digrees its not like gaming to play there")
-      minAzimuthAngle={-Math.PI / 3.4} // ~ -53 degrees (cannot spin all the way around)
-      maxAzimuthAngle={Math.PI / 3.4}  // ~ +53 degrees (cannot spin all the way around)
-      minPolarAngle={Math.PI / 3.6}    // ~ 50 degrees (high architectural elevation)
-      maxPolarAngle={Math.PI / 2.45}   // ~ 73 degrees (cannot dip below ground or go upside down)
+      minAzimuthAngle={0}
+      maxAzimuthAngle={0}
       minDistance={10}
-      maxDistance={480}                // User requirement: "can zoom in zoom out manually for like small particle"
+      maxDistance={480}
       enableDamping={true}
       dampingFactor={0.035}
     />
