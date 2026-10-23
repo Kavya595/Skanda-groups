@@ -138,6 +138,12 @@ function CameraController({
   // Expose smooth, responsive zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
     zoomIn: () => {
+      if (cameraPreset === 'roadWalk') {
+        const nextProg = Math.min(1, progRef.current + 0.04);
+        progRef.current = nextProg;
+        if (onWalkProgressChange) onWalkProgressChange(nextProg);
+        return;
+      }
       if (cameraPreset === 'mapView') {
         if (onSwitchToOverview) {
           onSwitchToOverview();
@@ -157,6 +163,17 @@ function CameraController({
       }
     },
     zoomOut: () => {
+      if (cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') {
+        if (progRef.current > 0.05) {
+          const nextProg = Math.max(0, progRef.current - 0.04);
+          progRef.current = nextProg;
+          if (onWalkProgressChange) onWalkProgressChange(nextProg);
+          return;
+        } else if (onExitWalk) {
+          onExitWalk();
+          return;
+        }
+      }
       if (controlsRef.current) {
         const target = controlsRef.current.target;
         const offset = new THREE.Vector3().subVectors(camera.position, target);
@@ -436,8 +453,16 @@ function CameraController({
       animRate.current = 1.3;
       animatingRef.current = true;
     } else if (isExitingWalk) {
-      // Exiting walk mode leaves camera in manual overview without auto-zooming
-      animatingRef.current = false;
+      // Smoothly ascend from current street walk position up into overview
+      const startX = camera.position.x;
+      const startZ = camera.position.z;
+      targetPos.current.set(startX, 82, startZ + 95);
+      targetLook.current.set(startX, 0, startZ - 5);
+      if (controlsRef.current) {
+        currentLook.current.copy(controlsRef.current.target);
+      }
+      animRate.current = 1.35;
+      animatingRef.current = true;
     }
 
     prevPresetRef.current = cameraPreset;

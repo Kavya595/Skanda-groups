@@ -485,17 +485,24 @@ export default function PlotViewerStandalone({ settings }) {
     }
   };
 
-  const handleRoadClick = () => {
-    // Road clicks preserve manual overview framing without automatic camera dives
+  const handleRoadClick = (road) => {
+    if (viewMode !== '3d') setViewMode('3d');
+    const roadIdx = (WALK_ROADS || []).findIndex(
+      r => r.id === road?.id || r.name?.toLowerCase().includes(road?.name?.toLowerCase())
+    );
+    setWalkRoadIndex(roadIdx >= 0 ? roadIdx : 0);
+    setWalkProgress(0.12);
+    setCameraPreset('roadWalk');
   };
 
   const handleWalkStep = (step) => {
     setWalkProgress(prev => Math.max(0, Math.min(1, prev + step)));
   };
 
-  // Click on park ground preserves manual overview framing without automatic camera dives
+  // Click on park drops camera into park ground stroll
   const handleParkClick = () => {
-    // Park clicks preserve manual overview framing without automatic camera dives
+    if (viewMode !== '3d') setViewMode('3d');
+    setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
   };
 
   const handleToggleParkView = () => {
@@ -712,6 +719,19 @@ export default function PlotViewerStandalone({ settings }) {
         <aside className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 pointer-events-auto transition-opacity duration-300 ${
           isScrolledPastMap ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}>
+          {/* 3D Street Walk View */}
+          <button
+            onClick={handleToggleRoadView}
+            className={`w-10 h-10 rounded-full shadow-lg border transition-all duration-200 hover:scale-110 flex items-center justify-center ${
+              cameraPreset === 'roadWalk'
+                ? 'bg-brand-orange text-white border-brand-orange ring-2 ring-orange-400/50'
+                : 'bg-white/95 backdrop-blur-md text-slate-700 hover:text-brand-orange border-slate-200/90 hover:bg-white'
+            }`}
+            title="3D Street Walk View (Stroll down 33' & 60' Boulevards & Avenues)"
+          >
+            <Footprints className="w-4 h-4" />
+          </button>
+
           {/* Park View (Flowering Lawn, Cycad Palm Shrubs & Perimeter Palms) */}
           <button
             onClick={handleToggleParkView}
@@ -747,6 +767,42 @@ export default function PlotViewerStandalone({ settings }) {
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
         </aside>
+
+        {/* Floating Street Walk Navigation Pill */}
+        {cameraPreset === 'roadWalk' && viewMode === '3d' && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center gap-3 animate-fadeIn max-w-[92vw]">
+            <Footprints className="w-4 h-4 text-brand-orange shrink-0 animate-pulse" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-bold truncate">
+                {WALK_ROADS[walkRoadIndex]?.name || "33' Internal Boulevard"}
+              </span>
+              <span className="text-[10px] text-slate-300">
+                Drag / scroll to walk &bull; Zoom out to ascend
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 ml-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setWalkRoadIndex((prev) => (prev + 1) % (WALK_ROADS?.length || 1))}
+                className="px-2.5 py-1 text-[11px] font-semibold bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-200 border border-slate-600 transition-colors"
+                title="Switch avenue"
+              >
+                Next Road
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setCameraPreset('overview');
+                  setIsAutoWalking(false);
+                }}
+                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                title="Exit Walk View"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Map Canvas (3D or 2D) */}
         <div className="w-full h-full touch-none" style={{ touchAction: 'none' }}>
