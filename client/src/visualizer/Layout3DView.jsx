@@ -100,13 +100,14 @@ function CameraController({
   onSwitchToOverview,
   apiRef
 }) {
-  const { camera, gl } = useThree();
+  const { camera, gl, size } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
   const animRate = useRef(1.0); // Slow, continuous gliding walk feel for forward and backward movement
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
   const currentLook = useRef(new THREE.Vector3(-9, 0, 6));
+  const defaultTarget = useMemo(() => new THREE.Vector3(-9, 0, 6), []);
   const lastAzimuthRef = useRef(0);
   const wheelOutAccum = useRef(0);
   const prevPresetRef = useRef(cameraPreset);
@@ -116,6 +117,23 @@ function CameraController({
     left: false,
     right: false
   });
+
+  // Maintain constant horizontal visibility across screen resize, window minimize, or mobile orientation
+  useEffect(() => {
+    if (!camera || !camera.isPerspectiveCamera) return;
+    const aspect = size.width / Math.max(size.height, 1);
+    const baseAspect = 1.777; // 16:9 widescreen baseline
+    const baseFov = 42;
+    if (aspect < baseAspect) {
+      // Widen vertical FOV proportionally so horizontal field of view NEVER zooms in when window is minimized or narrowed
+      const hFov = 2 * Math.atan(Math.tan((baseFov * Math.PI) / 360) * baseAspect);
+      const newFov = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * (180 / Math.PI);
+      camera.fov = Math.min(newFov, 75);
+    } else {
+      camera.fov = baseFov;
+    }
+    camera.updateProjectionMatrix();
+  }, [camera, size.width, size.height]);
 
   // Expose smooth, responsive zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -139,20 +157,12 @@ function CameraController({
       }
     },
     zoomOut: () => {
-      // User requirement: "can comeout of the walk from all of a sudden just slowly minmize and can come out from that view like that implement"
-      if (cameraPreset === 'roadWalk' || cameraPreset === 'park' || cameraPreset === 'parkGround') {
-        if (onExitWalk) {
-          animRate.current = 1.15; // Slow, gentle drone ascent pull-out
-          onExitWalk();
-          return;
-        }
-      }
       if (controlsRef.current) {
         const target = controlsRef.current.target;
         const offset = new THREE.Vector3().subVectors(camera.position, target);
         const dist = offset.length();
         // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
-        if (dist < 2600) {
+        if (dist < 2800) {
           // Direct, smooth backward zoom step (28% outward)
           offset.multiplyScalar(1.28);
           camera.position.copy(target).add(offset);
@@ -426,14 +436,8 @@ function CameraController({
       animRate.current = 1.3;
       animatingRef.current = true;
     } else if (isExitingWalk) {
-      // ONLY trigger return animation when user explicitly exits walk mode
-      targetPos.current.set(-9, 78, 110);
-      targetLook.current.set(-9, 0, 6);
-      if (controlsRef.current) {
-        currentLook.current.copy(controlsRef.current.target);
-      }
-      animRate.current = 1.15;
-      animatingRef.current = true;
+      // Exiting walk mode leaves camera in manual overview without auto-zooming
+      animatingRef.current = false;
     }
 
     prevPresetRef.current = cameraPreset;
@@ -555,7 +559,7 @@ function CameraController({
   return (
     <OrbitControls
       ref={controlsRef}
-      target={[-9, 0, 6]}
+      target={defaultTarget}
       enabled={cameraPreset !== 'roadWalk'}
       enableRotate={false}
       enableZoom={true}

@@ -443,6 +443,14 @@ export default function PlotViewerStandalone({ settings }) {
     }
   };
 
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const handleMeasurePoint = (pt) => {
     setMeasurePoints(prev => {
       if (prev.length >= 2) return [pt];
@@ -477,24 +485,17 @@ export default function PlotViewerStandalone({ settings }) {
     }
   };
 
-  const handleRoadClick = (road) => {
-    if (viewMode !== '3d') setViewMode('3d');
-    const roadIdx = (WALK_ROADS || []).findIndex(
-      r => r.id === road.id || r.name?.toLowerCase().includes(road.name?.toLowerCase())
-    );
-    setWalkRoadIndex(roadIdx >= 0 ? roadIdx : 0);
-    setWalkProgress(0.12);
-    setCameraPreset('roadWalk');
+  const handleRoadClick = () => {
+    // Road clicks preserve manual overview framing without automatic camera dives
   };
 
   const handleWalkStep = (step) => {
     setWalkProgress(prev => Math.max(0, Math.min(1, prev + step)));
   };
 
-  // Click on park drops camera into park ground walk
+  // Click on park ground preserves manual overview framing without automatic camera dives
   const handleParkClick = () => {
-    if (viewMode !== '3d') setViewMode('3d');
-    setCameraPreset(prev => prev === 'park' ? 'overview' : 'park');
+    // Park clicks preserve manual overview framing without automatic camera dives
   };
 
   const handleToggleParkView = () => {
@@ -590,7 +591,9 @@ export default function PlotViewerStandalone({ settings }) {
         {/* ========================================================== */}
         <div
           ref={mapSectionRef}
-          className="fixed top-0 left-0 w-full z-0 overflow-hidden h-[75vh] select-none touch-none bg-[#E5ECE3]"
+          className={`fixed top-0 left-0 w-full z-0 overflow-hidden select-none touch-none bg-[#E5ECE3] ${
+            isFullscreen ? 'h-full' : 'h-[75vh]'
+          }`}
           style={{ touchAction: 'none' }}
         >
         {/* Floating Top Header (Branding & Search) */}
