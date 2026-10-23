@@ -131,12 +131,12 @@ function CameraController({
         // Start from current animated target if already gliding, or current camera position
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
-        if (currentDist > 12) {
+        if (currentDist > 24) {
           // Slow, gentle forward step (factor: 0.92 = 8% forward glide)
           const factor = 0.92;
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
-            Math.max(6, target.y + (currentPos.y - target.y) * factor),
+            Math.max(10, target.y + (currentPos.y - target.y) * factor),
             target.z + (currentPos.z - target.z) * factor
           );
           targetLook.current.copy(target);
@@ -159,7 +159,8 @@ function CameraController({
         const target = controlsRef.current.target;
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
-        if (currentDist < 260) {
+        // User requirement: "not zooming out as a small particle" -> strictly bounded so master plan stays prominent
+        if (currentDist < 145) {
           // Slow, gentle backward step (factor: 1.09 = 9% backward glide)
           const factor = 1.09;
           targetPos.current.set(
@@ -175,7 +176,7 @@ function CameraController({
       }
     },
     reset: () => {
-      targetPos.current.set(-9, 85, 120);
+      targetPos.current.set(-9, 78, 110);
       targetLook.current.set(-9, 0, 6);
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
@@ -267,11 +268,13 @@ function CameraController({
         onWalkProgressChange(nextProg);
       }
 
-      // Drag left/right to look around slowly and inspect plots on both sides
-      yawRef.current -= dx * 0.0035;
+      // Drag left/right to look around - CLAMPED TO PREVENT 360 SPIN (User requirement: "dont flip 360 digrees")
+      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
+      const baseYaw = road.forwardYaw;
+      yawRef.current = Math.max(baseYaw - 1.25, Math.min(baseYaw + 1.25, yawRef.current - dx * 0.0035));
 
-      // Slight natural vertical pitch
-      pitchRef.current = Math.max(-0.35, Math.min(0.35, pitchRef.current - dy * 0.0006));
+      // Natural vertical pitch clamped to eye level (cannot flip upside down)
+      pitchRef.current = Math.max(-0.18, Math.min(0.20, pitchRef.current - dy * 0.0006));
     };
 
     const handlePointerUp = () => {
@@ -427,7 +430,7 @@ function CameraController({
       animatingRef.current = true;
     } else {
       // Overview preset (default: ~37° isometric perspective matching Plots99 Image 2)
-      targetPos.current.set(-9, 85, 120);
+      targetPos.current.set(-9, 78, 110);
       targetLook.current.set(-9, 0, 6);
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
@@ -454,6 +457,9 @@ function CameraController({
     }
 
     if (cameraPreset === 'roadWalk') {
+      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
+      const baseYaw = road.forwardYaw;
+
       // Slow, continuous keyboard walking forward and backward
       if (keysPressed.current.forward) {
         const nextProg = Math.min(1, progRef.current + delta * 0.035);
@@ -465,15 +471,15 @@ function CameraController({
         progRef.current = nextProg;
         if (onWalkProgressChange) onWalkProgressChange(nextProg);
       }
+      // Turn left/right clamped to road corridor (User requirement: "dont flip 360 digrees")
       if (keysPressed.current.left) {
-        yawRef.current += delta * 0.75;
+        yawRef.current = Math.min(baseYaw + 1.25, yawRef.current + delta * 0.75);
       }
       if (keysPressed.current.right) {
-        yawRef.current -= delta * 0.75;
+        yawRef.current = Math.max(baseYaw - 1.25, yawRef.current - delta * 0.75);
       }
 
       // Direct Responsive Road Walk Camera Control
-      const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
       let tx, ty = road.cameraHeight, tz;
       if (road.axis === 'x') {
         tx = road.startX + (road.endX - road.startX) * progRef.current;
@@ -533,7 +539,7 @@ function CameraController({
       if (keysPressed.current.forward) {
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
-        if (dist > 14) {
+        if (dist > 24) {
           const moveStep = delta * 12; // Slow forward movement rate
           const dir = new THREE.Vector3().subVectors(target, camera.position).normalize();
           camera.position.addScaledVector(dir, moveStep);
@@ -543,7 +549,8 @@ function CameraController({
       if (keysPressed.current.backward) {
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
-        if (dist < 280) {
+        // User requirement: "not zooming out as a small particle" -> clamped to max distance 150
+        if (dist < 150) {
           const moveStep = delta * 12; // Slow backward movement rate
           const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
           camera.position.addScaledVector(dir, moveStep);
@@ -572,10 +579,13 @@ function CameraController({
         ONE: THREE.TOUCH.ROTATE,
         TWO: THREE.TOUCH.DOLLY_PAN
       }}
-      minPolarAngle={Math.PI / 12}
-      maxPolarAngle={Math.PI / 2.15}
-      minDistance={12}
-      maxDistance={280}
+      // Fixed Architectural Viewing Arc (User requirement: "dont flip 360 digrees its not like gaming to play there")
+      minAzimuthAngle={-Math.PI / 3.4} // ~ -53 degrees (cannot spin all the way around)
+      maxAzimuthAngle={Math.PI / 3.4}  // ~ +53 degrees (cannot spin all the way around)
+      minPolarAngle={Math.PI / 3.6}    // ~ 50 degrees (high architectural elevation)
+      maxPolarAngle={Math.PI / 2.45}   // ~ 73 degrees (cannot dip below ground or go upside down)
+      minDistance={22}
+      maxDistance={155}                // Clamped (User requirement: "not zooming out as a small particle")
       enableDamping={true}
       dampingFactor={0.035}
     />
@@ -2078,11 +2088,12 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
               setTilesLoaded((c) => c + 1);
             } catch (e) {}
           };
-          fallback.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=osm`;
+          // Fallback to direct CartoDB Voyager mirror (CORS enabled)
+          fallback.src = `https://a.basemaps.cartocdn.com/rastertiles/voyager/${zoom}/${tx}/${ty}.png`;
         };
 
-        // Try direct Google Maps tiles with sub-second response, fallback to proxy
-        img.src = `https://mt1.google.com/vt/lyrs=m&x=${tx}&y=${ty}&z=${zoom}`;
+        // Primary: Backend tile proxy serving Google Maps roadmap tiles with CORS headers
+        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
       }
     }
   }, [canvas, texture]);
@@ -2170,20 +2181,20 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
 
   // Geographic plane size: 2048px * 2.285m/px = 4680m
   const groundSize = 4680;
-  // Geographic offset aligning Brundavan local (0,0) with its real coordinate on map tiles
-  const shiftX = -447;
-  const shiftZ = 420;
+  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) and Srisailam Highway (X: 75)
+  const shiftX = 581.5;
+  const shiftZ = 149.2;
 
   return (
     <group>
-      {/* 1. Extended Horizon Ground Plane (Infinite margin beyond 4.7km) */}
+      {/* 1. Extended Horizon Ground Plane */}
       <mesh position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[35000, 35000]} />
         <meshBasicMaterial color="#E5EAE0" />
       </mesh>
 
-      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Zoom 15: Srisailam Highway NH-765, Kadthal, Maisigandi) */}
-      <mesh position={[shiftX, -0.08, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Google Maps Roadmap: Srisailam Highway NH-765, Kadthal) */}
+      <mesh position={[shiftX, -0.015, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[groundSize, groundSize]} />
         <meshBasicMaterial
           map={texture || undefined}
@@ -2191,14 +2202,15 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         />
       </mesh>
 
-      {/* 3. Dedicated Venture Green Parcel with Bermuda Turf Texture (User requirement: clean area grass around it) */}
-      <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* 3. Dedicated Venture Green Parcel with Bermuda Turf Texture (Soft grass highlight around venture) */}
+      <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[ventureParcelShape]} />
         <meshStandardMaterial
           map={parcelGrassTexture || undefined}
-          color="#8FCB77"
+          color="#97D67E"
           roughness={0.82}
-          metalness={0.04}
+          transparent={true}
+          opacity={0.35}
         />
       </mesh>
       <Line points={parcelBorderPoints} color="#1E7B34" lineWidth={3.2} />

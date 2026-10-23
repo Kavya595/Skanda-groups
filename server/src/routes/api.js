@@ -28,46 +28,61 @@ router.get('/plots', plotCtrl.getPlots);
 router.get('/plots/stats', plotCtrl.getPlotStats);
 router.get('/plots/:plotNumber', plotCtrl.getPlotDetail);
 
+// In-memory tile cache to serve repeat requests instantly
+const tileCache = new Map();
+
 // Clean Watermark-Free Map Tile Proxy (Google Maps & OpenStreetMap, Zero API Key Required)
 router.get('/tiles/:z/:x/:y.png', async (req, res) => {
   const { z, x, y } = req.params;
   const type = req.query.type || 'google';
+  const cacheKey = `${type}_${z}_${x}_${y}`;
+
+  if (tileCache.has(cacheKey)) {
+    const cached = tileCache.get(cacheKey);
+    res.set({
+      'Content-Type': cached.contentType,
+      'Cache-Control': 'public, max-age=604800, immutable',
+      'Access-Control-Allow-Origin': '*'
+    });
+    return res.send(cached.buffer);
+  }
 
   const urlsToTry = [];
   if (type === 'hybrid' || type === 'satellite') {
     urlsToTry.push(`https://mt1.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}`);
-  } else if (type === 'osm') {
-    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
-    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
-  } else if (type === 'voyager') {
-    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
-    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+    urlsToTry.push(`https://mt2.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}`);
   } else {
-    // Default: CartoDB Voyager / Google Maps / OSM
-    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
-    urlsToTry.push(`https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+    // Default: Google Maps Roadmap (matches 2D view exactly)
     urlsToTry.push(`https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}`);
+    urlsToTry.push(`https://mt2.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}`);
+    urlsToTry.push(`https://a.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`);
   }
 
   for (const tileUrl of urlsToTry) {
     try {
       const response = await fetch(tileUrl, {
+        signal: AbortSignal.timeout(3000),
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
       });
       if (response.ok) {
-        const buffer = await response.arrayBuffer();
+        const buffer = Buffer.from(await response.arrayBuffer());
         const contentType = response.headers.get('content-type') || 'image/png';
+
+        if (tileCache.size < 500) {
+          tileCache.set(cacheKey, { buffer, contentType });
+        }
+
         res.set({
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=604800, immutable',
           'Access-Control-Allow-Origin': '*'
         });
-        return res.send(Buffer.from(buffer));
+        return res.send(buffer);
       }
     } catch {
-      // Continue to fallback
+      // Continue to next mirror
     }
   }
 
