@@ -15,10 +15,9 @@ export const parkData = {
 
 export const layoutRoads = [
   { id: 'ROAD-60-TOP', name: "Proposed 60'-0\" Wide Road (to Maisigandi Temple)", width: '60ft', type: 'arterial', x: 20, y: 20, widthPx: 960, heightPx: 45, orientation: 'horizontal' },
-  { id: 'ROAD-HWY-EAST', name: "Srisailam Highway (NH-765)", width: '100ft+', type: 'highway', x: 990, y: 20, widthPx: 60, heightPx: 670, orientation: 'vertical' },
-  { id: 'ROAD-33-EAST-SERVICE', name: "Proposed 33'-0\" Wide Road (Highway Service)", width: '33ft', type: 'service', x: 940, y: 20, widthPx: 35, heightPx: 670, orientation: 'vertical' },
+  { id: 'ROAD-33-EAST', name: "Proposed 33'-0\" Wide Road", width: '33ft', type: 'arterial', x: 940, y: 20, widthPx: 45, heightPx: 670, orientation: 'vertical' },
   { id: 'ROAD-33-MID', name: "Proposed 33'-0\" Wide Road (Main Internal Boulevard)", width: '33ft', type: 'internal', x: 20, y: 275, widthPx: 920, heightPx: 40, orientation: 'horizontal' },
-  { id: 'ROAD-33-V0', name: "Proposed 33'-0\" Wide Road", width: '33ft', type: 'internal', x: 140, y: 320, widthPx: 30, heightPx: 360, orientation: 'vertical' },
+  { id: 'ROAD-33-V0', name: "Proposed 33'-0\" Wide Road (Between Park & Plots)", width: '33ft', type: 'internal', x: 140, y: 320, widthPx: 30, heightPx: 360, orientation: 'vertical' },
   { id: 'ROAD-33-V1', name: "Proposed 33'-0\" Wide Road", width: '33ft', type: 'internal', x: 375, y: 65, widthPx: 30, heightPx: 615, orientation: 'vertical' },
   { id: 'ROAD-33-V2', name: "Proposed 33'-0\" Wide Road", width: '33ft', type: 'internal', x: 535, y: 65, widthPx: 30, heightPx: 615, orientation: 'vertical' },
   { id: 'ROAD-33-V3', name: "Proposed 33'-0\" Wide Road", width: '33ft', type: 'internal', x: 695, y: 65, widthPx: 30, heightPx: 615, orientation: 'vertical' },

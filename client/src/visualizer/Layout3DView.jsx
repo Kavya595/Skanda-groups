@@ -73,16 +73,28 @@ export const WALK_ROADS = [
     lookAhead: 18
   },
   {
-    id: 'ROAD-HWY-EAST',
-    name: "Srisailam Highway (NH-765)",
-    shortName: "NH-765 Highway",
-    x: 80,
+    id: 'ROAD-33-EAST',
+    name: "33' East Road",
+    shortName: "33' East Road",
+    x: 73.5,
     startZ: -50,
     endZ: 60,
     axis: 'z',
-    cameraHeight: 2.6,
-    forwardYaw: Math.PI, // Facing +Z (Southbound along highway)
-    lookAhead: 22
+    cameraHeight: 2.1,
+    forwardYaw: Math.PI, // Facing +Z (Southbound)
+    lookAhead: 18
+  },
+  {
+    id: 'ROAD-33-V0',
+    name: "33' Avenue 0 (Park Road)",
+    shortName: "Avenue 0",
+    x: -61.5,
+    startZ: 50,
+    endZ: -40,
+    axis: 'z',
+    cameraHeight: 2.1,
+    forwardYaw: 0, // Facing -Z (North toward 60ft road)
+    lookAhead: 16
   }
 ];
 
@@ -1122,12 +1134,12 @@ export function MovingVehicles3D({ animate = true }) {
 
   return (
     <group>
-      {/* 1. Srisailam Highway: White SUV (Southbound) */}
-      <group ref={hwySouthRef} position={[77, 0.05, -25]}>
+      {/* 1. East 33ft Road: White SUV (Southbound) */}
+      <group ref={hwySouthRef} position={[72.5, 0.05, -25]}>
         <Vehicle3D color="#F8FAFC" />
       </group>
-      {/* 2. Srisailam Highway: Emerald Green Sedan (Northbound) */}
-      <group ref={hwyNorthRef} position={[83, 0.05, 35]} rotation={[0, Math.PI, 0]}>
+      {/* 2. East 33ft Road: Emerald Green Sedan (Northbound) */}
+      <group ref={hwyNorthRef} position={[74.5, 0.05, 35]} rotation={[0, Math.PI, 0]}>
         <Vehicle3D color="#059669" />
       </group>
       {/* 3. 60ft Arterial Road: Silver Sedan (Eastbound towards Highway) */}
@@ -1577,19 +1589,31 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
         anchorY="middle"
         fontWeight="bold"
       >
-        60' Road (to Maisigandi Temple)
+        PROP. 60'-0" WIDE ROAD ⟷ MASIGANDI TEMPLE
       </Text>
 
       <Text
-        position={[80, 0.065, 5]}
+        position={[73.5, 0.065, 5]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
-        fontSize={1.8}
+        fontSize={1.6}
         color="#FEF08A"
         anchorX="center"
         anchorY="middle"
         fontWeight="bold"
       >
-        Srisailam Highway (NH-765)
+        PROP. 33'-0" WIDE ROAD
+      </Text>
+
+      <Text
+        position={[-61.5, 0.065, -20]}
+        rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
+        fontSize={1.25}
+        color="#FEF08A"
+        anchorX="center"
+        anchorY="middle"
+        fontWeight="bold"
+      >
+        PROP. 33'-0" WIDE ROAD
       </Text>
 
       <Text
@@ -1601,7 +1625,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
         anchorY="middle"
         fontWeight="bold"
       >
-        33' Main Boulevard
+        PROP. 33'-0" WIDE ROAD
       </Text>
 
       <Text
@@ -1749,10 +1773,10 @@ export function ParkArea3D({ onParkClick }) {
   );
 }
 
-// Grand Entrance Arch connecting Layout to Srisailam Highway Service Road
-export function GrandEntranceArch({ position = [63, 0, 0.5] }) {
+// Grand Entrance Arch connecting Layout to 60' Approach Road from Maisigandi Temple
+export function GrandEntranceArch({ position = [70, 0, -47], rotation = [0, 0, 0] }) {
   return (
-    <group position={position} rotation={[0, Math.PI / 2, 0]}>
+    <group position={position} rotation={rotation}>
       {/* Left Stone Pillar */}
       <mesh position={[-4.0, 2.6, 0]}>
         <boxGeometry args={[0.9, 5.2, 0.9]} />
@@ -1945,13 +1969,13 @@ function paintRegionalKadthalMap(ctx, width, height) {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // 8. Highway Typography along road
+  // 8. Road Typography along East Road
   ctx.save();
   ctx.translate(1300, 580);
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#FEF08A';
   ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('SRISAILAM HIGHWAY (NH-765) ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
   ctx.restore();
 
   ctx.save();
@@ -1959,7 +1983,7 @@ function paintRegionalKadthalMap(ctx, width, height) {
   ctx.rotate(Math.PI / 2);
   ctx.fillStyle = '#FEF08A';
   ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('SRISAILAM HIGHWAY (NH-765) ⬇ TO SRISAILAM', 0, 0);
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬇ TO 4TH PHASE', 0, 0);
   ctx.restore();
 
   // 9. Flyer Location Landmark Badges
@@ -2245,18 +2269,7 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       {/* 5. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
       <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
-      {/* 6. 100 Feet Road 3D Connector connecting Entrance Arch eastward to Srisailam Highway */}
-      <mesh position={[71.5, 0.05, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[17, 10]} />
-        <meshStandardMaterial color="#1E293B" roughness={0.9} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1} />
-      </mesh>
-      {/* 100' Road Center Dashed Line */}
-      <mesh position={[71.5, 0.058, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[17, 0.28]} />
-        <meshBasicMaterial color="#FEF08A" polygonOffset polygonOffsetFactor={-2} polygonOffsetUnits={-2} />
-      </mesh>
-
-      {/* 7. Subtle Ground Landmark Rings for Venture Location */}
+      {/* 6. Subtle Ground Landmark Rings for Venture Location */}
       <group position={[-9, 0.025, 6]}>
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
           <ringGeometry args={[14, 18, 32]} />
@@ -2289,8 +2302,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         </group>
       ))}
 
-      {/* Grand Entrance Arch at Srisailam Highway Service Road Entrance */}
-      <GrandEntranceArch position={[63, 0, 0.5]} />
+      {/* Grand Entrance Arch at North-East 60' Approach Road (no plots before entrance) */}
+      <GrandEntranceArch position={[70, 0, -47]} rotation={[0, 0, 0]} />
     </group>
   );
 }

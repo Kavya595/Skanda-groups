@@ -199,8 +199,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // Inner Lush Grass Lawn
     const parkInnerPoly = [
       [-86.2, -40.2],
-      [-59.8, -40.2],
-      [-59.8, -4.8],
+      [-66.8, -40.2],
+      [-66.8, -4.8],
       [-86.2, -4.8]
     ].map(([x, z]) => localToLatLng(x, z));
 
@@ -212,9 +212,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    const entranceGeo = localToLatLng(63, 0.5);
-
-    // (F) Dedicated Surrounding Green Estate Buffer (Matching Plots99 Image 1)
+    // (F) Dedicated Surrounding Green Estate Buffer (Matching Brochure Boundary)
     const estateBufferLocal = [
       [-132, -72], [-120, -84], [-60, -86], [0, -82], [55, -78], [88, -66],
       [98, -20], [104, 18], [96, 70], [68, 86], [18, 92], [-35, 90],
@@ -230,27 +228,49 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (G) 100 Feet Road Corridor connecting Srisailam Highway directly to Site (from Official Flyer)
-    const road100FtHwyPoint = localToLatLng(80, 0.5);
-    L.polyline([entranceGeo, road100FtHwyPoint], {
-      color: '#F59E0B',
-      weight: 4,
-      opacity: 0.85,
-      interactive: false
-    }).addTo(staticGroup);
+    // (G) Maisigandi Temple Entrance Panel & Approach at North-East Corner
+    const templePanelPos = localToLatLng(82, -35);
+    const templeIcon = L.divIcon({
+      className: 'maisigandi-temple-panel',
+      html: `
+        <div style="
+          background: #FFFBEB;
+          border: 1.5px solid #F59E0B;
+          border-radius: 6px;
+          padding: 4px 8px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          user-select: none;
+        ">
+          <div style="font-size: 16px;">🛕</div>
+          <div style="font-size: 8px; font-weight: 900; color: #DC2626; letter-spacing: 0.5px; white-space: nowrap; margin-top: 2px;">
+            MAISIGANDI TEMPLE
+          </div>
+          <div style="font-size: 6.5px; font-weight: 700; color: #92400E; white-space: nowrap;">
+            ⟵ 60' WIDE ROAD ACCESS
+          </div>
+        </div>
+      `,
+      iconSize: [0, 0]
+    });
+    L.marker(templePanelPos, { icon: templeIcon, interactive: false }).addTo(staticGroup);
 
     // (H) Authentic Regional Landmarks situated on map (Matching Google Maps exact location)
     const flyerLandmarks = [
       {
-        pos: [16.9545, 78.5145], // Sri Maisigandi Maisamma Temple (East near Srisailam Highway)
+        pos: [16.9545, 78.5145], // Sri Maisigandi Maisamma Temple
         title: "Maisigandi Ramalingeswara Temple",
         badge: "🛕 Maisigandi Temple (1 min)",
         style: "background: #78350F; color: #FEF08A; border: 1.5px solid #F59E0B;"
       },
       {
-        pos: [16.9723, 78.5098], // Kadthal Toll Plaza on NH-765 Srisailam Highway
-        title: "Kadthal Toll Plaza (NH-765)",
-        badge: "🛣️ Kadthal Toll Plaza (NH-765)",
+        pos: [16.9723, 78.5098], // Kadthal Toll Plaza
+        title: "Kadthal Toll Plaza",
+        badge: "🛣️ Kadthal Toll Plaza",
         style: "background: #0F172A; color: #FEF08A; border: 1.5px solid #F59E0B;"
       },
       {
@@ -272,9 +292,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         style: "background: #0F172A; color: #E2E8F0; border: 1.5px solid #64748B;"
       },
       {
-        pos: [16.9780, 78.5135], // Towards Hyderabad & ORR Exit 14 via Srisailam Highway
+        pos: [16.9780, 78.5135], // Towards Hyderabad & ORR Exit 14
         title: "To Hyderabad & ORR Exit 14",
-        badge: "⬆ Srisailam Highway &bull; To ORR Exit 14 & Hyderabad",
+        badge: "⬆ To ORR Exit 14 & Hyderabad",
         style: "background: #B45309; color: #FFFFFF; border: 1px solid #FDE68A;"
       }
     ];
@@ -327,9 +347,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     const annotationsGroup = L.layerGroup().addTo(map);
 
     // --- (A) PARK INNER LAWN TYPOGRAPHY (Strictly constrained within lawn polygon boundaries) ---
-    // Inner lawn coordinates: [-86.2, -40.2] to [-59.8, -4.8], centroid: [-73.0, -22.5]
+    // Inner lawn coordinates: [-86.2, -40.2] to [-66.8, -4.8], centroid: [-76.5, -22.5]
     const ptParkTL = map.latLngToLayerPoint(localToLatLng(-86.2, -40.2));
-    const ptParkBR = map.latLngToLayerPoint(localToLatLng(-59.8, -4.8));
+    const ptParkBR = map.latLngToLayerPoint(localToLatLng(-66.8, -4.8));
     const parkPixelW = Math.abs(ptParkBR.x - ptParkTL.x);
     const parkPixelH = Math.abs(ptParkBR.y - ptParkTL.y);
 
@@ -377,7 +397,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         `;
       }
 
-      const parkCenterGeo = localToLatLng(-73.0, -22.5);
+      const parkCenterGeo = localToLatLng(-76.5, -22.5);
       const parkIcon = L.divIcon({
         className: 'custom-park-typography',
         html: `
@@ -511,36 +531,16 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       L.marker(localToLatLng(-12.5, 0.5), { icon: r33Icon, interactive: false }).addTo(annotationsGroup);
     }
 
-    // 3. Srisailam Highway (NH-765)
-    const ptLeftHwy = map.latLngToLayerPoint(localToLatLng(74, 5));
-    const ptRightHwy = map.latLngToLayerPoint(localToLatLng(90, 5));
-    const wHwy = Math.abs(ptRightHwy.x - ptLeftHwy.x);
-    const ptTopHwy = map.latLngToLayerPoint(localToLatLng(82, -56));
-    const ptBottomHwy = map.latLngToLayerPoint(localToLatLng(82, 66));
-    const hwyLength = Math.abs(ptBottomHwy.y - ptTopHwy.y);
-
-    // Strictly ensure text fits inside highway length and thickness, and hide when zoomed out
-    if (currentZoom >= 18.5 && wHwy >= 12 && hwyLength >= 80) {
-      const maxHwyW = Math.min(Math.floor(hwyLength * 0.70), 160);
-      let textHwy = "SRISAILAM HIGHWAY (NH-765)";
-      let fontHwy = '8px';
-      if (hwyLength < 130 || currentZoom < 19.3) {
-        textHwy = "SRISAILAM HWY (NH-765)";
-        fontHwy = '7px';
-      }
-      if (hwyLength < 95 || currentZoom < 18.8) {
-        textHwy = "NH-765";
-        fontHwy = '6px';
-      }
-
-      const hwyLabel = L.divIcon({
-        className: 'hwy-road-label',
+    // 3. Proposed 33'-0" East Road (Brochure: PROP. 33'-0" WIDE ROAD)
+    if (currentZoom >= 18.2) {
+      const eastRoadLabel = L.divIcon({
+        className: 'east-33-road-label',
         html: `
           <div style="
-            width: ${maxHwyW}px;
-            max-width: ${maxHwyW}px;
+            width: 140px;
+            max-width: 140px;
             color: #FEF08A;
-            font-size: ${fontHwy};
+            font-size: ${currentZoom >= 19.3 ? '8px' : '6.5px'};
             font-weight: 800;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -552,35 +552,63 @@ const Layout2DView = React.forwardRef(function Layout2DView({
             transform: translate(-50%, -50%) rotate(90deg);
             pointer-events: none;
             user-select: none;
-          ">${textHwy}</div>
+          ">PROP. 33'-0" WIDE ROAD</div>
         `,
         iconSize: [0, 0]
       });
-      L.marker(localToLatLng(82, 5), { icon: hwyLabel, interactive: false }).addTo(annotationsGroup);
+      L.marker(localToLatLng(73.5, 7.75), { icon: eastRoadLabel, interactive: false }).addTo(annotationsGroup);
     }
 
-    // 4. Grand Entrance Arch (Only when zoomed in enough >= 18.8, placed on the approach margin)
-    if (currentZoom >= 18.8) {
-      const entranceGeo = localToLatLng(66.5, 0.5);
+    // 4. Proposed 33'-0" Road between Park and Plots (Road V0)
+    if (currentZoom >= 18.2) {
+      const parkRoadLabel = L.divIcon({
+        className: 'park-v0-road-label',
+        html: `
+          <div style="
+            width: 120px;
+            max-width: 120px;
+            color: #FEF08A;
+            font-size: ${currentZoom >= 19.3 ? '7.5px' : '6px'};
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+            transform: translate(-50%, -50%) rotate(90deg);
+            pointer-events: none;
+            user-select: none;
+          ">PROP. 33'-0" WIDE ROAD</div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(localToLatLng(-61.5, -22.5), { icon: parkRoadLabel, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // 5. Venture Approach & Entrance Portal (North-East 60' Road junction, completely clear of all plots)
+    if (currentZoom >= 18.6) {
+      const entranceGeo = localToLatLng(73.5, -47);
       const archIcon = L.divIcon({
         className: 'entrance-arch-icon',
         html: `
           <div style="
             background: #0F172A;
             color: #FEF08A;
-            border: 1px solid #F59E0B;
-            border-radius: 3px;
-            padding: 1.5px 4.5px;
-            font-size: ${currentZoom >= 19.5 ? '7px' : '6px'};
-            font-weight: 800;
-            letter-spacing: 0.4px;
+            border: 1.5px solid #F59E0B;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: ${currentZoom >= 19.5 ? '7.5px' : '6.5px'};
+            font-weight: 900;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.45);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
             white-space: nowrap;
             transform: translate(-50%, -50%);
             pointer-events: none;
           ">
-            ⛩️ ENTRANCE ARCH
+            ⛩️ MAIN ENTRANCE PORTAL
           </div>
         `,
         iconSize: [0, 0]
@@ -588,7 +616,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       L.marker(entranceGeo, { icon: archIcon, interactive: false }).addTo(annotationsGroup);
     }
 
-    // 5. 4th Phase road openings labels (Brochure stubs)
+    // 6. 4th Phase road openings labels (Brochure stubs)
     if (currentZoom >= 18.5) {
       const phase4Positions = [
         [-61.5, 53.5],
@@ -620,31 +648,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         });
         L.marker(localToLatLng(px, pz), { icon: p4Marker, interactive: false }).addTo(annotationsGroup);
       });
-    }
-
-    // 6. 100' Connecting Road label (Only when zoomed in >= 19.2)
-    if (currentZoom >= 19.2) {
-      const road100FtLabel = L.divIcon({
-        className: 'r100-label',
-        html: `
-          <div style="
-            background: #1E293B;
-            color: #FEF08A;
-            border: 1px solid #F59E0B;
-            border-radius: 4px;
-            padding: 1px 4px;
-            font-size: 7px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-          ">100' CONNECTING ROAD</div>
-        `,
-        iconSize: [0, 0]
-      });
-      L.marker(localToLatLng(74, 0.5), { icon: road100FtLabel, interactive: false }).addTo(annotationsGroup);
     }
 
     return () => {
@@ -748,59 +751,62 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           });
           L.marker(plot.geoCenter, { icon: activeIcon, interactive: false, zIndexOffset: 1000 }).addTo(plotsGroup);
         } else {
-          // Proportionally scaled typography strictly contained within plot bounds
-          const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 6) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
-          let fontSize = '6.5px';
-          let showDims = false;
+          // Authentic Brochure Plot Circles: <Number> on top, horizontal dividing line, <Area> below
+          const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 8) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
+          let circleSize = 15;
+          let fontSize = '5.5px';
+          let areaFontSize = '4.5px';
 
           if (currentZoom >= 19.8) {
-            fontSize = isNarrow ? '8.5px' : '10px';
-            showDims = !isNarrow;
+            circleSize = isNarrow ? 20 : 22;
+            fontSize = isNarrow ? '7.5px' : '8.5px';
+            areaFontSize = isNarrow ? '6px' : '7px';
           } else if (currentZoom >= 18.8) {
-            fontSize = isNarrow ? '7px' : '8.5px';
-          } else if (currentZoom >= 18.2) {
-            fontSize = isNarrow ? '5.5px' : '6.5px';
+            circleSize = isNarrow ? 16 : 18;
+            fontSize = isNarrow ? '6.5px' : '7px';
+            areaFontSize = isNarrow ? '5px' : '5.8px';
           }
-
-          const numColor = plot.status === 'sold' ? '#991B1B' : '#0F172A';
-          const dimText = plot.dimensions ? plot.dimensions.split('x')[0].trim() : `${plot.areaSqYds} sq.yd`;
 
           const numIcon = L.divIcon({
             className: `plot-num-icon-${plot.plotNumber}`,
             html: `
               <div style="
-                text-align: center;
-                line-height: 1.1;
+                width: ${circleSize}px;
+                height: ${circleSize}px;
+                border-radius: 50%;
+                border: 1px solid #0F172A;
+                background: rgba(255, 255, 255, 0.45);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
                 transform: translate(-50%, -50%);
                 pointer-events: none;
                 user-select: none;
-                white-space: nowrap;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.15);
               ">
                 <div style="
                   font-size: ${fontSize};
-                  font-weight: 800;
-                  color: ${numColor};
-                  letter-spacing: -0.3px;
-                  text-shadow:
-                    -1px -1px 0 #FFFFFF,
-                     1px -1px 0 #FFFFFF,
-                    -1px  1px 0 #FFFFFF,
-                     1px  1px 0 #FFFFFF;
+                  font-weight: 900;
+                  color: #0F172A;
+                  line-height: 1;
                 ">${plot.plotNumber}</div>
-                ${showDims ? `
-                  <div style="
-                    font-size: 6px;
-                    font-weight: 700;
-                    color: #475569;
-                    margin-top: 1px;
-                    letter-spacing: -0.2px;
-                    text-shadow: 0 1px 2px #FFFFFF;
-                  ">${dimText}</div>
-                ` : ''}
+                <div style="
+                  width: 80%;
+                  height: 0.8px;
+                  background: #0F172A;
+                  margin: 0.8px 0;
+                "></div>
+                <div style="
+                  font-size: ${areaFontSize};
+                  font-weight: 800;
+                  color: #0F172A;
+                  line-height: 1;
+                ">${plot.areaSqYds}</div>
               </div>
             `,
-            iconSize: [24, 14],
-            iconAnchor: [12, 7]
+            iconSize: [circleSize, circleSize],
+            iconAnchor: [circleSize / 2, circleSize / 2]
           });
           L.marker(plot.geoCenter, { icon: numIcon, interactive: false }).addTo(plotsGroup);
         }
@@ -850,41 +856,41 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     const vehiclesGroup = L.layerGroup().addTo(map);
 
     const vehicleConfigs = [
-      // 1. Red Sport Sedan: Srisailam Highway NH-765 (Southbound)
+      // 1. Red Sport Sedan: East 33ft Road (Southbound)
       {
-        id: 'hwy-s',
+        id: 'east-s',
         color: '#DC2626',
-        start: [78, -55],
-        end: [78, 65],
+        start: [73.5, -50],
+        end: [73.5, 65],
         heading: 90, // Southbound
         speed: 0.0028,
         offset: 0
       },
-      // 2. Pearl White SUV: Srisailam Highway NH-765 (Northbound)
+      // 2. Pearl White SUV: East 33ft Road (Northbound)
       {
-        id: 'hwy-n',
+        id: 'east-n',
         color: '#FFFFFF',
-        start: [82, 65],
-        end: [82, -55],
+        start: [73.5, 65],
+        end: [73.5, -50],
         heading: 270, // Northbound
         speed: 0.0032,
         offset: 0.48
       },
-      // 3. Royal Blue Sedan: 60ft Road (Eastbound towards Highway)
+      // 3. Royal Blue Sedan: 60ft Road (Eastbound towards Maisigandi Temple)
       {
         id: 'r60-e',
         color: '#2563EB',
         start: [-88, -44.5],
-        end: [72, -44.5],
+        end: [75, -44.5],
         heading: 0, // Eastbound
         speed: 0.0022,
         offset: 0.15
       },
-      // 4. Midnight Slate Car: 60ft Road (Westbound towards Maisigandi)
+      // 4. Midnight Slate Car: 60ft Road (Westbound from Maisigandi Temple)
       {
         id: 'r60-w',
         color: '#1E293B',
-        start: [72, -49.5],
+        start: [75, -49.5],
         end: [-88, -49.5],
         heading: 180, // Westbound
         speed: 0.0024,
