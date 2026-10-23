@@ -145,27 +145,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           interactive: false
         }).addTo(staticGroup);
 
-        // Highway Label
-        const hwyCenter = localToLatLng(road.center[0], road.center[1]);
-        const hwyLabel = L.divIcon({
-          className: 'hwy-road-label',
-          html: `
-            <div style="
-              color: #FEF08A;
-              font-size: 8.5px;
-              font-weight: 800;
-              letter-spacing: 0.8px;
-              text-transform: uppercase;
-              text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-              white-space: nowrap;
-              transform: translate(-50%, -50%) rotate(90deg);
-              pointer-events: none;
-            ">SRISAILAM HIGHWAY (NH-765)</div>
-          `,
-          iconSize: [0, 0]
-        });
-        L.marker(hwyCenter, { icon: hwyLabel, interactive: false }).addTo(staticGroup);
-
       } else if (isArterial) {
         // White Dashed Centerline for 60ft Arterial Road
         const [p0, p1, p2, p3] = road.polygon;
@@ -178,27 +157,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           interactive: false
         }).addTo(staticGroup);
 
-        // 60ft Road Label
-        const r60Center = localToLatLng(road.center[0], road.center[1]);
-        const r60Label = L.divIcon({
-          className: 'r60-road-label',
-          html: `
-            <div style="
-              color: #F8FAFC;
-              font-size: 8px;
-              font-weight: 800;
-              letter-spacing: 0.6px;
-              text-transform: uppercase;
-              text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-              white-space: nowrap;
-              transform: translate(-50%, -50%);
-              pointer-events: none;
-            ">PROP. 60'-0" WIDE ROAD &nbsp;&hArr;&nbsp; MASIGANDI TEMPLE</div>
-          `,
-          iconSize: [0, 0]
-        });
-        L.marker(r60Center, { icon: r60Label, interactive: false }).addTo(staticGroup);
-
       } else if (road.id === 'ROAD-33-MID') {
         // White Dashed Centerline for Central Boulevard
         const [p0, p1, p2, p3] = road.polygon;
@@ -210,60 +168,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           dashArray: '5, 5',
           interactive: false
         }).addTo(staticGroup);
-
-        // 33ft Main Boulevard Typography
-        const centerGeo = localToLatLng(road.center[0], road.center[1]);
-        const roadLabel = L.divIcon({
-          className: 'custom-road-label',
-          html: `
-            <div style="
-              color: rgba(255, 255, 255, 0.95);
-              font-size: 8px;
-              font-weight: 800;
-              letter-spacing: 0.6px;
-              text-transform: uppercase;
-              text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-              white-space: nowrap;
-              transform: translate(-50%, -50%);
-              pointer-events: none;
-            ">33' MAIN BOULEVARD</div>
-          `,
-          iconSize: [0, 0]
-        });
-        L.marker(centerGeo, { icon: roadLabel, interactive: false }).addTo(staticGroup);
       }
-    });
-
-    // 4th Phase road openings labels matching brochure
-    const phase4Positions = [
-      [-61.5, 53.5], // Road V0 opening to 4th Phase
-      [-32.5, 65.5], // Road V1 opening to 4th Phase
-      [-3.5, 65.5],  // Road V2 opening to 4th Phase
-      [25.5, 65.5],  // Road V3 opening to 4th Phase
-      [53.5, 69.0]   // Road V4 opening to 4th Phase
-    ];
-    phase4Positions.forEach(([px, pz]) => {
-      const p4Marker = L.divIcon({
-        className: 'phase4-stub-label',
-        html: `
-          <div style="
-            background: rgba(15, 23, 42, 0.88);
-            color: #E2E8F0;
-            border: 1px solid #64748B;
-            border-radius: 3px;
-            padding: 1px 5px;
-            font-size: 7.5px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-          ">&darr; 4th Phase</div>
-        `,
-        iconSize: [0, 0]
-      });
-      L.marker(localToLatLng(px, pz), { icon: p4Marker, interactive: false }).addTo(staticGroup);
     });
 
     // (D) Clean Ac. 0.758 Central Park (Jogging Track & Emerald Lawn, No Tree Dots)
@@ -292,30 +197,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       fillOpacity: 0.98,
       interactive: false
     }).addTo(staticGroup);
-
-    // Park Center Typography directly on grass
-    const parkCenterGeo = localToLatLng(parkData.center[0], parkData.center[1]);
-    const parkBadge = L.divIcon({
-      className: 'custom-park-typography',
-      html: `
-        <div style="
-          text-align: center;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-          user-select: none;
-        ">
-          <div style="font-size: 10px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.7); letter-spacing: 0.5px;">
-            SITE RESERVED FOR OPEN SPACE (PARK)
-          </div>
-          <div style="font-size: 7.5px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.7);">
-            Ac. 0.758 cents &bull; 209'-9" x 169'-3" x 201'-6"
-          </div>
-        </div>
-      `,
-      iconSize: [140, 26],
-      iconAnchor: [70, 13]
-    });
-    L.marker(parkCenterGeo, { icon: parkBadge, interactive: false }).addTo(staticGroup);
 
     // (E) Grand Entrance Arch Symbol connecting to Service Road
     const entranceGeo = localToLatLng(63, 0.5);
@@ -368,28 +249,6 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       opacity: 0.85,
       interactive: false
     }).addTo(staticGroup);
-
-    const road100FtLabel = L.divIcon({
-      className: 'r100-label',
-      html: `
-        <div style="
-          background: #1E293B;
-          color: #FEF08A;
-          border: 1px solid #F59E0B;
-          border-radius: 4px;
-          padding: 1.5px 4.5px;
-          font-size: 7px;
-          font-weight: 800;
-          letter-spacing: 0.5px;
-          white-space: nowrap;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-        ">100' CONNECTING ROAD</div>
-      `,
-      iconSize: [0, 0]
-    });
-    L.marker(localToLatLng(71, 0.5), { icon: road100FtLabel, interactive: false }).addTo(staticGroup);
 
     // (H) Authentic Flyer Regional Landmarks situated on map (Zero API Key Required)
     const flyerLandmarks = [
@@ -464,6 +323,301 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     };
   }, []); // Run ONCE on mount
+
+  // 1b. Render Zoom-Responsive Master Plan Annotations (Park Typography, Road Labels, Stubs strictly bounded)
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    const annotationsGroup = L.layerGroup().addTo(map);
+
+    // --- (A) PARK INNER LAWN TYPOGRAPHY (Strictly constrained within lawn polygon boundaries) ---
+    // Inner lawn coordinates: [-86.2, -40.2] to [-59.8, -4.8], centroid: [-73.0, -22.5]
+    const ptParkTL = map.latLngToLayerPoint(localToLatLng(-86.2, -40.2));
+    const ptParkBR = map.latLngToLayerPoint(localToLatLng(-59.8, -4.8));
+    const parkPixelW = Math.abs(ptParkBR.x - ptParkTL.x);
+    const parkPixelH = Math.abs(ptParkBR.y - ptParkTL.y);
+
+    if (parkPixelW >= 20 && parkPixelH >= 18) {
+      const maxParkW = Math.max(16, Math.floor(parkPixelW * 0.90));
+      const maxParkH = Math.max(14, Math.floor(parkPixelH * 0.90));
+
+      let parkContent = '';
+      if (parkPixelW >= 125) {
+        // High zoom (Zoom >= 19.5): Complete DTCP Sanctioned specifications
+        parkContent = `
+          <div style="font-size: 8.5px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.85); letter-spacing: 0.3px; line-height: 1.15; margin-bottom: 2px;">
+            SITE RESERVED FOR<br/>OPEN SPACE (PARK)
+          </div>
+          <div style="font-size: 6.8px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.85); line-height: 1.15;">
+            Ac. 0.758 cents<br/>209'-9" &times; 169'-3" &times; 201'-6"
+          </div>
+        `;
+      } else if (parkPixelW >= 70) {
+        // Medium zoom (Zoom 18.5 - 19.4): Clear Park title and acreage
+        parkContent = `
+          <div style="font-size: 7.2px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 3px rgba(0,0,0,0.85); letter-spacing: 0.2px; line-height: 1.15; margin-bottom: 2px;">
+            OPEN SPACE (PARK)
+          </div>
+          <div style="font-size: 6.2px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.85); line-height: 1.1;">
+            Ac. 0.758 cents
+          </div>
+        `;
+      } else if (parkPixelW >= 38) {
+        // Moderate zoom (Zoom 17.5 - 18.4): Compact 2-line title strictly inside
+        parkContent = `
+          <div style="font-size: 6px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.85); line-height: 1.1;">
+            PARK
+          </div>
+          <div style="font-size: 5px; font-weight: 700; color: #FEF08A; text-shadow: 0 1px 2px rgba(0,0,0,0.85); line-height: 1.0;">
+            0.758 Ac
+          </div>
+        `;
+      } else {
+        // Small zoom / minimized (Zoom < 17.5): Micro badge strictly inside green lawn
+        parkContent = `
+          <div style="font-size: 5px; font-weight: 800; color: #FFFFFF; text-shadow: 0 1px 2px rgba(0,0,0,0.85); line-height: 1.0;">
+            PARK
+          </div>
+        `;
+      }
+
+      const parkCenterGeo = localToLatLng(-73.0, -22.5);
+      const parkIcon = L.divIcon({
+        className: 'custom-park-typography',
+        html: `
+          <div style="
+            width: ${maxParkW}px;
+            height: ${maxParkH}px;
+            max-width: ${maxParkW}px;
+            max-height: ${maxParkH}px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding: 1px 2px;
+            user-select: none;
+            pointer-events: none;
+          ">
+            ${parkContent}
+          </div>
+        `,
+        iconSize: [maxParkW, maxParkH],
+        iconAnchor: [maxParkW / 2, maxParkH / 2]
+      });
+      L.marker(parkCenterGeo, { icon: parkIcon, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // --- (B) ROAD LABELS (Bounded to asphalt geometry & curb margins) ---
+    // 1. Proposed 60'-0" Wide Arterial Road
+    const ptTop60 = map.latLngToLayerPoint(localToLatLng(-9, -52));
+    const ptBottom60 = map.latLngToLayerPoint(localToLatLng(-9, -42));
+    const h60 = Math.abs(ptBottom60.y - ptTop60.y);
+    const ptLeft60 = map.latLngToLayerPoint(localToLatLng(-88, -47));
+    const ptRight60 = map.latLngToLayerPoint(localToLatLng(70, -47));
+    const w60 = Math.abs(ptRight60.x - ptLeft60.x);
+
+    if (h60 >= 11) {
+      const labelW60 = Math.min(Math.floor(w60 * 0.85), 280);
+      const labelH60 = Math.max(Math.floor(h60 * 0.82), 8);
+
+      let text60 = "PROP. 60'-0\" WIDE ROAD ⇔ MASIGANDI TEMPLE";
+      let font60 = '8px';
+      if (h60 < 18) {
+        text60 = "60' ROAD";
+        font60 = '6px';
+      } else if (h60 < 26) {
+        text60 = "60' ROAD ⇔ MASIGANDI TEMPLE";
+        font60 = '7px';
+      }
+
+      const r60Icon = L.divIcon({
+        className: 'r60-road-label',
+        html: `
+          <div style="
+            width: ${labelW60}px;
+            height: ${labelH60}px;
+            max-width: ${labelW60}px;
+            max-height: ${labelH60}px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: #F8FAFC;
+            font-size: ${font60};
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+            pointer-events: none;
+            user-select: none;
+          ">${text60}</div>
+        `,
+        iconSize: [labelW60, labelH60],
+        iconAnchor: [labelW60 / 2, labelH60 / 2]
+      });
+      L.marker(localToLatLng(-9, -47), { icon: r60Icon, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // 2. Proposed 33'-0" Central Boulevard (Internal Main Road)
+    const ptTop33 = map.latLngToLayerPoint(localToLatLng(-12.5, -3));
+    const ptBottom33 = map.latLngToLayerPoint(localToLatLng(-12.5, 4));
+    const h33 = Math.abs(ptBottom33.y - ptTop33.y);
+    const ptLeft33 = map.latLngToLayerPoint(localToLatLng(-88, 0.5));
+    const ptRight33 = map.latLngToLayerPoint(localToLatLng(63, 0.5));
+    const w33 = Math.abs(ptRight33.x - ptLeft33.x);
+
+    if (h33 >= 10.5) {
+      const labelW33 = Math.min(Math.floor(w33 * 0.75), 180);
+      const labelH33 = Math.max(Math.floor(h33 * 0.82), 8);
+
+      let text33 = "33' MAIN BOULEVARD";
+      let font33 = '7.5px';
+      if (h33 < 15) {
+        text33 = "33' ROAD";
+        font33 = '5.5px';
+      } else if (h33 < 22) {
+        text33 = "33' MAIN ROAD";
+        font33 = '6.5px';
+      }
+
+      const r33Icon = L.divIcon({
+        className: 'custom-road-label',
+        html: `
+          <div style="
+            width: ${labelW33}px;
+            height: ${labelH33}px;
+            max-width: ${labelW33}px;
+            max-height: ${labelH33}px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: ${font33};
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+            pointer-events: none;
+            user-select: none;
+          ">${text33}</div>
+        `,
+        iconSize: [labelW33, labelH33],
+        iconAnchor: [labelW33 / 2, labelH33 / 2]
+      });
+      L.marker(localToLatLng(-12.5, 0.5), { icon: r33Icon, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // 3. Srisailam Highway (NH-765)
+    const ptLeftHwy = map.latLngToLayerPoint(localToLatLng(74, 5));
+    const ptRightHwy = map.latLngToLayerPoint(localToLatLng(90, 5));
+    const wHwy = Math.abs(ptRightHwy.x - ptLeftHwy.x);
+
+    if (wHwy >= 12) {
+      let textHwy = "SRISAILAM HIGHWAY (NH-765)";
+      let fontHwy = '8.5px';
+      if (wHwy < 18) {
+        textHwy = "NH-765";
+        fontHwy = '6.5px';
+      } else if (wHwy < 28) {
+        textHwy = "SRISAILAM HWY (NH-765)";
+        fontHwy = '7.5px';
+      }
+
+      const hwyLabel = L.divIcon({
+        className: 'hwy-road-label',
+        html: `
+          <div style="
+            color: #FEF08A;
+            font-size: ${fontHwy};
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.95);
+            white-space: nowrap;
+            transform: translate(-50%, -50%) rotate(90deg);
+            pointer-events: none;
+            user-select: none;
+          ">${textHwy}</div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(localToLatLng(82, 5), { icon: hwyLabel, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // 4. 4th Phase road openings labels (Brochure stubs)
+    if (currentZoom >= 18) {
+      const phase4Positions = [
+        [-61.5, 53.5],
+        [-32.5, 65.5],
+        [-3.5, 65.5],
+        [25.5, 65.5],
+        [53.5, 69.0]
+      ];
+      phase4Positions.forEach(([px, pz]) => {
+        const p4Marker = L.divIcon({
+          className: 'phase4-stub-label',
+          html: `
+            <div style="
+              background: rgba(15, 23, 42, 0.88);
+              color: #E2E8F0;
+              border: 1px solid #64748B;
+              border-radius: 3px;
+              padding: 1px 4px;
+              font-size: ${currentZoom >= 19 ? '7.5px' : '6.5px'};
+              font-weight: 800;
+              letter-spacing: 0.4px;
+              white-space: nowrap;
+              box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+              transform: translate(-50%, -50%);
+              pointer-events: none;
+            ">&darr; 4th Phase</div>
+          `,
+          iconSize: [0, 0]
+        });
+        L.marker(localToLatLng(px, pz), { icon: p4Marker, interactive: false }).addTo(annotationsGroup);
+      });
+    }
+
+    // 5. 100' Connecting Road label
+    if (currentZoom >= 17.5) {
+      const road100FtLabel = L.divIcon({
+        className: 'r100-label',
+        html: `
+          <div style="
+            background: #1E293B;
+            color: #FEF08A;
+            border: 1px solid #F59E0B;
+            border-radius: 4px;
+            padding: 1px 4px;
+            font-size: ${currentZoom >= 19 ? '7.5px' : '6.5px'};
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+          ">100' CONNECTING ROAD</div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(localToLatLng(71, 0.5), { icon: road100FtLabel, interactive: false }).addTo(annotationsGroup);
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        map.removeLayer(annotationsGroup);
+      }
+    };
+  }, [currentZoom]);
 
   // 2. Render Dynamic Interactive Plots Layer (Clean, Attractive Layout Blocks)
   useEffect(() => {
@@ -706,22 +860,22 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         speed: 0.0024,
         offset: 0.62
       },
-      // 5. Golden Amber Sedan: 33ft Central Boulevard (Eastbound)
+      // 5. Golden Amber Sedan: 33ft Central Boulevard (Eastbound Lane)
       {
         id: 'r33-e',
         color: '#D97706',
-        start: [-75, 1.8],
-        end: [60, 1.8],
+        start: [-75, 2.25],
+        end: [60, 2.25],
         heading: 0, // Eastbound
         speed: 0.0018,
         offset: 0.35
       },
-      // 6. Emerald Green Hatchback: 33ft Central Boulevard (Westbound)
+      // 6. Emerald Green Hatchback: 33ft Central Boulevard (Westbound Lane)
       {
         id: 'r33-w',
         color: '#059669',
-        start: [60, -1.0],
-        end: [-75, -1.0],
+        start: [60, -1.25],
+        end: [-75, -1.25],
         heading: 180, // Westbound
         speed: 0.002,
         offset: 0.82
@@ -738,7 +892,15 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       }
     ];
 
-    const carScale = currentZoom >= 20 ? 1.5 : currentZoom >= 19 ? 1.25 : 1.0;
+    const carScale = currentZoom >= 20 ? 1.25 : currentZoom >= 19 ? 0.95 : currentZoom >= 18 ? 0.65 : currentZoom >= 17.5 ? 0.45 : 0;
+
+    if (carScale <= 0) {
+      return () => {
+        if (mapInstanceRef.current && vehiclesGroup) {
+          map.removeLayer(vehiclesGroup);
+        }
+      };
+    }
 
     const markers = vehicleConfigs.map(cfg => {
       const startLatLng = localToLatLng(cfg.start[0], cfg.start[1]);
@@ -809,7 +971,11 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         .leaflet-control-attribution {
           display: none !important;
         }
-        .entrance-arch-icon, .custom-park-typography, .hwy-road-label, .r60-road-label, .custom-road-label, .green-buffer-label {
+        .leaflet-div-icon {
+          background: transparent !important;
+          border: none !important;
+        }
+        .entrance-arch-icon, .custom-park-typography, .hwy-road-label, .r60-road-label, .custom-road-label, .green-buffer-label, .phase4-stub-label, .r100-label {
           pointer-events: none !important;
         }
       `}</style>
