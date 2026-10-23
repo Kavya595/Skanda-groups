@@ -121,16 +121,16 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       color: 'transparent',
       weight: 0,
       fillColor: '#86EFAC',
-      fillOpacity: 0.35,
+      fillOpacity: 0.65,
       interactive: false
     }).addTo(staticGroup);
 
-    // (A2) Venture Inner Ground Turf Base (Exact layout shape)
+    // (A2) Venture Inner Ground Turf Base (Exact layout shape with solid vibrant real grass green)
     L.polygon(SITE_BOUNDARY_GEO, {
       color: 'transparent',
       weight: 0,
-      fillColor: '#4ADE80',
-      fillOpacity: 0.25,
+      fillColor: '#68BA56',
+      fillOpacity: 0.92,
       interactive: false
     }).addTo(staticGroup);
 

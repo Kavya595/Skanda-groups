@@ -2034,8 +2034,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
       <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <shapeGeometry args={[layoutGrassBufferShape]} />
         <meshStandardMaterial
-          color="#9BD89E"
-          roughness={0.88}
+          color="#7EC86E"
+          roughness={0.82}
           metalness={0.02}
         />
       </mesh>
@@ -2045,8 +2045,8 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         <shapeGeometry args={[layoutParcelShape]} />
         <meshStandardMaterial
           map={parcelGrassTexture || undefined}
-          color="#8FD192"
-          roughness={0.82}
+          color="#68BA56"
+          roughness={0.78}
         />
       </mesh>
 
