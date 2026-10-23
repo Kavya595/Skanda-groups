@@ -10,7 +10,7 @@ import {
   statusColors
 } from './masterPlanData';
 
-// Real Google Maps Roadmap & Satellite tile providers (Zero API Key Required)
+// Real Google Maps Roadmap tile provider (Zero API Key Required)
 export const GOOGLE_MAP_LAYER = {
   url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
   attribution: '&copy; Google Maps &bull; Kadthal, Srisailam Highway',
@@ -18,17 +18,9 @@ export const GOOGLE_MAP_LAYER = {
   maxZoom: 21
 };
 
-export const GOOGLE_SATELLITE_LAYER = {
-  url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-  attribution: '&copy; Google Satellite &bull; Kadthal, Srisailam Highway',
-  subdomains: ['0', '1', '2', '3'],
-  maxZoom: 21
-};
-
 export const MAP_LAYERS = {
-  satellite: GOOGLE_SATELLITE_LAYER,
-  roadmap: GOOGLE_MAP_LAYER,
-  google: GOOGLE_MAP_LAYER
+  google: GOOGLE_MAP_LAYER,
+  roadmap: GOOGLE_MAP_LAYER
 };
 
 const Layout2DView = React.forwardRef(function Layout2DView({
@@ -42,12 +34,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 }, ref) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
-  const tileLayerRef = useRef(null);
   const plotLayersRef = useRef({});
   const onSelectPlotRef = useRef(onSelectPlot);
-
-  // Default to satellite view matching user's Google Maps link and aerial view
-  const [mapType, setMapType] = useState('satellite');
 
   // Keep onSelectPlotRef updated without triggering map re-initialization
   useEffect(() => {
@@ -56,19 +44,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
 
-  // Dynamically switch base layer between Satellite and Roadmap
-  useEffect(() => {
-    if (!mapInstanceRef.current || !tileLayerRef.current) return;
-    const targetLayer = mapType === 'roadmap' ? GOOGLE_MAP_LAYER : GOOGLE_SATELLITE_LAYER;
-    tileLayerRef.current.setUrl(targetLayer.url);
-  }, [mapType]);
-
   // Expose imperative methods for external toolbar
   React.useImperativeHandle(ref, () => ({
     zoomIn: () => mapInstanceRef.current?.zoomIn(),
     zoomOut: () => mapInstanceRef.current?.zoomOut(),
     reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
-    setMapType: (type) => setMapType(type)
+    setMapType: () => {}
   }));
 
   // 1. Initialize Leaflet Map and Permanent Base Master Plan Layers (Surrounding Greenery, Boundary, Roads, Park)
@@ -90,14 +71,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
     mapInstanceRef.current = map;
 
-    // Add base tile layer (Google Satellite by default)
-    const initialLayer = mapType === 'roadmap' ? GOOGLE_MAP_LAYER : GOOGLE_SATELLITE_LAYER;
-    const tileLayer = L.tileLayer(initialLayer.url, {
-      attribution: initialLayer.attribution,
-      subdomains: initialLayer.subdomains,
-      maxZoom: initialLayer.maxZoom
+    // Add base tile layer (Clean Google Maps Roadmap)
+    L.tileLayer(GOOGLE_MAP_LAYER.url, {
+      attribution: GOOGLE_MAP_LAYER.attribution,
+      subdomains: GOOGLE_MAP_LAYER.subdomains,
+      maxZoom: GOOGLE_MAP_LAYER.maxZoom
     }).addTo(map);
-    tileLayerRef.current = tileLayer;
 
     // Track zoom updates for responsive typography scaling
     const updateZoom = () => setCurrentZoom(map.getZoom());
@@ -218,32 +197,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (E) Grand Entrance Arch Symbol connecting to Service Road
     const entranceGeo = localToLatLng(63, 0.5);
-    const archIcon = L.divIcon({
-      className: 'entrance-arch-icon',
-      html: `
-        <div style="
-          background: #0F172A;
-          color: #FEF08A;
-          border: 1.5px solid #F59E0B;
-          border-radius: 4px;
-          padding: 2px 5px;
-          font-size: 7.5px;
-          font-weight: 800;
-          letter-spacing: 0.5px;
-          text-transform: uppercase;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.45);
-          white-space: nowrap;
-          transform: translate(-50%, -50%) rotate(90deg);
-          pointer-events: none;
-        ">
-          ⛩️ ENTRANCE ARCH
-        </div>
-      `,
-      iconSize: [0, 0]
-    });
-    L.marker(entranceGeo, { icon: archIcon, interactive: false }).addTo(staticGroup);
 
     // (F) Dedicated Surrounding Green Estate Buffer (Matching Plots99 Image 1)
     const estateBufferLocal = [
@@ -546,29 +500,40 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     const ptLeftHwy = map.latLngToLayerPoint(localToLatLng(74, 5));
     const ptRightHwy = map.latLngToLayerPoint(localToLatLng(90, 5));
     const wHwy = Math.abs(ptRightHwy.x - ptLeftHwy.x);
+    const ptTopHwy = map.latLngToLayerPoint(localToLatLng(82, -56));
+    const ptBottomHwy = map.latLngToLayerPoint(localToLatLng(82, 66));
+    const hwyLength = Math.abs(ptBottomHwy.y - ptTopHwy.y);
 
-    if (wHwy >= 12) {
+    // Strictly ensure text fits inside highway length and thickness, and hide when zoomed out
+    if (currentZoom >= 18.5 && wHwy >= 12 && hwyLength >= 80) {
+      const maxHwyW = Math.min(Math.floor(hwyLength * 0.70), 160);
       let textHwy = "SRISAILAM HIGHWAY (NH-765)";
-      let fontHwy = '8.5px';
-      if (wHwy < 18) {
-        textHwy = "NH-765";
-        fontHwy = '6.5px';
-      } else if (wHwy < 28) {
+      let fontHwy = '8px';
+      if (hwyLength < 130 || currentZoom < 19.3) {
         textHwy = "SRISAILAM HWY (NH-765)";
-        fontHwy = '7.5px';
+        fontHwy = '7px';
+      }
+      if (hwyLength < 95 || currentZoom < 18.8) {
+        textHwy = "NH-765";
+        fontHwy = '6px';
       }
 
       const hwyLabel = L.divIcon({
         className: 'hwy-road-label',
         html: `
           <div style="
+            width: ${maxHwyW}px;
+            max-width: ${maxHwyW}px;
             color: #FEF08A;
             font-size: ${fontHwy};
             font-weight: 800;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
             text-shadow: 0 1px 3px rgba(0,0,0,0.95);
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
             transform: translate(-50%, -50%) rotate(90deg);
             pointer-events: none;
             user-select: none;
@@ -579,8 +544,37 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       L.marker(localToLatLng(82, 5), { icon: hwyLabel, interactive: false }).addTo(annotationsGroup);
     }
 
-    // 4. 4th Phase road openings labels (Brochure stubs)
-    if (currentZoom >= 18) {
+    // 4. Grand Entrance Arch (Only when zoomed in enough >= 18.8, placed on the approach margin)
+    if (currentZoom >= 18.8) {
+      const entranceGeo = localToLatLng(66.5, 0.5);
+      const archIcon = L.divIcon({
+        className: 'entrance-arch-icon',
+        html: `
+          <div style="
+            background: #0F172A;
+            color: #FEF08A;
+            border: 1px solid #F59E0B;
+            border-radius: 3px;
+            padding: 1.5px 4.5px;
+            font-size: ${currentZoom >= 19.5 ? '7px' : '6px'};
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.45);
+            white-space: nowrap;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+          ">
+            ⛩️ ENTRANCE ARCH
+          </div>
+        `,
+        iconSize: [0, 0]
+      });
+      L.marker(entranceGeo, { icon: archIcon, interactive: false }).addTo(annotationsGroup);
+    }
+
+    // 5. 4th Phase road openings labels (Brochure stubs)
+    if (currentZoom >= 18.5) {
       const phase4Positions = [
         [-61.5, 53.5],
         [-32.5, 65.5],
@@ -613,8 +607,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       });
     }
 
-    // 5. 100' Connecting Road label
-    if (currentZoom >= 17.5) {
+    // 6. 100' Connecting Road label (Only when zoomed in >= 19.2)
+    if (currentZoom >= 19.2) {
       const road100FtLabel = L.divIcon({
         className: 'r100-label',
         html: `
@@ -624,7 +618,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
             border: 1px solid #F59E0B;
             border-radius: 4px;
             padding: 1px 4px;
-            font-size: ${currentZoom >= 19 ? '7.5px' : '6.5px'};
+            font-size: 7px;
             font-weight: 800;
             letter-spacing: 0.5px;
             white-space: nowrap;
@@ -635,7 +629,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         `,
         iconSize: [0, 0]
       });
-      L.marker(localToLatLng(71, 0.5), { icon: road100FtLabel, interactive: false }).addTo(annotationsGroup);
+      L.marker(localToLatLng(74, 0.5), { icon: road100FtLabel, interactive: false }).addTo(annotationsGroup);
     }
 
     return () => {
@@ -710,7 +704,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       layersMap[plot.plotNumber] = poly;
 
       // Clean Plot Number Typography (matching Plots99 Screenshots)
-      const shouldShowNumber = isVisible;
+      // When zoomed out (< 18.2), HIDE individual numbers so they never clutter or spill out of boundaries (Fix for Image 1)
+      const shouldShowNumber = isVisible && (currentZoom >= 18.2 || isSelected || isTargetMatch);
 
       if (shouldShowNumber) {
         if (isSelected || isTargetMatch) {
@@ -738,16 +733,18 @@ const Layout2DView = React.forwardRef(function Layout2DView({
           });
           L.marker(plot.geoCenter, { icon: activeIcon, interactive: false, zIndexOffset: 1000 }).addTo(plotsGroup);
         } else {
-          // Proportionally scaled typography based on zoom level & plot dimensions
+          // Proportionally scaled typography strictly contained within plot bounds
           const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 6) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
-          let fontSize = isNarrow ? '7px' : '8px';
+          let fontSize = '6.5px';
           let showDims = false;
 
           if (currentZoom >= 19.8) {
             fontSize = isNarrow ? '8.5px' : '10px';
             showDims = !isNarrow;
           } else if (currentZoom >= 18.8) {
-            fontSize = isNarrow ? '7.5px' : '9px';
+            fontSize = isNarrow ? '7px' : '8.5px';
+          } else if (currentZoom >= 18.2) {
+            fontSize = isNarrow ? '5.5px' : '6.5px';
           }
 
           const numColor = plot.status === 'sold' ? '#991B1B' : '#0F172A';
@@ -1006,40 +1003,10 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         }
       `}</style>
 
-      {/* Floating Satellite / Roadmap Layer Selector */}
-      <div className="absolute top-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-md p-1 rounded-2xl border border-slate-700/80 shadow-2xl flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => setMapType('satellite')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            mapType === 'satellite'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-300 hover:text-white'
-          }`}
-          title="Switch to Google Satellite View"
-        >
-          <span>🛰️</span>
-          <span>Satellite</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setMapType('roadmap')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-            mapType === 'roadmap'
-              ? 'bg-emerald-600 text-white shadow-xs'
-              : 'text-slate-300 hover:text-white'
-          }`}
-          title="Switch to Google Roadmap View"
-        >
-          <span>🗺️</span>
-          <span>Map</span>
-        </button>
-      </div>
-
       {/* Leaflet Map DOM Target */}
       <div
         ref={mapContainerRef}
-        className="w-full h-full bg-[#1A1F18] z-0"
+        className="w-full h-full bg-[#E5ECE3] z-0"
         style={{ cursor: 'grab' }}
       />
     </div>
