@@ -118,7 +118,7 @@ function CameraController({
         }
       }
       if (controlsRef.current) {
-        const factor = 0.72;
+        const factor = 0.88; // Small, gentle zoom-in step (prevents large jumps)
         const target = controlsRef.current.target;
         camera.position.x = target.x + (camera.position.x - target.x) * factor;
         camera.position.y = target.y + (camera.position.y - target.y) * factor;
@@ -136,13 +136,13 @@ function CameraController({
       }
       if (controlsRef.current) {
         const dist = camera.position.distanceTo(controlsRef.current.target);
-        if (dist > 260 && cameraPreset !== 'mapView') {
+        if (dist > 320 && cameraPreset !== 'mapView') {
           if (onSwitchToMapView) {
             onSwitchToMapView();
             return;
           }
         }
-        const factor = 1.35;
+        const factor = 1.14; // Small, gentle zoom-out step (prevents large jumps)
         const target = controlsRef.current.target;
         camera.position.x = target.x + (camera.position.x - target.x) * factor;
         camera.position.y = target.y + (camera.position.y - target.y) * factor;
@@ -395,6 +395,7 @@ function CameraController({
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
+      zoomSpeed={0.65}
       mouseButtons={{
         LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,

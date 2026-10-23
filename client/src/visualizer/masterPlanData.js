@@ -31,9 +31,9 @@ export const LAYOUT_BOUNDS = {
 export const SITE_GEO = {
   center: [16.9530655, 78.4918533], // [lat, lng] Exact Google Maps pin (16°57'11.1"N, 78°29'30.6"E)
   pin: [16.9530689, 78.4918425],
-  zoom: 18.5,
-  minZoom: 16.5, // Strict zoom limit prevents layout collapsing into a clumsy tiny smudge
-  maxZoom: 21,
+  zoom: 18.2, // Balanced initial zoom fitting the entire layout with comfortable margins
+  minZoom: 14.5, // Smooth zoom out allows viewing surrounding area without blocking
+  maxZoom: 20.5, // Prevents over-extending too large on zoom in
   locality: "Chellampalle, Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",
   state: "Telangana",

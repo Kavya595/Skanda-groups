@@ -44,10 +44,18 @@ const Layout2DView = React.forwardRef(function Layout2DView({
 
   const [currentZoom, setCurrentZoom] = useState(SITE_GEO.zoom);
 
-  // Expose imperative methods for external toolbar
+  // Expose imperative methods for external toolbar with smooth, gentle zoom steps
   React.useImperativeHandle(ref, () => ({
-    zoomIn: () => mapInstanceRef.current?.zoomIn(),
-    zoomOut: () => mapInstanceRef.current?.zoomOut(),
+    zoomIn: () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.zoomIn(0.35);
+      }
+    },
+    zoomOut: () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.zoomOut(0.35);
+      }
+    },
     reset: () => mapInstanceRef.current?.setView(SITE_GEO.center, SITE_GEO.zoom, { animate: true }),
     setMapType: () => {}
   }));
@@ -65,6 +73,13 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       zoom: SITE_GEO.zoom,
       minZoom: SITE_GEO.minZoom,
       maxZoom: SITE_GEO.maxZoom,
+      zoomSnap: 0.2,             // Smooth fractional zoom levels (no jarring jumps)
+      zoomDelta: 0.35,            // Small, gradual steps per button click
+      wheelPxPerZoomLevel: 140,   // Smooth mouse wheel zoom rate
+      scrollWheelZoom: true,
+      touchZoom: true,
+      doubleClickZoom: true,
+      zoomAnimation: true,
       zoomControl: false,
       attributionControl: false
     });
