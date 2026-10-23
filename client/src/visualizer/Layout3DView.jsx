@@ -103,12 +103,13 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
+  const animRate = useRef(2.0); // Slower, continuous gliding walk feel for zoom transitions
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
   const lastAzimuthRef = useRef(0);
   const wheelOutAccum = useRef(0);
 
-  // Expose smooth zoomIn / zoomOut / reset to external toolbars
+  // Expose smooth, slow gliding zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
     zoomIn: () => {
       if (cameraPreset === 'mapView') {
@@ -118,12 +119,21 @@ function CameraController({
         }
       }
       if (controlsRef.current) {
-        const factor = 0.88; // Small, gentle zoom-in step (prevents large jumps)
         const target = controlsRef.current.target;
-        camera.position.x = target.x + (camera.position.x - target.x) * factor;
-        camera.position.y = target.y + (camera.position.y - target.y) * factor;
-        camera.position.z = target.z + (camera.position.z - target.z) * factor;
-        controlsRef.current.update();
+        // Start from current animated target if already gliding, or current camera position
+        const currentPos = animatingRef.current ? targetPos.current : camera.position;
+        const currentDist = currentPos.distanceTo(target);
+        if (currentDist > 12) {
+          const factor = 0.86; // Small, gentle step
+          targetPos.current.set(
+            target.x + (currentPos.x - target.x) * factor,
+            Math.max(6, target.y + (currentPos.y - target.y) * factor),
+            target.z + (currentPos.z - target.z) * factor
+          );
+          targetLook.current.copy(target);
+          animRate.current = 1.9; // Slow, continuous walk/glide speed
+          animatingRef.current = true;
+        }
       }
     },
     zoomOut: () => {
@@ -135,24 +145,26 @@ function CameraController({
         }
       }
       if (controlsRef.current) {
-        const dist = camera.position.distanceTo(controlsRef.current.target);
-        if (dist > 320 && cameraPreset !== 'mapView') {
-          if (onSwitchToMapView) {
-            onSwitchToMapView();
-            return;
-          }
-        }
-        const factor = 1.14; // Small, gentle zoom-out step (prevents large jumps)
         const target = controlsRef.current.target;
-        camera.position.x = target.x + (camera.position.x - target.x) * factor;
-        camera.position.y = target.y + (camera.position.y - target.y) * factor;
-        camera.position.z = target.z + (camera.position.z - target.z) * factor;
-        controlsRef.current.update();
+        const currentPos = animatingRef.current ? targetPos.current : camera.position;
+        const currentDist = currentPos.distanceTo(target);
+        if (currentDist < 260) {
+          const factor = 1.16; // Small, gentle step
+          targetPos.current.set(
+            target.x + (currentPos.x - target.x) * factor,
+            target.y + (currentPos.y - target.y) * factor,
+            target.z + (currentPos.z - target.z) * factor
+          );
+          targetLook.current.copy(target);
+          animRate.current = 1.9; // Slow, continuous walk/glide speed
+          animatingRef.current = true;
+        }
       }
     },
     reset: () => {
       targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
+      animRate.current = 3.2;
       animatingRef.current = true;
     }
   }));
@@ -374,12 +386,13 @@ function CameraController({
         controlsRef.current.target.set(lx, ly, lz);
       }
     } else if (animatingRef.current && controlsRef.current) {
-      const step = Math.min(delta * 4.2, 1);
+      const rate = animRate.current || 2.0;
+      const step = Math.min(delta * rate, 1);
       camera.position.lerp(targetPos.current, step);
       controlsRef.current.target.lerp(targetLook.current, step);
       controlsRef.current.update();
 
-      if (camera.position.distanceTo(targetPos.current) < 0.22) {
+      if (camera.position.distanceTo(targetPos.current) < 0.12) {
         animatingRef.current = false;
         if (onResetComplete) onResetComplete();
       }
@@ -395,7 +408,7 @@ function CameraController({
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
-      zoomSpeed={0.65}
+      zoomSpeed={0.32}
       mouseButtons={{
         LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,
@@ -408,9 +421,9 @@ function CameraController({
       minPolarAngle={Math.PI / 12}
       maxPolarAngle={Math.PI / 2.15}
       minDistance={10}
-      maxDistance={2800}
+      maxDistance={320}
       enableDamping={true}
-      dampingFactor={0.07}
+      dampingFactor={0.045}
     />
   );
 }
