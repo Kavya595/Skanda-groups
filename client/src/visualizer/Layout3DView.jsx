@@ -62,7 +62,7 @@ export const WALK_ROADS = [
   },
   {
     id: 'ROAD-60-TOP',
-    name: "60' Arterial Road (to Maisigandi Temple)",
+    name: "60' Arterial Road",
     shortName: "60' Arterial",
     startX: -86,
     endX: 70,
@@ -1589,7 +1589,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
         anchorY="middle"
         fontWeight="bold"
       >
-        PROP. 60'-0" WIDE ROAD ⟷ MASIGANDI TEMPLE
+        PROP. 60'-0" WIDE ROAD
       </Text>
 
       <Text
@@ -1605,7 +1605,7 @@ export function ConnectedRoadNetwork({ onRoadClick }) {
       </Text>
 
       <Text
-        position={[-61.5, 0.065, -20]}
+        position={[-32.5, 0.065, -20]}
         rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
         fontSize={1.25}
         color="#FEF08A"
@@ -1987,17 +1987,7 @@ function paintRegionalKadthalMap(ctx, width, height) {
   ctx.restore();
 
   // 9. Flyer Location Landmark Badges
-  // (A) Maisigandi Ramalingeswara Temple
-  ctx.fillStyle = '#78350F';
-  ctx.fillRect(1370, 805, 235, 36);
-  ctx.strokeStyle = '#F59E0B';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1370, 805, 235, 36);
-  ctx.fillStyle = '#FEF08A';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('🛕 Maisigandi Temple (1 min)', 1380, 829);
-
-  // (B) Kadthal Municipality & Mandal Hq
+  // (A) Kadthal Municipality & Mandal Hq
   ctx.fillStyle = '#0F172A';
   ctx.fillRect(660, 460, 260, 36);
   ctx.strokeStyle = '#64748B';
@@ -2242,32 +2232,15 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         />
       </mesh>
 
-      {/* 3. Dedicated Venture Green Parcel with Bermuda Turf Texture (Soft grass highlight around venture) */}
-      <mesh position={[0, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <shapeGeometry args={[ventureParcelShape]} />
+      {/* 3. Natural Seamless Green Grass Field around and under the Venture (No harsh boundary lines) */}
+      <mesh position={[-5, 0.015, 8]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[260, 220]} />
         <meshStandardMaterial
-          map={parcelGrassTexture || undefined}
-          color="#97D67E"
-          roughness={0.82}
-          transparent={true}
-          opacity={0.35}
+          color="#9BD89E"
+          roughness={0.88}
+          metalness={0.02}
         />
       </mesh>
-      <Line points={parcelBorderPoints} color="#1E7B34" lineWidth={3.2} />
-
-      {/* Perimeter trees along the venture parcel boundary */}
-      {parcelTrees.map(([tx, tz], i) => (
-        <PerimeterCanopyTree key={`ptree-${i}`} position={[tx, 0.015, tz]} scale={1.15} />
-      ))}
-
-      {/* 4. DTCP Sanctioned Layout Compound Base Shape (#A2DC8F) */}
-      <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <shapeGeometry args={[compoundShape]} />
-        <meshStandardMaterial color="#A2DC8F" roughness={0.8} metalness={0.05} />
-      </mesh>
-
-      {/* 5. DTCP Layout Compound Perimeter Fencing Line (#15803D) */}
-      <Line points={fencePoints} color="#15803D" lineWidth={3.5} />
 
       {/* 6. Subtle Ground Landmark Rings for Venture Location */}
       <group position={[-9, 0.025, 6]}>

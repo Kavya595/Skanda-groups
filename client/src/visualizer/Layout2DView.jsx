@@ -115,20 +115,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
-    // (A) DTCP Sanctioned Layout Boundary Polygon (Exact cuts matching brochure)
+    // (A) Natural Green Grass Base for Venture Ground
     L.polygon(SITE_BOUNDARY_GEO, {
-      color: '#15803D',
-      weight: 3.5,
-      fillColor: '#F0FDF4',
-      fillOpacity: 0.35,
-      interactive: false
-    }).addTo(staticGroup);
-
-    // Boundary White Accent Outer Line
-    L.polyline(SITE_BOUNDARY_GEO.concat([SITE_BOUNDARY_GEO[0]]), {
-      color: '#FFFFFF',
-      weight: 1.8,
-      dashArray: '6, 4',
+      color: 'transparent',
+      weight: 0,
+      fillColor: '#86EFAC',
+      fillOpacity: 0.3,
       interactive: false
     }).addTo(staticGroup);
 
@@ -199,8 +191,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // Inner Lush Grass Lawn
     const parkInnerPoly = [
       [-86.2, -40.2],
-      [-66.8, -40.2],
-      [-66.8, -4.8],
+      [-37.8, -40.2],
+      [-37.8, -4.8],
       [-86.2, -4.8]
     ].map(([x, z]) => localToLatLng(x, z));
 
@@ -212,61 +204,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (F) Dedicated Surrounding Green Estate Buffer (Matching Brochure Boundary)
-    const estateBufferLocal = [
-      [-132, -72], [-120, -84], [-60, -86], [0, -82], [55, -78], [88, -66],
-      [98, -20], [104, 18], [96, 70], [68, 86], [18, 92], [-35, 90],
-      [-88, 88], [-118, 76], [-134, 20], [-134, -35]
-    ];
-    const estateBufferGeo = estateBufferLocal.map(([x, z]) => localToLatLng(x, z));
-    L.polygon(estateBufferGeo, {
-      color: '#16A34A',
-      weight: 1.8,
-      fillColor: '#86EFAC',
-      fillOpacity: 0.22,
-      dashArray: '4, 4',
-      interactive: false
-    }).addTo(staticGroup);
-
-    // (G) Maisigandi Temple Entrance Panel & Approach at North-East Corner
-    const templePanelPos = localToLatLng(82, -35);
-    const templeIcon = L.divIcon({
-      className: 'maisigandi-temple-panel',
-      html: `
-        <div style="
-          background: #FFFBEB;
-          border: 1.5px solid #F59E0B;
-          border-radius: 6px;
-          padding: 4px 8px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-          user-select: none;
-        ">
-          <div style="font-size: 16px;">🛕</div>
-          <div style="font-size: 8px; font-weight: 900; color: #DC2626; letter-spacing: 0.5px; white-space: nowrap; margin-top: 2px;">
-            MAISIGANDI TEMPLE
-          </div>
-          <div style="font-size: 6.5px; font-weight: 700; color: #92400E; white-space: nowrap;">
-            ⟵ 60' WIDE ROAD ACCESS
-          </div>
-        </div>
-      `,
-      iconSize: [0, 0]
-    });
-    L.marker(templePanelPos, { icon: templeIcon, interactive: false }).addTo(staticGroup);
-
-    // (H) Authentic Regional Landmarks situated on map (Matching Google Maps exact location)
+    // (H) Curated Regional Landmarks situated on map (Matching Google Maps exact location)
     const flyerLandmarks = [
-      {
-        pos: [16.9545, 78.5145], // Sri Maisigandi Maisamma Temple
-        title: "Maisigandi Ramalingeswara Temple",
-        badge: "🛕 Maisigandi Temple (1 min)",
-        style: "background: #78350F; color: #FEF08A; border: 1.5px solid #F59E0B;"
-      },
       {
         pos: [16.9723, 78.5098], // Kadthal Toll Plaza
         title: "Kadthal Toll Plaza",
@@ -397,7 +336,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         `;
       }
 
-      const parkCenterGeo = localToLatLng(-76.5, -22.5);
+      const parkCenterGeo = localToLatLng(-62.0, -22.5);
       const parkIcon = L.divIcon({
         className: 'custom-park-typography',
         html: `
@@ -439,13 +378,13 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       const labelW60 = Math.min(Math.floor(w60 * 0.85), 280);
       const labelH60 = Math.max(Math.floor(h60 * 0.82), 8);
 
-      let text60 = "PROP. 60'-0\" WIDE ROAD ⇔ MASIGANDI TEMPLE";
+      let text60 = "PROP. 60'-0\" WIDE ROAD";
       let font60 = '8px';
       if (h60 < 18) {
         text60 = "60' ROAD";
         font60 = '6px';
       } else if (h60 < 26) {
-        text60 = "60' ROAD ⇔ MASIGANDI TEMPLE";
+        text60 = "PROP. 60'-0\" WIDE ROAD";
         font60 = '7px';
       }
 
@@ -559,7 +498,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       L.marker(localToLatLng(73.5, 7.75), { icon: eastRoadLabel, interactive: false }).addTo(annotationsGroup);
     }
 
-    // 4. Proposed 33'-0" Road between Park and Plots (Road V0)
+    // 4. Proposed 33'-0" Road between Park and Plots (Road V1)
     if (currentZoom >= 18.2) {
       const parkRoadLabel = L.divIcon({
         className: 'park-v0-road-label',
@@ -584,7 +523,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         `,
         iconSize: [0, 0]
       });
-      L.marker(localToLatLng(-61.5, -22.5), { icon: parkRoadLabel, interactive: false }).addTo(annotationsGroup);
+      L.marker(localToLatLng(-32.5, -22.5), { icon: parkRoadLabel, interactive: false }).addTo(annotationsGroup);
     }
 
     // 5. Venture Approach & Entrance Portal (North-East 60' Road junction, completely clear of all plots)
