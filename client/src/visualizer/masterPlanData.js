@@ -25,17 +25,19 @@ export const LAYOUT_BOUNDS = {
 /**
  * Real-World Geographic Alignment at Kadthal, Srisailam Highway (NH-765)
  * Location: Chellampalle, Maisigandi Temple Road, Kadthal, Ranga Reddy Dist, Telangana
- * Exact Google Maps Coordinates: 16°57'11.1"N 78°29'30.6"E (16.953069, 78.491842)
+ * Exact Google Maps Coordinates: 16°57'11.1"N 78°29'30.6"E (16.9530655, 78.4918533)
  * DTCP Approval: TLP NO. 87/2024/H | TS RERA: PO2400009081
  */
 export const SITE_GEO = {
-  center: [16.953069, 78.491842], // [lat, lng] Exact Google Maps pin (16°57'11.1"N, 78°29'30.6"E)
-  zoom: 18,
+  center: [16.9530655, 78.4918533], // [lat, lng] Exact Google Maps pin (16°57'11.1"N, 78°29'30.6"E)
+  pin: [16.9530689, 78.4918425],
+  zoom: 18.5,
   minZoom: 10,
   maxZoom: 21,
   locality: "Chellampalle, Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",
-  state: "Telangana"
+  state: "Telangana",
+  mapsUrl: "https://www.google.com/maps/place//@16.9530655,78.4918533,52m/data=!3m1!1e3!4m6!1m5!3m4!2zMTbCsDU3JzExLjEiTiA3OMKwMjknMzAuNiJF!8m2!3d16.9530689!4d78.4918425"
 };
 
 // Coordinate projection from local (x, z) meters to [lat, lng]
@@ -727,13 +729,13 @@ export const REGIONAL_LANDMARKS = [
     distance: '0 km',
     time: '0 min',
     direction: 'At Site (Chellampalle, Kadthal)',
-    coordinates: [16.953069, 78.491842],
+    coordinates: [16.9530655, 78.4918533],
     threePos: [0, 0, 0],
     icon: '🏡',
     color: '#16A34A',
     badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
     desc: "DTCP & TS RERA Sanctioned Gated Layout (96 Plots, Ac. 0.758 Park, Srisailam Highway).",
-    mapsUrl: 'https://www.google.com/maps/place/16%C2%B057%2711.1%22N+78%C2%B029%2730.6%22E/@16.953069,78.491842,17z'
+    mapsUrl: 'https://www.google.com/maps/place//@16.9530655,78.4918533,52m/data=!3m1!1e3!4m6!1m5!3m4!2zMTbCsDU3JzExLjEiTiA3OMKwMjknMzAuNiJF!8m2!3d16.9530689!4d78.4918425'
   },
   {
     id: 'LM-MAISIGANDI',
