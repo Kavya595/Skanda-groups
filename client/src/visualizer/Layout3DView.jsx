@@ -1945,6 +1945,8 @@ function paintRegionalKadthalMap(ctx, width, height) {
 
 // Module-level cached texture for 3D regional map
 let regionalMapTextureCache = null;
+let googleTilesLoaded = false;
+
 export function getRegionalMapTexture() {
   if (typeof document === 'undefined') return null;
   if (regionalMapTextureCache) return regionalMapTextureCache;
@@ -1964,6 +1966,44 @@ export function getRegionalMapTexture() {
   tex.magFilter = THREE.LinearFilter;
   tex.needsUpdate = true;
   regionalMapTextureCache = tex;
+
+  // Background Google Maps roadmap tiles load centered on 16.9530689, 78.4918425
+  if (!googleTilesLoaded) {
+    googleTilesLoaded = true;
+    const zoom = 15;
+    const minTx = 23527;
+    const minTy = 14816;
+    let pending = 16;
+
+    for (let dy = 0; dy < 4; dy++) {
+      for (let dx = 0; dx < 4; dx++) {
+        const tx = minTx + dx;
+        const ty = minTy + dy;
+        const cx = dx * 512;
+        const cy = dy * 512;
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            ctx.drawImage(img, cx, cy, 512, 512);
+          } catch (e) {}
+          pending--;
+          if (pending === 0) {
+            tex.needsUpdate = true;
+          }
+        };
+        img.onerror = () => {
+          pending--;
+          if (pending === 0) {
+            tex.needsUpdate = true;
+          }
+        };
+        img.src = `/api/tiles/${zoom}/${tx}/${ty}.png?type=google`;
+      }
+    }
+  }
+
   return tex;
 }
 
@@ -2009,9 +2049,9 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
 
   // Geographic plane size: 2048px * 2.285m/px = 4680m
   const groundSize = 4680;
-  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) and Srisailam Highway (X: 75)
-  const shiftX = 581.5;
-  const shiftZ = 149.2;
+  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) at 16.9530689, 78.4918425
+  const shiftX = 582.7;
+  const shiftZ = 149.7;
 
   return (
     <group>

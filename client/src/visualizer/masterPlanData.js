@@ -29,15 +29,15 @@ export const LAYOUT_BOUNDS = {
  * DTCP Approval: TLP NO. 87/2024/H | TS RERA: PO2400009081
  */
 export const SITE_GEO = {
-  center: [16.9530655, 78.4918533], // [lat, lng] Exact Google Maps pin (16°57'11.1"N, 78°29'30.6"E)
+  center: [16.9530689, 78.4918425], // [lat, lng] Exact Google Maps pin requested by user (16.9530689, 78.4918425)
   pin: [16.9530689, 78.4918425],
-  zoom: 18.2, // Balanced initial zoom fitting the entire layout with comfortable margins
+  zoom: 17, // User explicitly specified &z=17
   minZoom: 12.0, // Smooth manual zoom out allows viewing regional map where layout is a small particle
   maxZoom: 20.5, // Prevents over-extending too large on zoom in
   locality: "Chellampalle, Kadthal, Srisailam Highway, Hyderabad",
   pinCode: "509358",
   state: "Telangana",
-  mapsUrl: "https://www.google.com/maps/place//@16.9530655,78.4918533,52m/data=!3m1!1e3!4m6!1m5!3m4!2zMTbCsDU3JzExLjEiTiA3OMKwMjknMzAuNiJF!8m2!3d16.9530689!4d78.4918425"
+  mapsUrl: "https://www.google.com/maps?q=16.9530689,78.4918425&z=17&hl=en"
 };
 
 // Coordinate projection from local (x, z) meters to [lat, lng]
