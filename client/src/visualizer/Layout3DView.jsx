@@ -117,7 +117,7 @@ function CameraController({
     right: false
   });
 
-  // Expose smooth, slow gliding zoomIn / zoomOut / reset to external toolbars
+  // Expose smooth, responsive zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
     zoomIn: () => {
       if (cameraPreset === 'mapView') {
@@ -128,21 +128,13 @@ function CameraController({
       }
       if (controlsRef.current) {
         const target = controlsRef.current.target;
-        // Start from current animated target if already gliding, or current camera position
-        const currentPos = animatingRef.current ? targetPos.current : camera.position;
-        const currentDist = currentPos.distanceTo(target);
-        if (currentDist > 12) {
-          // Slow, gentle forward step (factor: 0.90 = 10% forward glide)
-          const factor = 0.90;
-          targetPos.current.set(
-            target.x + (currentPos.x - target.x) * factor,
-            Math.max(4, target.y + (currentPos.y - target.y) * factor),
-            target.z + (currentPos.z - target.z) * factor
-          );
-          targetLook.current.copy(target);
-          currentLook.current.copy(target);
-          animRate.current = 1.0; // Slow, continuous forward glide
-          animatingRef.current = true;
+        const offset = new THREE.Vector3().subVectors(camera.position, target);
+        const dist = offset.length();
+        if (dist > 8) {
+          // Direct, smooth forward zoom step (22% inward)
+          offset.multiplyScalar(0.78);
+          camera.position.copy(target).add(offset);
+          controlsRef.current.update();
         }
       }
     },
@@ -157,26 +149,19 @@ function CameraController({
       }
       if (controlsRef.current) {
         const target = controlsRef.current.target;
-        const currentPos = animatingRef.current ? targetPos.current : camera.position;
-        const currentDist = currentPos.distanceTo(target);
+        const offset = new THREE.Vector3().subVectors(camera.position, target);
+        const dist = offset.length();
         // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
-        if (currentDist < 460) {
-          // Slow, gentle backward step (factor: 1.12 = 12% backward glide)
-          const factor = 1.12;
-          targetPos.current.set(
-            target.x + (currentPos.x - target.x) * factor,
-            target.y + (currentPos.y - target.y) * factor,
-            target.z + (currentPos.z - target.z) * factor
-          );
-          targetLook.current.copy(target);
-          currentLook.current.copy(target);
-          animRate.current = 1.0; // Slow, continuous backward glide
-          animatingRef.current = true;
+        if (dist < 2600) {
+          // Direct, smooth backward zoom step (28% outward)
+          offset.multiplyScalar(1.28);
+          camera.position.copy(target).add(offset);
+          controlsRef.current.update();
         }
       }
     },
     reset: () => {
-      targetPos.current.set(-9, 78, 110);
+      targetPos.current.set(-9, 85, 120);
       targetLook.current.set(-9, 0, 6);
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
@@ -261,7 +246,7 @@ function CameraController({
       lastPos.current = { x: e.clientX, y: e.clientY };
 
       // Slow, steady forward and backward dragging (USER REQUIREMENT: "slow forward going and backward going for 3d")
-      const moveDelta = -dy * 0.00065;
+      const moveDelta = -dy * 0.0012;
       const nextProg = Math.max(0, Math.min(1, progRef.current + moveDelta));
       progRef.current = nextProg;
       if (onWalkProgressChange) {
@@ -350,7 +335,7 @@ function CameraController({
         const dy = e.touches[0].clientY - e.touches[1].clientY;
         const dist = Math.hypot(dx, dy);
         // User pinching inward to zoom out/minimize
-        if (touchStartDist - dist > 70) {
+        if (touchStartDist - dist > 50) {
           touchStartDist = 0;
           animRate.current = 1.15;
           if (onExitWalk) {
@@ -546,8 +531,8 @@ function CameraController({
       if (keysPressed.current.forward) {
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
-        if (dist > 12) {
-          const moveStep = delta * 12; // Slow forward movement rate
+        if (dist > 8) {
+          const moveStep = Math.max(10, dist * 0.45) * delta; // Proportional smooth forward movement
           const dir = new THREE.Vector3().subVectors(target, camera.position).normalize();
           camera.position.addScaledVector(dir, moveStep);
           controlsRef.current.update();
@@ -557,8 +542,8 @@ function CameraController({
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
         // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
-        if (dist < 460) {
-          const moveStep = delta * 12; // Slow backward movement rate
+        if (dist < 2600) {
+          const moveStep = Math.max(10, dist * 0.45) * delta; // Proportional smooth backward movement
           const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
           camera.position.addScaledVector(dir, moveStep);
           controlsRef.current.update();
@@ -571,12 +556,12 @@ function CameraController({
     <OrbitControls
       ref={controlsRef}
       target={[-9, 0, 6]}
-      enabled={cameraPreset !== 'roadWalk' && !animatingRef.current}
+      enabled={cameraPreset !== 'roadWalk'}
       enableRotate={false}
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
-      zoomSpeed={0.16}
+      zoomSpeed={0.95}
       mouseButtons={{
         LEFT: THREE.MOUSE.PAN,
         MIDDLE: THREE.MOUSE.DOLLY,
@@ -586,12 +571,10 @@ function CameraController({
         ONE: THREE.TOUCH.PAN,
         TWO: THREE.TOUCH.DOLLY_PAN
       }}
-      minAzimuthAngle={0}
-      maxAzimuthAngle={0}
-      minDistance={10}
-      maxDistance={480}
+      minDistance={8}
+      maxDistance={2800}
       enableDamping={true}
-      dampingFactor={0.035}
+      dampingFactor={0.08}
     />
   );
 }
@@ -2367,10 +2350,14 @@ const Layout3DView = React.forwardRef(function Layout3DView({
   const bgColor = '#E5ECE3';
 
   return (
-    <div className={`w-full h-full relative bg-[#E5ECE3] select-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}>
+    <div
+      className={`w-full h-full relative bg-[#E5ECE3] select-none touch-none ${cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}`}
+      style={{ touchAction: 'none' }}
+    >
       <Canvas
         shadows={false}
         className={cameraPreset === 'roadWalk' ? 'cursor-grab active:cursor-grabbing' : ''}
+        style={{ touchAction: 'none', width: '100%', height: '100%' }}
         camera={{ position: [-9, 85, 120], fov: 42, near: 0.8, far: 45000 }}
         gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', logarithmicDepthBuffer: true }}
       >

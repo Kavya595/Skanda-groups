@@ -43,7 +43,7 @@ const LayoutMasterView = React.forwardRef(function LayoutMasterView({
   }), [viewMode]);
 
   return (
-    <div className="relative w-full h-full overflow-hidden select-none">
+    <div className="relative w-full h-full overflow-hidden select-none touch-none" style={{ touchAction: 'none' }}>
       {viewMode === '2d' ? (
         <Layout2DView ref={ref2D} {...props} />
       ) : (
