@@ -103,13 +103,19 @@ function CameraController({
   const { camera, gl } = useThree();
   const controlsRef = useRef();
   const animatingRef = useRef(false);
-  const animRate = useRef(1.35); // Slow, continuous gliding walk feel for zoom transitions
+  const animRate = useRef(1.0); // Slow, continuous gliding walk feel for forward and backward movement
   const targetPos = useRef(new THREE.Vector3(-9, 85, 120));
   const targetLook = useRef(new THREE.Vector3(-9, 0, 6));
   const currentLook = useRef(new THREE.Vector3(-9, 0, 6));
   const lastAzimuthRef = useRef(0);
   const wheelOutAccum = useRef(0);
   const prevPresetRef = useRef(cameraPreset);
+  const keysPressed = useRef({
+    forward: false,
+    backward: false,
+    left: false,
+    right: false
+  });
 
   // Expose smooth, slow gliding zoomIn / zoomOut / reset to external toolbars
   React.useImperativeHandle(apiRef, () => ({
@@ -126,7 +132,8 @@ function CameraController({
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
         if (currentDist > 12) {
-          const factor = 0.88; // Small, gentle step (no abrupt large jumps)
+          // Slow, gentle forward step (factor: 0.92 = 8% forward glide)
+          const factor = 0.92;
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
             Math.max(6, target.y + (currentPos.y - target.y) * factor),
@@ -134,7 +141,7 @@ function CameraController({
           );
           targetLook.current.copy(target);
           currentLook.current.copy(target);
-          animRate.current = 1.35; // Slow, continuous walk/glide speed
+          animRate.current = 1.0; // Slow, continuous forward glide
           animatingRef.current = true;
         }
       }
@@ -153,7 +160,8 @@ function CameraController({
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
         if (currentDist < 260) {
-          const factor = 1.14; // Small, gentle step
+          // Slow, gentle backward step (factor: 1.09 = 9% backward glide)
+          const factor = 1.09;
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
             target.y + (currentPos.y - target.y) * factor,
@@ -161,7 +169,7 @@ function CameraController({
           );
           targetLook.current.copy(target);
           currentLook.current.copy(target);
-          animRate.current = 1.35; // Slow, continuous walk/glide speed
+          animRate.current = 1.0; // Slow, continuous backward glide
           animatingRef.current = true;
         }
       }
@@ -172,10 +180,46 @@ function CameraController({
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      animRate.current = 1.8;
+      animRate.current = 1.6;
       animatingRef.current = true;
     }
   }));
+
+  // Keyboard navigation for slow continuous forward & backward movement across 3D
+  useEffect(() => {
+    const handleWindowKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+      if (e.key === 'ArrowUp' || e.code === 'KeyW' || e.key === 'w' || e.key === 'W') {
+        keysPressed.current.forward = true;
+      } else if (e.key === 'ArrowDown' || e.code === 'KeyS' || e.key === 's' || e.key === 'S') {
+        keysPressed.current.backward = true;
+      } else if (e.key === 'ArrowLeft' || e.code === 'KeyA' || e.key === 'a' || e.key === 'A') {
+        keysPressed.current.left = true;
+      } else if (e.key === 'ArrowRight' || e.code === 'KeyD' || e.key === 'd' || e.key === 'D') {
+        keysPressed.current.right = true;
+      }
+    };
+
+    const handleWindowKeyUp = (e) => {
+      if (e.key === 'ArrowUp' || e.code === 'KeyW' || e.key === 'w' || e.key === 'W') {
+        keysPressed.current.forward = false;
+      } else if (e.key === 'ArrowDown' || e.code === 'KeyS' || e.key === 's' || e.key === 'S') {
+        keysPressed.current.backward = false;
+      } else if (e.key === 'ArrowLeft' || e.code === 'KeyA' || e.key === 'a' || e.key === 'A') {
+        keysPressed.current.left = false;
+      } else if (e.key === 'ArrowRight' || e.code === 'KeyD' || e.key === 'd' || e.key === 'D') {
+        keysPressed.current.right = false;
+      }
+    };
+
+    window.addEventListener('keydown', handleWindowKeyDown);
+    window.addEventListener('keyup', handleWindowKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleWindowKeyDown);
+      window.removeEventListener('keyup', handleWindowKeyUp);
+    };
+  }, []);
 
   // Road Walk Gesture State
   const isDragging = useRef(false);
@@ -215,19 +259,19 @@ function CameraController({
       const dy = e.clientY - lastPos.current.y;
       lastPos.current = { x: e.clientX, y: e.clientY };
 
-      // Drag up/down to walk forward and backward (USER REQUIREMENT: "drag like normally and go forward and see")
-      const moveDelta = -dy * 0.0028;
+      // Slow, steady forward and backward dragging (USER REQUIREMENT: "slow forward going and backward going for 3d")
+      const moveDelta = -dy * 0.00065;
       const nextProg = Math.max(0, Math.min(1, progRef.current + moveDelta));
       progRef.current = nextProg;
       if (onWalkProgressChange) {
         onWalkProgressChange(nextProg);
       }
 
-      // Drag left/right to look around and inspect plots on both sides
-      yawRef.current -= dx * 0.005;
+      // Drag left/right to look around slowly and inspect plots on both sides
+      yawRef.current -= dx * 0.0035;
 
       // Slight natural vertical pitch
-      pitchRef.current = Math.max(-0.35, Math.min(0.35, pitchRef.current - dy * 0.0008));
+      pitchRef.current = Math.max(-0.35, Math.min(0.35, pitchRef.current - dy * 0.0006));
     };
 
     const handlePointerUp = () => {
@@ -235,16 +279,16 @@ function CameraController({
     };
 
     // Smooth Slow Wheel Interaction for Walk Mode:
-    // Scroll forward (deltaY < 0) -> slow, steady walk forward down the street.
-    // Scroll backward (deltaY > 0) -> walk backward.
+    // Scroll forward (deltaY < 0) -> slow, steady forward walking (~0.8m per notch).
+    // Scroll backward (deltaY > 0) -> slow, steady backward walking.
     // Deliberate continuous backward scroll at start of road -> gently minimize and pull out of walk into overview.
     const handleWheel = (e) => {
       e.preventDefault();
 
       if (e.deltaY > 0) {
-        if (progRef.current <= 0.02) {
-          wheelOutAccum.current += e.deltaY;
-          if (wheelOutAccum.current > 320) {
+        if (progRef.current <= 0.015) {
+          wheelOutAccum.current += Math.abs(e.deltaY);
+          if (wheelOutAccum.current > 300) {
             wheelOutAccum.current = 0;
             animRate.current = 1.15; // Slow, graceful drone ascent
             if (onExitWalk) {
@@ -254,7 +298,7 @@ function CameraController({
           }
         } else {
           wheelOutAccum.current = 0;
-          const moveStep = -0.025; // Gentle backward step
+          const moveStep = -0.0065; // Slow, gentle backward walking step
           const nextProg = Math.max(0, progRef.current + moveStep);
           progRef.current = nextProg;
           if (onWalkProgressChange) {
@@ -263,7 +307,7 @@ function CameraController({
         }
       } else {
         wheelOutAccum.current = 0;
-        const moveStep = 0.025; // Gentle forward step
+        const moveStep = 0.0065; // Slow, gentle forward walking step
         const nextProg = Math.min(1, progRef.current + moveStep);
         progRef.current = nextProg;
         if (onWalkProgressChange) {
@@ -353,7 +397,7 @@ function CameraController({
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      animRate.current = 1.35;
+      animRate.current = 1.25;
       animatingRef.current = true;
     } else if (cameraPreset === 'topDown') {
       // Top-Down orthographic/overhead view
@@ -362,7 +406,7 @@ function CameraController({
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      animRate.current = 1.5;
+      animRate.current = 1.35;
       animatingRef.current = true;
     } else if (cameraPreset === 'mapView') {
       // 3D Regional Map View matching Plots99 Image (media_1792061116841_a13f2ed9.png)
@@ -371,7 +415,7 @@ function CameraController({
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      animRate.current = 1.4;
+      animRate.current = 1.3;
       animatingRef.current = true;
     } else if (cameraPreset === 'highway') {
       targetPos.current.set(78, 22, 22);
@@ -379,7 +423,7 @@ function CameraController({
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      animRate.current = 1.4;
+      animRate.current = 1.3;
       animatingRef.current = true;
     } else {
       // Overview preset (default: ~37° isometric perspective matching Plots99 Image 2)
@@ -389,7 +433,7 @@ function CameraController({
         currentLook.current.copy(controlsRef.current.target);
       }
       // If coming out of walk or park view, use slow, gentle rising drone pull-out rate
-      animRate.current = isExitingWalk ? 1.15 : 1.4;
+      animRate.current = isExitingWalk ? 1.15 : 1.3;
       animatingRef.current = true;
     }
 
@@ -410,6 +454,24 @@ function CameraController({
     }
 
     if (cameraPreset === 'roadWalk') {
+      // Slow, continuous keyboard walking forward and backward
+      if (keysPressed.current.forward) {
+        const nextProg = Math.min(1, progRef.current + delta * 0.035);
+        progRef.current = nextProg;
+        if (onWalkProgressChange) onWalkProgressChange(nextProg);
+      }
+      if (keysPressed.current.backward) {
+        const nextProg = Math.max(0, progRef.current - delta * 0.035);
+        progRef.current = nextProg;
+        if (onWalkProgressChange) onWalkProgressChange(nextProg);
+      }
+      if (keysPressed.current.left) {
+        yawRef.current += delta * 0.75;
+      }
+      if (keysPressed.current.right) {
+        yawRef.current -= delta * 0.75;
+      }
+
       // Direct Responsive Road Walk Camera Control
       const road = WALK_ROADS[walkRoadIndex] || WALK_ROADS[0];
       let tx, ty = road.cameraHeight, tz;
@@ -421,11 +483,12 @@ function CameraController({
         tz = road.startZ + (road.endZ - road.startZ) * progRef.current;
       }
 
-      // Smooth camera interpolation
-      const smoothRate = isDragging.current ? 0.35 : 0.18;
-      camera.position.x += (tx - camera.position.x) * smoothRate;
-      camera.position.y += (ty - camera.position.y) * smoothRate;
-      camera.position.z += (tz - camera.position.z) * smoothRate;
+      // Smooth camera interpolation for slow, graceful forward and backward movement
+      const lerpSpeed = isDragging.current ? 3.8 : 2.6;
+      const factor = 1 - Math.exp(-delta * lerpSpeed);
+      camera.position.x += (tx - camera.position.x) * factor;
+      camera.position.y += (ty - camera.position.y) * factor;
+      camera.position.z += (tz - camera.position.z) * factor;
 
       // Compute look direction from yaw and pitch
       const lookDist = 18;
@@ -439,9 +502,9 @@ function CameraController({
       }
       currentLook.current.set(lx, ly, lz);
     } else if (animatingRef.current) {
-      const rate = animRate.current || 1.35;
-      // Cap step at 0.07 so frame hiccups or low FPS never cause sudden visual snap
-      const step = Math.min(delta * rate, 0.07);
+      const rate = animRate.current || 1.15;
+      // Cap step at 0.045 for ultra smooth, slow motion
+      const step = Math.min(delta * rate, 0.045);
 
       camera.position.lerp(targetPos.current, step);
       currentLook.current.lerp(targetLook.current, step);
@@ -465,6 +528,28 @@ function CameraController({
         animatingRef.current = false;
         if (onResetComplete) onResetComplete();
       }
+    } else if (controlsRef.current) {
+      // Continuous Slow Keyboard Dolly Forward / Backward in 3D Overview Mode
+      if (keysPressed.current.forward) {
+        const target = controlsRef.current.target;
+        const dist = camera.position.distanceTo(target);
+        if (dist > 14) {
+          const moveStep = delta * 12; // Slow forward movement rate
+          const dir = new THREE.Vector3().subVectors(target, camera.position).normalize();
+          camera.position.addScaledVector(dir, moveStep);
+          controlsRef.current.update();
+        }
+      }
+      if (keysPressed.current.backward) {
+        const target = controlsRef.current.target;
+        const dist = camera.position.distanceTo(target);
+        if (dist < 280) {
+          const moveStep = delta * 12; // Slow backward movement rate
+          const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
+          camera.position.addScaledVector(dir, moveStep);
+          controlsRef.current.update();
+        }
+      }
     }
   });
 
@@ -477,7 +562,7 @@ function CameraController({
       enableZoom={true}
       enablePan={true}
       screenSpacePanning={true}
-      zoomSpeed={0.24}
+      zoomSpeed={0.16}
       mouseButtons={{
         LEFT: THREE.MOUSE.ROTATE,
         MIDDLE: THREE.MOUSE.DOLLY,
@@ -492,7 +577,7 @@ function CameraController({
       minDistance={12}
       maxDistance={280}
       enableDamping={true}
-      dampingFactor={0.04}
+      dampingFactor={0.035}
     />
   );
 }

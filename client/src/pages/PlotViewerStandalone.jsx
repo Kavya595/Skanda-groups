@@ -454,12 +454,12 @@ export default function PlotViewerStandalone({ settings }) {
     setStatusFilter(prev => prev === status ? 'all' : status);
   };
 
-  // Auto-walk smooth loop
+  // Auto-walk smooth loop (slow, calm stroll pace)
   useEffect(() => {
     if (!isAutoWalking || cameraPreset !== 'roadWalk' || viewMode !== '3d') return;
     const interval = setInterval(() => {
       setWalkProgress((prev) => {
-        const next = prev + 0.004;
+        const next = prev + 0.0012; // Slow, gentle forward promenade
         return next >= 1 ? 0 : next;
       });
     }, 45);
