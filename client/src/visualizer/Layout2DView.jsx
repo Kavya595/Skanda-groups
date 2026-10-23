@@ -816,21 +816,16 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     };
   }, [plots, selectedPlot, filterStatus, filterFacing, searchTerm, currentZoom]);
 
-  // 3. Fly to and focus Selected Plot
+  // 3. Focus Selected Plot WITHOUT automatic zoom (User requirement: "dont zoom in and zoom out automatically")
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPlot) return;
-    const map = mapInstanceRef.current;
-    if (selectedPlot.geoCenter) {
-      const targetZoom = Math.max(map.getZoom(), 18.5);
-      map.flyTo(selectedPlot.geoCenter, targetZoom, { animate: true, duration: 0.8 });
-      const layer = plotLayersRef.current[selectedPlot.plotNumber];
-      if (layer) {
-        layer.bringToFront();
-      }
+    const layer = plotLayersRef.current[selectedPlot.plotNumber];
+    if (layer) {
+      layer.bringToFront();
     }
   }, [selectedPlot]);
 
-  // 4. Fly to search target when plot number entered
+  // 4. Highlight search target when plot number entered WITHOUT automatic zoom
   useEffect(() => {
     if (!mapInstanceRef.current || !searchTerm) return;
     const clean = searchTerm.trim();
@@ -839,10 +834,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     if (!found && clean.length >= 1) {
       found = plots.find(p => String(p.plotNumber).includes(clean));
     }
-    if (found && found.geoCenter) {
-      const map = mapInstanceRef.current;
-      const targetZoom = Math.max(map.getZoom(), 18.5);
-      map.flyTo(found.geoCenter, targetZoom, { animate: true, duration: 0.8 });
+    if (found) {
       const layer = plotLayersRef.current[found.plotNumber];
       if (layer) {
         layer.bringToFront();

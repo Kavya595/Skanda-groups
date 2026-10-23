@@ -131,12 +131,12 @@ function CameraController({
         // Start from current animated target if already gliding, or current camera position
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
-        if (currentDist > 24) {
-          // Slow, gentle forward step (factor: 0.92 = 8% forward glide)
-          const factor = 0.92;
+        if (currentDist > 12) {
+          // Slow, gentle forward step (factor: 0.90 = 10% forward glide)
+          const factor = 0.90;
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
-            Math.max(10, target.y + (currentPos.y - target.y) * factor),
+            Math.max(4, target.y + (currentPos.y - target.y) * factor),
             target.z + (currentPos.z - target.z) * factor
           );
           targetLook.current.copy(target);
@@ -159,10 +159,10 @@ function CameraController({
         const target = controlsRef.current.target;
         const currentPos = animatingRef.current ? targetPos.current : camera.position;
         const currentDist = currentPos.distanceTo(target);
-        // User requirement: "not zooming out as a small particle" -> strictly bounded so master plan stays prominent
-        if (currentDist < 145) {
-          // Slow, gentle backward step (factor: 1.09 = 9% backward glide)
-          const factor = 1.09;
+        // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
+        if (currentDist < 460) {
+          // Slow, gentle backward step (factor: 1.12 = 12% backward glide)
+          const factor = 1.12;
           targetPos.current.set(
             target.x + (currentPos.x - target.x) * factor,
             target.y + (currentPos.y - target.y) * factor,
@@ -385,7 +385,22 @@ function CameraController({
   }, [gl, cameraPreset, onWalkProgressChange, onExitWalk]);
 
   // Preset Camera Transitions for Overview, Park, TopDown, and Highway
+  const isFirstMount = useRef(true);
   useEffect(() => {
+    // User requirement: "dont zoom in and zoom out automatically"
+    // On initial mount or load, DO NOT run automatic zoom animations!
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      prevPresetRef.current = cameraPreset;
+      animatingRef.current = false;
+      return;
+    }
+
+    // If preset hasn't changed, do not trigger auto-animation
+    if (prevPresetRef.current === cameraPreset) {
+      return;
+    }
+
     const isExitingWalk =
       prevPresetRef.current === 'roadWalk' ||
       prevPresetRef.current === 'park' ||
@@ -428,15 +443,14 @@ function CameraController({
       }
       animRate.current = 1.3;
       animatingRef.current = true;
-    } else {
-      // Overview preset (default: ~37° isometric perspective matching Plots99 Image 2)
+    } else if (isExitingWalk) {
+      // ONLY trigger return animation when user explicitly exits walk mode
       targetPos.current.set(-9, 78, 110);
       targetLook.current.set(-9, 0, 6);
       if (controlsRef.current) {
         currentLook.current.copy(controlsRef.current.target);
       }
-      // If coming out of walk or park view, use slow, gentle rising drone pull-out rate
-      animRate.current = isExitingWalk ? 1.15 : 1.3;
+      animRate.current = 1.15;
       animatingRef.current = true;
     }
 
@@ -539,7 +553,7 @@ function CameraController({
       if (keysPressed.current.forward) {
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
-        if (dist > 24) {
+        if (dist > 12) {
           const moveStep = delta * 12; // Slow forward movement rate
           const dir = new THREE.Vector3().subVectors(target, camera.position).normalize();
           camera.position.addScaledVector(dir, moveStep);
@@ -549,8 +563,8 @@ function CameraController({
       if (keysPressed.current.backward) {
         const target = controlsRef.current.target;
         const dist = camera.position.distanceTo(target);
-        // User requirement: "not zooming out as a small particle" -> clamped to max distance 150
-        if (dist < 150) {
+        // User requirement: "can zoom in zoom out manually for like small particle" -> allows full manual zoom out
+        if (dist < 460) {
           const moveStep = delta * 12; // Slow backward movement rate
           const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
           camera.position.addScaledVector(dir, moveStep);
@@ -584,8 +598,8 @@ function CameraController({
       maxAzimuthAngle={Math.PI / 3.4}  // ~ +53 degrees (cannot spin all the way around)
       minPolarAngle={Math.PI / 3.6}    // ~ 50 degrees (high architectural elevation)
       maxPolarAngle={Math.PI / 2.45}   // ~ 73 degrees (cannot dip below ground or go upside down)
-      minDistance={22}
-      maxDistance={155}                // Clamped (User requirement: "not zooming out as a small particle")
+      minDistance={10}
+      maxDistance={480}                // User requirement: "can zoom in zoom out manually for like small particle"
       enableDamping={true}
       dampingFactor={0.035}
     />
