@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import {
   SITE_GEO,
   SITE_BOUNDARY_GEO,
+  LAYOUT_GRASS_BUFFER_GEO,
   localToLatLng,
   layoutRoads,
   parkData,
@@ -115,16 +116,8 @@ const Layout2DView = React.forwardRef(function Layout2DView({
     // -------------------------------------------------------------
     const staticGroup = L.layerGroup().addTo(map);
 
-    // (A1) Surrounding Natural Grass Terrain (Seamless green landscape around venture matching 3D)
-    const grassSurroundLocal = [
-      [-160, -120],
-      [150, -120],
-      [150, 130],
-      [-160, 130]
-    ];
-    const grassSurroundGeo = grassSurroundLocal.map(([x, z]) => localToLatLng(x, z));
-
-    L.polygon(grassSurroundGeo, {
+    // (A1) Surrounding Natural Grass Fringe (Layout-shaped organic buffer matching exact venture cuts)
+    L.polygon(LAYOUT_GRASS_BUFFER_GEO, {
       color: 'transparent',
       weight: 0,
       fillColor: '#86EFAC',
@@ -132,7 +125,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       interactive: false
     }).addTo(staticGroup);
 
-    // (A2) Venture Inner Ground Turf Base
+    // (A2) Venture Inner Ground Turf Base (Exact layout shape)
     L.polygon(SITE_BOUNDARY_GEO, {
       color: 'transparent',
       weight: 0,

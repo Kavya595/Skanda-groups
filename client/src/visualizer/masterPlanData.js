@@ -699,6 +699,45 @@ export function getEnrichedPlots(overridePlots = null) {
 // Site boundary in geographic coordinates [lat, lng] tracing exact brochure cuts
 export const SITE_BOUNDARY_GEO = SITE_BOUNDARY_LOCAL.map(([x, z]) => localToLatLng(x, z));
 
+// Outward layout-shaped buffer following the exact contour and cuts of the venture layout (organic grass fringe, no square box)
+export const LAYOUT_GRASS_BUFFER_LOCAL = [
+  [-98, -62],
+  [87, -62],
+  [87, 77.5],
+  [68.5, 77.5],
+  [60.6, 75.1],
+  [67, 77],
+  [67, 77.5],
+  [40, 77.5],
+  [40, 74],
+  [37.7, 73.5],
+  [39, 73.8],
+  [39, 74],
+  [12, 74],
+  [12, 71.9],
+  [10, 71.8],
+  [10, 74],
+  [-17, 74],
+  [-17, 72],
+  [-18, 72],
+  [-27.4, 72],
+  [-19, 76.2],
+  [-19, 74],
+  [-46, 74],
+  [-46, 67.4],
+  [-51.6, 64.4],
+  [-48, 66.2],
+  [-48, 62],
+  [-75, 62],
+  [-75, 57.4],
+  [-98, 50.4],
+  [-98, 4],
+  [-98, -3],
+  [-98, -42]
+];
+
+export const LAYOUT_GRASS_BUFFER_GEO = LAYOUT_GRASS_BUFFER_LOCAL.map(([x, z]) => localToLatLng(x, z));
+
 /**
  * Authoritative Curated Regional Landmarks & Connectivity around Kadthal
  * Srisailam National Highway (NH-765) Corridor

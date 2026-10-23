@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import {
   LAYOUT_BOUNDS,
   SITE_BOUNDARY_LOCAL,
+  LAYOUT_GRASS_BUFFER_LOCAL,
   layoutRoads,
   parkData,
   statusColors
@@ -1731,9 +1732,244 @@ export function GrandEntranceArch({ position = [70, 0, -47], rotation = [0, 0, 0
 
 
 
-// Clean Master Plan 3D Ground with Pure Seamless Grass Terrain (Instant load with zero network latency)
+// Authoritative Regional Kadthal & Srisailam Highway Map Renderer
+// Pre-paints topography with NH-765 4-lane expressway, Kadthal municipality, toll plaza, and 100' road
+function paintRegionalKadthalMap(ctx, width, height) {
+  // 1. Natural Land Base
+  ctx.fillStyle = '#E5EAE0';
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Agricultural Farmland Patchwork (Natural cadastral patterns)
+  const farmTones = ['#DFE6D6', '#E2E9D8', '#D8E2CE', '#E8EFE2', '#D3DFC8'];
+  for (let r = 0; r < 16; r++) {
+    for (let c = 0; c < 16; c++) {
+      const x = (c / 16) * width;
+      const y = (r / 16) * height;
+      const w = width / 16;
+      const h = height / 16;
+      ctx.fillStyle = farmTones[(r * 5 + c * 3) % farmTones.length];
+      ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+    }
+  }
+
+  // 3. Green Reserve Forests & Agro Green Tracts
+  ctx.fillStyle = '#B4CCA4';
+  ctx.beginPath();
+  ctx.ellipse(520, 480, 260, 160, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(1560, 1420, 320, 200, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.ellipse(1480, 780, 180, 220, 0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Natural Water Bodies (Cheruvu / Lakes)
+  ctx.fillStyle = '#9AC3E6';
+  ctx.strokeStyle = '#6E9EC9';
+  ctx.lineWidth = 3;
+
+  ctx.beginPath();
+  ctx.ellipse(1440, 980, 115, 70, -0.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(780, 640, 95, 55, 0.35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#2B5784';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Chellampalle Lake', 1370, 985);
+  ctx.fillText('Kadthal Lake', 735, 645);
+
+  // 5. Connecting Arterial & Regional Roads
+  // Bangalore to Shadnagar Road (Crossing East-West south of site)
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(0, 1260);
+  ctx.lineTo(2048, 1260);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FCD34D';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // 60' Arterial Road (East-West through Site)
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(850, 840);
+  ctx.lineTo(1600, 840);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 6. Srisailam Highway (NH-765 - Major 4-Lane National Highway Corridor)
+  ctx.strokeStyle = '#1E293B';
+  ctx.lineWidth = 22;
+  ctx.beginPath();
+  ctx.moveTo(1280, 0);
+  ctx.quadraticCurveTo(1275, 840, 1265, 2048);
+  ctx.stroke();
+
+  // Double Yellow Median Divider
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(1278, 0);
+  ctx.quadraticCurveTo(1273, 840, 1263, 2048);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1282, 0);
+  ctx.quadraticCurveTo(1277, 840, 1267, 2048);
+  ctx.stroke();
+
+  // White Dashed Lane Dividers (2 lanes each direction)
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([14, 14]);
+  ctx.beginPath();
+  ctx.moveTo(1273, 0);
+  ctx.quadraticCurveTo(1268, 840, 1258, 2048);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(1287, 0);
+  ctx.quadraticCurveTo(1282, 840, 1272, 2048);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 7. 100 Feet Road Corridor (connecting Srisailam Highway to SITE)
+  ctx.strokeStyle = '#0F172A';
+  ctx.lineWidth = 16;
+  ctx.beginPath();
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#FEF08A';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.beginPath();
+  ctx.moveTo(1275, 840);
+  ctx.lineTo(1210, 840);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 8. Road Typography along East Road
+  ctx.save();
+  ctx.translate(1300, 580);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬆ TO HYDERABAD / ORR EXIT 14', 0, 0);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(1300, 1520);
+  ctx.rotate(Math.PI / 2);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('PROP. 33\'-0" WIDE ROAD ⬇ TO 4TH PHASE', 0, 0);
+  ctx.restore();
+
+  // 9. Location Landmark Badges
+  // (A) Kadthal Municipality & Mandal Hq
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(660, 460, 260, 36);
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(660, 460, 260, 36);
+  ctx.fillStyle = '#E2E8F0';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏛️ Kadthal Town & Municipality', 670, 484);
+
+  // (B) Kadthal Toll Plaza
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(1150, 420, 240, 36);
+  ctx.strokeStyle = '#64748B';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1150, 420, 240, 36);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🛣️ Kadthal Toll Plaza (4 mins)', 1165, 444);
+
+  // (C) Green Pharma City Corridor
+  ctx.fillStyle = '#064E3B';
+  ctx.fillRect(1420, 360, 310, 48);
+  ctx.strokeStyle = '#10B981';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(1420, 360, 310, 48);
+  ctx.fillStyle = '#A7F3D0';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🏭 Green Pharma City Corridor', 1430, 382);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#D1FAE5';
+  ctx.fillText('Hyderabad Pharma City (19,000+ Acres)', 1430, 400);
+
+  // (D) Bangalore to Shadnagar Highway Connector
+  ctx.fillStyle = '#1E293B';
+  ctx.fillRect(80, 1238, 280, 32);
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(80, 1238, 280, 32);
+  ctx.fillStyle = '#CBD5E1';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('🛣️ Bangalore to Shadnagar Road', 90, 1260);
+
+  // (E) 100' Road Badge
+  ctx.fillStyle = '#0F172A';
+  ctx.fillRect(1150, 795, 120, 26);
+  ctx.strokeStyle = '#F59E0B';
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(1150, 795, 120, 26);
+  ctx.fillStyle = '#FEF08A';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillText("100' Road to Site", 1156, 812);
+
+  // (F) 60' Road Access Label
+  ctx.fillStyle = '#047857';
+  ctx.fillRect(870, 796, 215, 30);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillText("PROP. 60'-0\" WIDE ROAD", 882, 816);
+}
+
+// Module-level cached texture for 3D regional map
+let regionalMapTextureCache = null;
+export function getRegionalMapTexture() {
+  if (typeof document === 'undefined') return null;
+  if (regionalMapTextureCache) return regionalMapTextureCache;
+
+  const cvs = document.createElement('canvas');
+  cvs.width = 1024;
+  cvs.height = 1024;
+  const ctx = cvs.getContext('2d');
+  ctx.scale(0.5, 0.5);
+  paintRegionalKadthalMap(ctx, 2048, 2048);
+
+  const tex = new THREE.CanvasTexture(cvs);
+  tex.wrapS = THREE.ClampToEdgeWrapping;
+  tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  regionalMapTextureCache = tex;
+  return tex;
+}
+
+// Clean Master Plan 3D Ground with Regional Map and Layout-Shaped Grass Ground (Zero square shape)
 export function CleanMasterPlanTerrain({ cameraPreset }) {
-  // Dedicated procedural Bermuda grass turf texture for the venture parcel
+  // Fast procedural Bermuda grass turf texture for layout ground
   const parcelGrassTexture = useMemo(() => {
     const base = getGrassTurfTexture();
     if (!base) return null;
@@ -1745,23 +1981,58 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
     return tex;
   }, []);
 
+  // Regional vector map texture covering Kadthal, Srisailam Highway NH-765, and site approach
+  const regionalMapTexture = useMemo(() => getRegionalMapTexture(), []);
+
+  // Exact Layout Shape (matching DTCP brochure perimeter cuts and steps, NOT a square)
+  const layoutParcelShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    SITE_BOUNDARY_LOCAL.forEach(([x, z], idx) => {
+      // In Three.js with rotation [-PI/2, 0, 0], (x, y) maps to (x, 0, -y). So y = -z.
+      if (idx === 0) shape.moveTo(x, -z);
+      else shape.lineTo(x, -z);
+    });
+    shape.closePath();
+    return shape;
+  }, []);
+
+  // Surrounding Grass Buffer Shape (following the EXACT contour of the layout outward by 10m, NOT a square)
+  const layoutGrassBufferShape = useMemo(() => {
+    const shape = new THREE.Shape();
+    LAYOUT_GRASS_BUFFER_LOCAL.forEach(([x, z], idx) => {
+      if (idx === 0) shape.moveTo(x, -z);
+      else shape.lineTo(x, -z);
+    });
+    shape.closePath();
+    return shape;
+  }, []);
+
+  // Geographic plane size: 2048px * 2.285m/px = 4680m
+  const groundSize = 4680;
+  // Geographic offset aligning Kadthal Google Map roadmap directly with site (0,0) and Srisailam Highway (X: 75)
+  const shiftX = 581.5;
+  const shiftZ = 149.2;
+
   return (
     <group>
       {/* 1. Extended Horizon Ground Plane */}
       <mesh position={[0, -0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
         <planeGeometry args={[35000, 35000]} />
-        <meshBasicMaterial color="#E5ECE3" />
+        <meshBasicMaterial color="#E5EAE0" />
       </mesh>
 
-      {/* 2. Outer Landscape Green Belt (1200m x 1000m) */}
-      <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
-        <planeGeometry args={[1200, 1000]} />
-        <meshStandardMaterial color="#A3D99C" roughness={0.92} />
+      {/* 2. Full 4.68-Kilometer High-Resolution 3D Regional Map Plane (Srisailam Highway NH-765, Kadthal Town, Pharma City) */}
+      <mesh position={[shiftX, -0.015, shiftZ]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow={false}>
+        <planeGeometry args={[groundSize, groundSize]} />
+        <meshBasicMaterial
+          map={regionalMapTexture || undefined}
+          color="#FFFFFF"
+        />
       </mesh>
 
-      {/* 3. Surrounding Natural Green Grass Field (360m x 320m) matching 'grass around it' */}
-      <mesh position={[-5, 0.01, 8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[360, 320]} />
+      {/* 3. Surrounding Natural Green Grass Buffer following the EXACT LAYOUT SHAPE (No square box!) */}
+      <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <shapeGeometry args={[layoutGrassBufferShape]} />
         <meshStandardMaterial
           color="#9BD89E"
           roughness={0.88}
@@ -1769,9 +2040,9 @@ export function CleanMasterPlanTerrain({ cameraPreset }) {
         />
       </mesh>
 
-      {/* 4. Immediate Venture Lawn Surface with Lush Turf Texture (260m x 220m) */}
-      <mesh position={[-5, 0.016, 8]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[260, 220]} />
+      {/* 4. Immediate Venture Layout Ground with Lush Turf Texture following the EXACT LAYOUT SHAPE */}
+      <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <shapeGeometry args={[layoutParcelShape]} />
         <meshStandardMaterial
           map={parcelGrassTexture || undefined}
           color="#8FD192"
