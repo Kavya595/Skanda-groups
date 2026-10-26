@@ -5,6 +5,7 @@ import {
   Download
 } from 'lucide-react';
 import EnquiryModal from '../components/EnquiryModal';
+import { trackActivityEvent } from '../api/client';
 
 export default function ProjectPage() {
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
@@ -115,6 +116,7 @@ export default function ProjectPage() {
                 <a
                   href="/assets/skandha_brochure.pdf"
                   download="Skandha_Group_Kadthal_Brochure.pdf"
+                  onClick={() => trackActivityEvent('brochure_downloaded', null, { label: 'Official Brochure PDF', source: 'ProjectPage' })}
                   className="inline-flex items-center gap-2 bg-slate-900/80 hover:bg-slate-900 text-white border border-slate-700/80 hover:border-slate-500 text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-sm backdrop-blur-sm transition-all"
                 >
                   <Download className="w-4 h-4 text-brand-orange" />
@@ -122,7 +124,10 @@ export default function ProjectPage() {
                 </a>
 
                 <button
-                  onClick={() => setIsEnquiryOpen(true)}
+                  onClick={() => {
+                    trackActivityEvent('enquiry_started', null, { source: 'ProjectPage_BookSiteVisit' });
+                    setIsEnquiryOpen(true);
+                  }}
                   className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold uppercase tracking-wider px-5 py-3.5 rounded-sm backdrop-blur-sm transition-all"
                 >
                   <Calendar className="w-4 h-4 text-brand-orange" />

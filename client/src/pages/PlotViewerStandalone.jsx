@@ -329,17 +329,17 @@ export default function PlotViewerStandalone({ settings }) {
   // Inventory breakdown percentages for Property Insights Pie Chart (Photo 3)
   const inventoryBreakdown = React.useMemo(() => {
     const total = plots.length || 96;
-    const avail = plots.filter(p => p.status === 'available').length || 81;
-    const sold = plots.filter(p => p.status === 'sold').length || 8;
-    const res = plots.filter(p => p.status === 'reserved').length || 7;
+    const avail = plots.filter(p => p.status === 'available').length || 85;
+    const sold = plots.filter(p => p.status === 'sold').length || 6;
+    const booked = plots.filter(p => p.status === 'booked' || p.status === 'reserved').length || 5;
     return {
       total,
       available: avail,
       sold,
-      reserved: res,
+      booked,
       availPct: Math.round((avail / total) * 100),
       soldPct: Math.round((sold / total) * 100),
-      resPct: Math.round((res / total) * 100)
+      bookedPct: Math.round((booked / total) * 100)
     };
   }, [plots]);
 
@@ -404,7 +404,10 @@ export default function PlotViewerStandalone({ settings }) {
     if (plot && plot.plotNumber) {
       trackActivityEvent('plot_viewed', plot.plotNumber, {
         status: plot.status,
-        facing: plot.facing
+        facing: plot.facing,
+        areaSqYds: plot.areaSqYds,
+        price: plot.totalPrice,
+        block: plot.block
       });
     }
   };
@@ -459,7 +462,9 @@ export default function PlotViewerStandalone({ settings }) {
   };
 
   const toggleStatusFilter = (status) => {
-    setStatusFilter(prev => prev === status ? 'all' : status);
+    const next = statusFilter === status ? 'all' : status;
+    setStatusFilter(next);
+    trackActivityEvent('filter_applied', null, { filter: next });
   };
 
   // Auto-walk smooth loop (slow, calm stroll pace)
@@ -566,6 +571,13 @@ export default function PlotViewerStandalone({ settings }) {
         message: `Inquiry from Master Plan Viewer. Preferred Facing: ${contactForm.facing}. Preferred Date: ${contactForm.visitDate || 'Flexible'}. Notes: ${contactForm.message || 'Booked guided site visit'}`
       });
       setContactSuccess(true);
+      trackActivityEvent('enquiry_submitted', selectedPlot?.plotNumber ? Number(selectedPlot.plotNumber) : undefined, {
+        customerName: contactForm.name,
+        customerPhone: contactForm.phone,
+        customerEmail: contactForm.email,
+        facing: contactForm.facing,
+        visitDate: contactForm.visitDate
+      });
       if (res?.whatsappUrl) {
         setContactSuccessResult(res);
         try {
@@ -856,7 +868,7 @@ export default function PlotViewerStandalone({ settings }) {
                 <span className={`w-2.5 h-2.5 rounded-full ${
                   selectedPlot.status === 'sold'
                     ? 'bg-[#F89898]'
-                    : selectedPlot.status === 'reserved'
+                    : (selectedPlot.status === 'booked' || selectedPlot.status === 'reserved')
                     ? 'bg-[#FBE38E]'
                     : 'bg-[#68D391]'
                 }`} />
@@ -955,21 +967,21 @@ export default function PlotViewerStandalone({ settings }) {
                 </span>
               </button>
 
-              {/* RESERVED */}
+              {/* BOOKED */}
               <button
-                onClick={() => toggleStatusFilter('reserved')}
+                onClick={() => toggleStatusFilter('booked')}
                 className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl transition-all text-left ${
-                  statusFilter === 'reserved'
+                  statusFilter === 'booked'
                     ? 'ring-2 ring-amber-400 bg-amber-50/90 shadow-xs'
                     : 'hover:bg-slate-50'
                 }`}
-                title="Filter Reserved plots (click again to clear)"
+                title="Filter Booked plots (click again to clear)"
               >
                 <span className="w-7 h-6 rounded-md bg-[#FBE38E] text-[#78350F] text-[11px] font-black flex items-center justify-center shadow-2xs">
-                  {stats?.reserved || 7}
+                  {stats?.booked ?? stats?.reserved ?? inventoryBreakdown.booked}
                 </span>
                 <span className="text-[11px] font-bold tracking-wider text-slate-700">
-                  RESERVED
+                  BOOKED
                 </span>
               </button>
 
@@ -1521,7 +1533,7 @@ export default function PlotViewerStandalone({ settings }) {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-3 h-3 rounded-xs bg-[#F6E05E]" />
-                    <span>Reserved {inventoryBreakdown.resPct}%</span>
+                    <span>Booked {inventoryBreakdown.bookedPct}%</span>
                   </div>
                 </div>
               </div>
@@ -2229,6 +2241,7 @@ export default function PlotViewerStandalone({ settings }) {
                 <a
                   href="/assets/skandha_flyer.pdf"
                   download="Skandha_Group_Flyer.pdf"
+                  onClick={() => trackActivityEvent('brochure_downloaded', null, { label: 'Official Flyer PDF', source: 'PlotViewerStandalone' })}
                   className="hidden md:inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
                   title="Download Official Flyer PDF"
                 >

@@ -51,12 +51,12 @@ export default function AdminDashboard() {
 
   const total = plotStats?.total || 96;
   const available = plotStats?.available || 0;
-  const reserved = plotStats?.reserved || 0;
+  const booked = plotStats?.booked || plotStats?.reserved || 0;
   const sold = plotStats?.sold || 0;
-  const blocked = plotStats?.blocked || 0;
 
   const soldPercent = Math.round((sold / total) * 100);
   const availablePercent = Math.round((available / total) * 100);
+  const bookedPercent = Math.round((booked / total) * 100);
 
   return (
     <div className="space-y-8">
@@ -168,17 +168,15 @@ export default function AdminDashboard() {
 
         <div className="flex flex-wrap items-center gap-4 text-xs font-semibold pt-1 border-t border-slate-100">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-emerald-500" /> Available ({available})</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400" /> Reserved ({reserved})</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-slate-400" /> Sold ({sold})</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-zinc-600" /> Blocked ({blocked})</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-amber-400" /> Booked ({booked})</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-500" /> Sold Out ({sold})</span>
         </div>
 
         {/* Multi-segment Progress Bar */}
         <div className="w-full h-4 rounded-full bg-slate-100 overflow-hidden flex shadow-inner">
           <div style={{ width: `${(available / total) * 100}%` }} className="bg-emerald-500" title={`Available: ${available}`} />
-          <div style={{ width: `${(reserved / total) * 100}%` }} className="bg-amber-400" title={`Reserved: ${reserved}`} />
-          <div style={{ width: `${(sold / total) * 100}%` }} className="bg-slate-400" title={`Sold: ${sold}`} />
-          <div style={{ width: `${(blocked / total) * 100}%` }} className="bg-zinc-600" title={`Blocked: ${blocked}`} />
+          <div style={{ width: `${(booked / total) * 100}%` }} className="bg-amber-400" title={`Booked: ${booked}`} />
+          <div style={{ width: `${(sold / total) * 100}%` }} className="bg-rose-500" title={`Sold Out: ${sold}`} />
         </div>
       </div>
 

@@ -108,38 +108,34 @@ export const SITE_BOUNDARY_LOCAL = [
 
 export const statusColors = {
   available: {
-    bg: '#9BD89E',         // Plots99 Soft Map Green
+    bg: '#9BD89E',         // Soft Map Green
     border: '#6BBF6F',
     text: '#064E3B',
     badge: 'bg-emerald-100 text-emerald-800 border-emerald-300',
     threeColor: '#9BD89E',
     label: 'Available'
   },
-  reserved: {
-    bg: '#FBE38E',         // Plots99 Warm Sunny Yellow
+  booked: {
+    bg: '#FBE38E',         // Warm Sunny Yellow / Amber
     border: '#EAB308',
     text: '#78350F',
     badge: 'bg-amber-100 text-amber-800 border-amber-300',
     threeColor: '#FBE38E',
-    label: 'Reserved'
+    label: 'Booked'
   },
   sold: {
-    bg: '#F89898',         // Plots99 Soft Coral Red
+    bg: '#F89898',         // Soft Coral Red
     border: '#EF4444',
     text: '#7F1D1D',
     badge: 'bg-rose-100 text-rose-800 border-rose-300',
     threeColor: '#F89898',
-    label: 'Sold'
-  },
-  blocked: {
-    bg: '#CBD5E1',         // Plots99 Soft Ash Grey
-    border: '#94A3B8',
-    text: '#1E293B',
-    badge: 'bg-slate-200 text-slate-800 border-slate-400',
-    threeColor: '#CBD5E1',
-    label: 'Blocked'
+    label: 'Sold Out'
   }
 };
+
+// Aliases for backward safety
+statusColors.reserved = statusColors.booked;
+statusColors.blocked = statusColors.available;
 
 export const parkData = {
   id: 'PARK-01',
@@ -302,7 +298,7 @@ export const masterPlotsData = [
   // BLOCK E-TOP (Plots 1 to 8) - Directly above Block K (Plots 83 to 96)
   // Between Road V4 (X: 57) and East 33' Road (X: 70). Center X: 63.5.
   // East Row (facing East 33' Road): Plots 1 to 4 (North to South)
-  { plotNumber: 1, block: 'Block E', areaSqYds: 247, dimensions: "58'-3\" x 37'-3\"", facing: 'North-East', isCorner: true, roadWidth: '60ft', status: 'reserved', quad: [63.5, 70, -42, -31.5] },
+  { plotNumber: 1, block: 'Block E', areaSqYds: 247, dimensions: "58'-3\" x 37'-3\"", facing: 'North-East', isCorner: true, roadWidth: '60ft', status: 'booked', quad: [63.5, 70, -42, -31.5] },
   { plotNumber: 2, block: 'Block E', areaSqYds: 217, dimensions: "59'-3\" x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [63.5, 70, -31.5, -22.5] },
   { plotNumber: 3, block: 'Block E', areaSqYds: 221, dimensions: "60'-3\" x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [63.5, 70, -22.5, -13.5] },
   { plotNumber: 4, block: 'Block E', areaSqYds: 380, dimensions: "61'-3\" x 55' (63')", facing: 'South-East', isCorner: true, roadWidth: '33ft', status: 'available', quad: [63.5, 70, -13.5, -3] },
@@ -318,7 +314,7 @@ export const masterPlotsData = [
   { plotNumber: 9,  block: 'Block D', areaSqYds: 243, dimensions: "55'-1\" x 39'-9\"", facing: 'North-East', isCorner: true, roadWidth: '60ft', status: 'available', quad: [39.5, 50, -42, -31.5] },
   { plotNumber: 10, block: 'Block D', areaSqYds: 202, dimensions: "55' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [39.5, 50, -31.5, -22.5] },
   { plotNumber: 11, block: 'Block D', areaSqYds: 202, dimensions: "55' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [39.5, 50, -22.5, -13.5] },
-  { plotNumber: 12, block: 'Block D', areaSqYds: 336, dimensions: "55' x 55'", facing: 'South-East', isCorner: true, roadWidth: '33ft', status: 'reserved', quad: [39.5, 50, -13.5, -3] },
+  { plotNumber: 12, block: 'Block D', areaSqYds: 336, dimensions: "55' x 55'", facing: 'South-East', isCorner: true, roadWidth: '33ft', status: 'booked', quad: [39.5, 50, -13.5, -3] },
   // West Row (facing Road V3): Plots 13 to 16 (South to North)
   { plotNumber: 13, block: 'Block D', areaSqYds: 336, dimensions: "55' x 55'", facing: 'South-West', isCorner: true, roadWidth: '33ft', status: 'available', quad: [29, 39.5, -13.5, -3] },
   { plotNumber: 14, block: 'Block D', areaSqYds: 202, dimensions: "55' x 33'", facing: 'West', isCorner: false, roadWidth: '33ft', status: 'available', quad: [29, 39.5, -22.5, -13.5] },
@@ -347,7 +343,7 @@ export const masterPlotsData = [
   { plotNumber: 28, block: 'Block A', areaSqYds: 306, dimensions: "50' x 55'", facing: 'South-East', isCorner: true, roadWidth: '33ft', status: 'available', quad: [-18, -7, -13.5, -3] },
   // West Row (facing Road V1 & Park): Plots 29 to 32 (South to North)
   { plotNumber: 29, block: 'Block A', areaSqYds: 264, dimensions: "50'-1\" x 48' (47')", facing: 'North-West', isCorner: true, roadWidth: '60ft', status: 'available', quad: [-29, -18, -42, -31.5] },
-  { plotNumber: 30, block: 'Block A', areaSqYds: 183, dimensions: "50' x 33'", facing: 'West', isCorner: false, roadWidth: '33ft', status: 'reserved', quad: [-29, -18, -31.5, -22.5] },
+  { plotNumber: 30, block: 'Block A', areaSqYds: 183, dimensions: "50' x 33'", facing: 'West', isCorner: false, roadWidth: '33ft', status: 'booked', quad: [-29, -18, -31.5, -22.5] },
   { plotNumber: 31, block: 'Block A', areaSqYds: 183, dimensions: "50' x 33'", facing: 'West', isCorner: false, roadWidth: '33ft', status: 'sold', quad: [-29, -18, -22.5, -13.5] },
   { plotNumber: 32, block: 'Block A', areaSqYds: 306, dimensions: "50' x 55'", facing: 'South-West', isCorner: true, roadWidth: '33ft', status: 'available', quad: [-29, -18, -13.5, -3] },
 
@@ -369,7 +365,7 @@ export const masterPlotsData = [
     facing: 'South-East',
     isCorner: true,
     roadWidth: '33ft',
-    status: 'blocked',
+    status: 'available',
     quad: [-88, -65, 35.5, 50.0],
     polygon: [
       [-88, 35.5],
@@ -405,7 +401,7 @@ export const masterPlotsData = [
     ]
   },
   // East Row (facing Road V1): Plots 42, 43, 44, 45, 46
-  { plotNumber: 42, block: 'Block G', areaSqYds: 336, dimensions: "55' x 55'", facing: 'North-East', isCorner: true, roadWidth: '33ft', status: 'reserved', quad: [-47, -36, 4, 14] },
+  { plotNumber: 42, block: 'Block G', areaSqYds: 336, dimensions: "55' x 55'", facing: 'North-East', isCorner: true, roadWidth: '33ft', status: 'booked', quad: [-47, -36, 4, 14] },
   { plotNumber: 43, block: 'Block G', areaSqYds: 202, dimensions: "55' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-47, -36, 14, 24] },
   { plotNumber: 44, block: 'Block G', areaSqYds: 202, dimensions: "55' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-47, -36, 24, 34] },
   { plotNumber: 45, block: 'Block G', areaSqYds: 202, dimensions: "55' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [-47, -36, 34, 44] },
@@ -505,7 +501,7 @@ export const masterPlotsData = [
     ]
   },
   // East Row (facing Road V3): Plots 65, 66, 67, 68, 69, 70
-  { plotNumber: 65, block: 'Block I', areaSqYds: 306, dimensions: "50' x 55'", facing: 'East', isCorner: true, roadWidth: '33ft', status: 'reserved', quad: [11, 22, 4, 13.6] },
+  { plotNumber: 65, block: 'Block I', areaSqYds: 306, dimensions: "50' x 55'", facing: 'East', isCorner: true, roadWidth: '33ft', status: 'booked', quad: [11, 22, 4, 13.6] },
   { plotNumber: 66, block: 'Block I', areaSqYds: 183, dimensions: "50' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [11, 22, 13.6, 23.2] },
   { plotNumber: 67, block: 'Block I', areaSqYds: 183, dimensions: "50' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [11, 22, 23.2, 32.8] },
   { plotNumber: 68, block: 'Block I', areaSqYds: 183, dimensions: "50' x 33'", facing: 'East', isCorner: false, roadWidth: '33ft', status: 'available', quad: [11, 22, 32.8, 42.4] },

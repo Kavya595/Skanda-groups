@@ -9,7 +9,8 @@ import {
   MapPin,
   Facebook,
   Instagram,
-  Youtube
+  Youtube,
+  ShieldCheck
 } from 'lucide-react';
 import EnquiryModal from './EnquiryModal';
 
@@ -93,6 +94,15 @@ export default function Navbar({ settings }) {
               >
                 <Youtube className="w-3.5 h-3.5 fill-white" />
               </a>
+
+              {/* Portal Symbol (Symbol only, strictly no text) */}
+              <Link
+                to="/admin"
+                className="w-6 h-6 rounded-sm bg-[#162a45] hover:bg-brand-orange text-slate-300 hover:text-white flex items-center justify-center transition-all ml-1"
+                aria-label="Portal Access"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -162,8 +172,8 @@ export default function Navbar({ settings }) {
               </Link>
             </nav>
 
-            {/* Right Button: "PLOT AVAILABILITY" */}
-            <div className="hidden sm:flex items-center">
+            {/* Right Button: "PLOT AVAILABILITY" & Admin Symbol */}
+            <div className="hidden sm:flex items-center gap-2.5">
               <a
                 href="/plots"
                 target="_blank"
@@ -172,10 +182,18 @@ export default function Navbar({ settings }) {
               >
                 PLOT AVAILABILITY
               </a>
+
+              <Link
+                to="/admin"
+                className="w-9 h-9 rounded-sm bg-white/5 hover:bg-white/15 text-slate-400 hover:text-white flex items-center justify-center transition-colors border border-white/10"
+                aria-label="Portal Access"
+              >
+                <ShieldCheck className="w-4 h-4 text-slate-400 hover:text-brand-orange transition-colors" />
+              </Link>
             </div>
 
             {/* Mobile Menu Toggle Button */}
-            <div className="lg:hidden flex items-center gap-3">
+            <div className="lg:hidden flex items-center gap-2">
               <a
                 href="/plots"
                 target="_blank"
@@ -184,6 +202,14 @@ export default function Navbar({ settings }) {
               >
                 Plots
               </a>
+
+              <Link
+                to="/admin"
+                className="p-1.5 rounded-sm bg-white/5 text-slate-400 hover:text-white border border-white/10"
+                aria-label="Portal Access"
+              >
+                <ShieldCheck className="w-4 h-4" />
+              </Link>
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 type="button"

@@ -116,6 +116,7 @@ router.get('/admin/plots', plotCtrl.getPlots);
 router.post('/admin/plots', validatePlotInput, plotCtrl.createPlot);
 router.put('/admin/plots/:plotNumber', plotCtrl.updatePlot);
 router.patch('/admin/plots/:plotNumber/status', plotCtrl.updatePlotStatus);
+router.post('/admin/plots/:plotNumber/book', plotCtrl.bookPlot);
 router.delete('/admin/plots/:plotNumber', plotCtrl.deletePlot);
 router.get('/admin/plots/export/csv', plotCtrl.exportPlotsCsv);
 router.post('/admin/plots/import/csv', plotCtrl.importPlotsCsv);

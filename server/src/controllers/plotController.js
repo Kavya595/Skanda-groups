@@ -44,18 +44,16 @@ function filterFallbackPlots({ status, facing, minArea, maxArea, search, page, l
 function getFallbackStats() {
   const total = initialPlots.length;
   const available = initialPlots.filter(p => p.status === 'available').length;
-  const reserved = initialPlots.filter(p => p.status === 'reserved').length;
+  const booked = initialPlots.filter(p => p.status === 'booked' || p.status === 'reserved').length;
   const sold = initialPlots.filter(p => p.status === 'sold').length;
-  const blocked = initialPlots.filter(p => p.status === 'blocked').length;
 
   return {
     success: true,
     stats: {
       total,
       available,
-      reserved,
-      sold,
-      blocked
+      booked,
+      sold
     }
   };
 }
@@ -169,12 +167,11 @@ export async function getPlotStats(req, res) {
       return res.json(getFallbackStats());
     }
 
-    const [total, available, reserved, sold, blocked] = await Promise.all([
+    const [total, available, booked, sold] = await Promise.all([
       Plot.countDocuments(),
       Plot.countDocuments({ status: 'available' }),
-      Plot.countDocuments({ status: 'reserved' }),
-      Plot.countDocuments({ status: 'sold' }),
-      Plot.countDocuments({ status: 'blocked' })
+      Plot.countDocuments({ status: 'booked' }),
+      Plot.countDocuments({ status: 'sold' })
     ]);
 
     return res.json({
@@ -182,9 +179,8 @@ export async function getPlotStats(req, res) {
       stats: {
         total,
         available,
-        reserved,
-        sold,
-        blocked
+        booked,
+        sold
       }
     });
   } catch (err) {
@@ -285,7 +281,7 @@ export async function updatePlotStatus(req, res) {
     const { plotNumber } = req.params;
     const { status } = req.body;
 
-    const valid = ['available', 'reserved', 'sold', 'blocked'];
+    const valid = ['available', 'booked', 'sold'];
     if (!valid.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -300,6 +296,15 @@ export async function updatePlotStatus(req, res) {
 
     const oldStatus = plot.status;
     plot.status = status;
+    // If status is reverted to available, clean customer booking info
+    if (status === 'available') {
+      plot.customerName = '';
+      plot.customerPhone = '';
+      plot.customerEmail = '';
+      plot.bookingAmount = 0;
+      plot.bookingDate = '';
+      plot.paymentStatus = 'unpaid';
+    }
     plot.updatedBy = req.user.username;
     await plot.save();
 
@@ -316,6 +321,72 @@ export async function updatePlotStatus(req, res) {
     return res.json({
       success: true,
       message: `Plot #${plot.plotNumber} status updated to ${status}.`,
+      plot
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+}
+
+export async function bookPlot(req, res) {
+  try {
+    const { plotNumber } = req.params;
+    const {
+      customerName,
+      customerPhone,
+      customerEmail,
+      bookingAmount,
+      bookingDate,
+      paymentStatus,
+      notes
+    } = req.body;
+
+    if (!customerName || !customerPhone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Customer Name and Phone Number are required to book a plot.'
+      });
+    }
+
+    const plot = await Plot.findOne({ plotNumber: Number(plotNumber) });
+    if (!plot) {
+      return res.status(404).json({ success: false, error: `Plot #${plotNumber} not found.` });
+    }
+
+    const before = plot.toObject();
+    plot.status = 'booked';
+    plot.customerName = customerName.trim();
+    plot.customerPhone = customerPhone.trim();
+    plot.customerEmail = customerEmail ? customerEmail.trim() : '';
+    plot.bookingAmount = (bookingAmount !== undefined && bookingAmount !== '') ? Number(bookingAmount) : 0;
+    plot.bookingDate = bookingDate || new Date().toISOString().split('T')[0];
+    if (paymentStatus) plot.paymentStatus = paymentStatus;
+    if (notes !== undefined) plot.notes = notes;
+    plot.updatedBy = req.user?.username || 'admin';
+
+    await plot.save();
+
+    await AuditLog.create({
+      adminUserId: req.user?._id,
+      adminEmail: req.user?.email || 'admin@skandhagroup.com',
+      action: 'PLOT_BOOKED_FOR_CUSTOMER',
+      resource: 'Plot',
+      resourceId: plot._id.toString(),
+      changes: {
+        plotNumber: plot.plotNumber,
+        customerName: plot.customerName,
+        customerPhone: plot.customerPhone,
+        customerEmail: plot.customerEmail,
+        bookingAmount: plot.bookingAmount,
+        bookingDate: plot.bookingDate,
+        paymentStatus: plot.paymentStatus
+      },
+      ipAddress: req.ip
+    });
+
+    return res.json({
+      success: true,
+      message: `Plot #${plot.plotNumber} successfully booked for ${plot.customerName}.`,
       plot
     });
   } catch (err) {

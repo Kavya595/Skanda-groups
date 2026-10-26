@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { fetchPublicSettings } from './api/client';
+import { fetchPublicSettings, trackActivityEvent } from './api/client';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Components
@@ -53,9 +53,13 @@ function ProtectedAdminRoute({ children }) {
 function PublicLayout({ settings }) {
   const location = useLocation();
 
-  // Scroll to top on page navigation
+  // Scroll to top on page navigation and track visitor page view
   useEffect(() => {
     window.scrollTo(0, 0);
+    trackActivityEvent('page_viewed', null, {
+      page: location.pathname,
+      title: document.title
+    });
   }, [location.pathname]);
 
   return (

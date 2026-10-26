@@ -33,28 +33,23 @@ export const statusColors = {
     threeColor: '#10B981',
     label: 'Available'
   },
-  reserved: {
-    bg: '#F59E0B',        // Amber
+  booked: {
+    bg: '#F59E0B',        // Amber / Sunny Yellow
     border: '#D97706',
     text: '#78350F',
     badge: 'bg-amber-100 text-amber-800 border-amber-300',
     threeColor: '#F59E0B',
-    label: 'Reserved'
+    label: 'Booked'
   },
   sold: {
-    bg: '#94A3B8',          // Slate Grey / soft muted
-    border: '#64748B',
-    text: '#1E293B',
-    badge: 'bg-slate-100 text-slate-700 border-slate-300',
-    threeColor: '#64748B',
-    label: 'Sold'
-  },
-  blocked: {
-    bg: '#475569',       // Deep Charcoal
-    border: '#334155',
-    text: '#FFFFFF',
-    badge: 'bg-zinc-200 text-zinc-800 border-zinc-400',
-    threeColor: '#475569',
-    label: 'Blocked'
+    bg: '#F89898',        // Coral Red / Sold Out
+    border: '#EF4444',
+    text: '#7F1D1D',
+    badge: 'bg-rose-100 text-rose-800 border-rose-300',
+    threeColor: '#F89898',
+    label: 'Sold Out'
   }
 };
+
+statusColors.reserved = statusColors.booked;
+statusColors.blocked = statusColors.available;

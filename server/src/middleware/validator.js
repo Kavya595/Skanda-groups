@@ -68,7 +68,7 @@ export function validatePlotInput(req, res, next) {
     });
   }
 
-  const validStatuses = ['available', 'reserved', 'sold', 'blocked'];
+  const validStatuses = ['available', 'booked', 'sold'];
   if (status && !validStatuses.includes(status)) {
     return res.status(400).json({
       success: false,

@@ -20,13 +20,16 @@ import {
   CheckCircle2,
   Sliders,
   Maximize2,
-  User
+  User,
+  UserCheck,
+  UserPlus
 } from 'lucide-react';
 import {
   adminGetPlots,
   adminCreatePlot,
   adminUpdatePlot,
   adminUpdatePlotStatus,
+  adminBookPlot,
   adminDeletePlot,
   adminExportPlotsCsv,
   adminImportPlotsCsv
@@ -55,6 +58,17 @@ export default function AdminPlots() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
+  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    plotNumber: '',
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    bookingAmount: '',
+    bookingDate: new Date().toISOString().split('T')[0],
+    paymentStatus: 'token_paid',
+    notes: ''
+  });
 
   // Form State
   const [formData, setFormData] = useState({
@@ -162,27 +176,70 @@ export default function AdminPlots() {
     }
   };
 
-  // Inventory stats computed across all plots
+  // Inventory stats computed across all plots strictly: available, booked, sold
   const invStats = React.useMemo(() => {
     const totalCount = allPlots.length || total || 96;
     let avail = 0;
     let sold = 0;
-    let res = 0;
-    let blk = 0;
+    let booked = 0;
     allPlots.forEach(p => {
       if (p.status === 'sold') sold++;
-      else if (p.status === 'reserved') res++;
-      else if (p.status === 'blocked') blk++;
+      else if (p.status === 'booked' || p.status === 'reserved') booked++;
       else avail++;
     });
     return {
       total: totalCount,
-      available: avail || (totalCount - sold - res - blk),
+      available: avail || (totalCount - sold - booked),
       sold,
-      reserved: res,
-      blocked: blk
+      booked
     };
   }, [allPlots, total]);
+
+  const openBookingModal = (plot = null) => {
+    setBookingData({
+      plotNumber: plot ? String(plot.plotNumber) : '',
+      customerName: plot?.customerName || '',
+      customerPhone: plot?.customerPhone || '',
+      customerEmail: plot?.customerEmail || '',
+      bookingAmount: plot?.bookingAmount || '',
+      bookingDate: plot?.bookingDate ? plot.bookingDate.split('T')[0] : new Date().toISOString().split('T')[0],
+      paymentStatus: plot?.paymentStatus || 'token_paid',
+      notes: plot?.notes || ''
+    });
+    setIsBookModalOpen(true);
+  };
+
+  const handleConfirmBooking = async (e) => {
+    e.preventDefault();
+    setFeedbackError('');
+    const targetNum = Number(bookingData.plotNumber);
+    if (!targetNum || isNaN(targetNum)) {
+      setFeedbackError('Please select a valid plot number.');
+      return;
+    }
+    if (!bookingData.customerName?.trim() || !bookingData.customerPhone?.trim()) {
+      setFeedbackError('Customer Name and Mobile Phone Number are required.');
+      return;
+    }
+
+    try {
+      const res = await adminBookPlot(targetNum, bookingData);
+      if (res.success) {
+        setFeedbackMsg(`Plot #${targetNum} successfully booked for ${bookingData.customerName}!`);
+        setIsBookModalOpen(false);
+        setPlots(prev => prev.map(p => p.plotNumber === targetNum ? { ...p, ...res.plot } : p));
+        setAllPlots(prev => prev.map(p => p.plotNumber === targetNum ? { ...p, ...res.plot } : p));
+        if (selectedPlot && selectedPlot.plotNumber === targetNum) {
+          setSelectedPlot(prev => ({ ...prev, ...res.plot }));
+        }
+        loadPlots();
+        loadAllPlots();
+        setTimeout(() => setFeedbackMsg(''), 4000);
+      }
+    } catch (err) {
+      setFeedbackError(err.message || 'Failed to book plot');
+    }
+  };
 
   const handleQuickStatusChange = async (plotNumber, newStatus) => {
     try {
@@ -380,6 +437,14 @@ export default function AdminPlots() {
           <div className="h-6 w-px bg-slate-200 hidden sm:block" />
 
           <button
+            onClick={() => openBookingModal(null)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold rounded-xl transition-all shadow-2xs"
+            title="Book a plot directly for customer"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span>Book Plot for Customer</span>
+          </button>
+          <button
             onClick={() => adminExportPlotsCsv()}
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors"
             title="Download CSV"
@@ -405,8 +470,8 @@ export default function AdminPlots() {
         </div>
       </div>
 
-      {/* KPI Inventory Status Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      {/* KPI Inventory Status Bar - 3 Real Real-Estate States: Available, Booked, Sold Out */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between">
           <div>
             <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Units</div>
@@ -429,31 +494,21 @@ export default function AdminPlots() {
 
         <div className="bg-white p-3.5 rounded-xl border border-amber-200/80 shadow-2xs flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Reserved</div>
-            <div className="text-xl font-black text-amber-700 mt-0.5">{invStats.reserved}</div>
+            <div className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Booked</div>
+            <div className="text-xl font-black text-amber-700 mt-0.5">{invStats.booked}</div>
           </div>
           <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs">
-            {Math.round((invStats.reserved / invStats.total) * 100)}%
+            {Math.round((invStats.booked / invStats.total) * 100)}%
           </div>
         </div>
 
         <div className="bg-white p-3.5 rounded-xl border border-rose-200/80 shadow-2xs flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Sold</div>
+            <div className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">Sold Out</div>
             <div className="text-xl font-black text-rose-700 mt-0.5">{invStats.sold}</div>
           </div>
           <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-700 flex items-center justify-center font-bold text-xs">
             {Math.round((invStats.sold / invStats.total) * 100)}%
-          </div>
-        </div>
-
-        <div className="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex items-center justify-between col-span-2 sm:col-span-1">
-          <div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Blocked</div>
-            <div className="text-xl font-black text-slate-800 mt-0.5">{invStats.blocked}</div>
-          </div>
-          <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
-            {Math.round((invStats.blocked / invStats.total) * 100)}%
           </div>
         </div>
       </div>
@@ -537,9 +592,8 @@ export default function AdminPlots() {
                 {[
                   { key: '', label: 'All' },
                   { key: 'available', label: 'Available' },
-                  { key: 'reserved', label: 'Reserved' },
-                  { key: 'sold', label: 'Sold' },
-                  { key: 'blocked', label: 'Blocked' }
+                  { key: 'booked', label: 'Booked' },
+                  { key: 'sold', label: 'Sold Out' }
                 ].map((st) => (
                   <button
                     key={st.key}
@@ -803,11 +857,11 @@ export default function AdminPlots() {
                     ) : null}
 
                     <button
-                      onClick={() => openEditModal(selectedPlot)}
-                      className="w-full mt-1 py-1.5 px-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1 shadow-2xs"
+                      onClick={() => openBookingModal(selectedPlot)}
+                      className="w-full mt-1.5 py-2 px-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
                     >
-                      <Edit2 className="w-3 h-3" />
-                      <span>Modify Buyer &amp; Booking Info</span>
+                      <UserCheck className="w-3.5 h-3.5" />
+                      <span>{selectedPlot.customerName ? 'Modify Booking Details' : 'Book Plot for Customer'}</span>
                     </button>
                   </div>
                 )}
@@ -862,9 +916,8 @@ export default function AdminPlots() {
               >
                 <option value="">All Statuses</option>
                 <option value="available">Available</option>
-                <option value="reserved">Reserved</option>
-                <option value="sold">Sold</option>
-                <option value="blocked">Blocked</option>
+                <option value="booked">Booked</option>
+                <option value="sold">Sold Out</option>
               </select>
             </div>
 
@@ -928,9 +981,8 @@ export default function AdminPlots() {
                               className={`text-xs font-bold rounded-lg px-2.5 py-1 border outline-none cursor-pointer ${meta.badge}`}
                             >
                               <option value="available">Available</option>
-                              <option value="reserved">Reserved</option>
-                              <option value="sold">Sold</option>
-                              <option value="blocked">Blocked</option>
+                              <option value="booked">Booked</option>
+                              <option value="sold">Sold Out</option>
                             </select>
                             {plot.customerName && (
                               <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-slate-700 truncate max-w-[130px]" title={`Buyer: ${plot.customerName}`}>
@@ -969,6 +1021,15 @@ export default function AdminPlots() {
                                 className="p-1.5 rounded-lg hover:bg-orange-50 text-slate-400 hover:text-brand-orange transition-colors"
                               >
                                 <Box className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* Direct Book / Manage Booking Button */}
+                              <button
+                                onClick={() => openBookingModal(plot)}
+                                title={plot.status === 'booked' ? 'Manage Customer Booking Details' : 'Book Plot for Customer'}
+                                className="p-1.5 rounded-lg hover:bg-amber-100 text-amber-600 hover:text-amber-800 transition-colors"
+                              >
+                                <UserCheck className="w-3.5 h-3.5" />
                               </button>
 
                               <button
@@ -1123,9 +1184,8 @@ export default function AdminPlots() {
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none bg-white font-bold"
                   >
                     <option value="available">Available</option>
-                    <option value="reserved">Reserved</option>
-                    <option value="sold">Sold</option>
-                    <option value="blocked">Blocked</option>
+                    <option value="booked">Booked</option>
+                    <option value="sold">Sold Out</option>
                   </select>
                 </div>
                 <div>
@@ -1325,6 +1385,161 @@ export default function AdminPlots() {
                 Process Import
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Book Plot For Customer Modal */}
+      {isBookModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div>
+                <h3 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-amber-600" />
+                  <span>Book Plot for Customer</span>
+                </h3>
+                <p className="text-xs text-slate-500">Record customer advance booking and lock plot status</p>
+              </div>
+              <button
+                onClick={() => setIsBookModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmBooking} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Select Plot Number *</label>
+                <select
+                  required
+                  value={bookingData.plotNumber}
+                  onChange={(e) => {
+                    const chosen = allPlots.find(p => String(p.plotNumber) === e.target.value);
+                    setBookingData({
+                      ...bookingData,
+                      plotNumber: e.target.value,
+                      customerName: chosen?.customerName || bookingData.customerName,
+                      customerPhone: chosen?.customerPhone || bookingData.customerPhone,
+                      customerEmail: chosen?.customerEmail || bookingData.customerEmail,
+                      bookingAmount: chosen?.bookingAmount || bookingData.bookingAmount,
+                      bookingDate: chosen?.bookingDate ? chosen.bookingDate.split('T')[0] : bookingData.bookingDate,
+                      paymentStatus: chosen?.paymentStatus || bookingData.paymentStatus,
+                      notes: chosen?.notes || bookingData.notes
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none bg-white font-bold text-slate-900"
+                >
+                  <option value="">-- Choose Plot Number (1 to 96) --</option>
+                  {(allPlots.length > 0 ? allPlots : plots).map(p => (
+                    <option key={p.plotNumber} value={p.plotNumber}>
+                      Plot #{p.plotNumber} - {p.block} ({p.areaSqYds} yd², {p.facing}) [{p.status.toUpperCase()}]
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Customer Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ramesh Kumar"
+                    value={bookingData.customerName}
+                    onChange={(e) => setBookingData({ ...bookingData, customerName: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Mobile / Phone Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+91 98765 43210"
+                    value={bookingData.customerPhone}
+                    onChange={(e) => setBookingData({ ...bookingData, customerPhone: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Customer Email</label>
+                  <input
+                    type="email"
+                    placeholder="buyer@example.com"
+                    value={bookingData.customerEmail}
+                    onChange={(e) => setBookingData({ ...bookingData, customerEmail: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Booking Date</label>
+                  <input
+                    type="date"
+                    value={bookingData.bookingDate}
+                    onChange={(e) => setBookingData({ ...bookingData, bookingDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Booking Amount / Advance Paid (₹)</label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 100000"
+                    value={bookingData.bookingAmount}
+                    onChange={(e) => setBookingData({ ...bookingData, bookingAmount: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Payment Status</label>
+                  <select
+                    value={bookingData.paymentStatus}
+                    onChange={(e) => setBookingData({ ...bookingData, paymentStatus: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none bg-white font-medium"
+                  >
+                    <option value="token_paid">Token Paid</option>
+                    <option value="partially_paid">Partially Paid</option>
+                    <option value="fully_paid">Fully Paid</option>
+                    <option value="unpaid">Unpaid / In Discussion</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Notes / Terms</label>
+                <textarea
+                  rows="2"
+                  placeholder="e.g. Advance paid via UPI. Registration planned for next week."
+                  value={bookingData.notes}
+                  onChange={(e) => setBookingData({ ...bookingData, notes: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none resize-none font-medium"
+                />
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsBookModalOpen(false)}
+                  className="flex-1 py-2.5 font-bold border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 font-bold bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl transition-colors shadow-xs"
+                >
+                  Confirm &amp; Book Plot
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

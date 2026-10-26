@@ -214,6 +214,13 @@ export default function Footer({ settings }) {
               <span className="text-brand-orange text-[10px]">▶</span>
               <span>Terms &amp; Conditions</span>
             </Link>
+            <Link
+              to="/admin"
+              className="text-slate-500 hover:text-brand-orange transition-colors p-1 ml-2"
+              aria-label="Portal Access"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </div>

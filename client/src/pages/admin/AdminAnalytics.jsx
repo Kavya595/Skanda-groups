@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { adminGetAnalyticsSummary, adminExportWebsiteVisitsCsv } from '../../api/client';
-import { Activity, Eye, Compass, Layers, Send, Search, Filter, Download } from 'lucide-react';
+import { Activity, Eye, Compass, Layers, Send, Search, Filter, Download, User, Phone, Mail } from 'lucide-react';
 
 export default function AdminAnalytics() {
   const [data, setData] = useState(null);
@@ -111,18 +111,46 @@ export default function AdminAnalytics() {
                           {getEventIcon(ev.eventType)}
                         </span>
                         <div>
-                          <span className="font-bold text-slate-800 capitalize">
-                            {ev.eventType.replace(/_/g, ' ')}
-                          </span>
-                          {ev.plotNumber && (
-                            <span className="ml-2 font-semibold text-brand-orange">
-                              Plot #{ev.plotNumber}
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-800 capitalize">
+                              {ev.eventType.replace(/_/g, ' ')}
                             </span>
+                            {ev.plotNumber && (
+                              <span className="font-semibold text-brand-orange bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200 text-[10px]">
+                                Plot #{ev.plotNumber}
+                              </span>
+                            )}
+                            {ev.page && (
+                              <span className="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                                {ev.page}
+                              </span>
+                            )}
+                          </div>
+                          {(ev.customerName || ev.customerPhone || ev.customerEmail) && (
+                            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700 mt-0.5">
+                              <User className="w-3 h-3 text-slate-400" />
+                              <span>{ev.customerName || 'Identified Visitor'}</span>
+                              {ev.customerPhone && (
+                                <a
+                                  href={`tel:${ev.customerPhone}`}
+                                  className="text-emerald-700 hover:underline flex items-center gap-0.5"
+                                  title="Call Customer"
+                                >
+                                  <Phone className="w-2.5 h-2.5" />
+                                  <span>{ev.customerPhone}</span>
+                                </a>
+                              )}
+                              {ev.customerEmail && (
+                                <span className="text-slate-500 font-normal truncate max-w-[160px]">
+                                  ({ev.customerEmail})
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
                       </div>
                       <span className="text-slate-400 text-[10px] shrink-0">
-                        {new Date(ev.createdAt).toLocaleTimeString()}
+                        {new Date(ev.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                   ))

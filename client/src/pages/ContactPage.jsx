@@ -74,7 +74,11 @@ export default function ContactPage({ settings }) {
       if (res.success) {
         setStatus('success');
         setStatusMessage('Thank you for reaching out! Your inquiry has been routed to our corporate advisory team. We will review your requirements and respond shortly.');
-        trackActivityEvent('enquiry_submitted', null, { source: 'contact_page' });
+        trackActivityEvent('enquiry_submitted', null, {
+          source: 'contact_page',
+          customerName: formData.fullName,
+          customerEmail: formData.email
+        });
         if (res.whatsappUrl) {
           setWhatsappUrl(res.whatsappUrl);
         }

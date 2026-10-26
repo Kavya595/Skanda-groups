@@ -34,6 +34,9 @@ export default function EnquiryModal({ isOpen, onClose, prefilledPlot }) {
       if (res.success) {
         setSuccessResult(res);
         trackActivityEvent('enquiry_submitted', prefilledPlot?.plotNumber, {
+          customerName: formData.name,
+          customerPhone: formData.phone,
+          customerEmail: formData.email,
           preferredMethod: formData.preferredContactMethod
         });
         if (res.whatsappUrl) {

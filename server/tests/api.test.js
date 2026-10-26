@@ -159,11 +159,32 @@ test('4. Plot Status & Inventory Management Operations', async (t) => {
     const res = await request(app)
       .patch('/api/admin/plots/10/status')
       .set('Authorization', `Bearer ${authToken}`)
-      .send({ status: 'reserved' });
+      .send({ status: 'booked' });
 
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
-    assert.equal(res.body.plot.status, 'reserved');
+    assert.equal(res.body.plot.status, 'booked');
+  });
+
+  await t.test('POST /api/admin/plots/10/book books plot for customer', async () => {
+    const res = await request(app)
+      .post('/api/admin/plots/10/book')
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        customerName: 'K. S. Sharma',
+        customerPhone: '+91 9440156789',
+        customerEmail: 'kssharma@example.com',
+        bookingAmount: 100000,
+        bookingDate: '2026-10-26',
+        paymentStatus: 'token_paid',
+        notes: 'Token received via RTGS.'
+      });
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    assert.equal(res.body.plot.status, 'booked');
+    assert.equal(res.body.plot.customerName, 'K. S. Sharma');
+    assert.equal(res.body.plot.customerPhone, '+91 9440156789');
   });
 
   await t.test('PATCH /api/admin/plots/10/status rejects invalid status enum', async () => {

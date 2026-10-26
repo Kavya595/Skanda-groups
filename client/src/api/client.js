@@ -71,6 +71,23 @@ export async function fetchPlotDetail(plotNumber) {
   }
 }
 
+export function getUserContact() {
+  try {
+    const raw = localStorage.getItem('skandha_user_contact');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveUserContact(contact = {}) {
+  try {
+    const existing = getUserContact() || {};
+    const updated = { ...existing, ...contact };
+    localStorage.setItem('skandha_user_contact', JSON.stringify(updated));
+  } catch {}
+}
+
 export async function fetchPlotStats() {
   try {
     const res = await fetch(`${API_BASE}/plots/stats`);
@@ -78,7 +95,7 @@ export async function fetchPlotStats() {
       console.warn(`fetchPlotStats returned status ${res.status}, returning baseline stats`);
       return {
         success: true,
-        stats: { total: 96, available: 81, reserved: 7, sold: 8, blocked: 0 }
+        stats: { total: 96, available: 85, booked: 5, sold: 6 }
       };
     }
     return handleResponse(res);
@@ -86,12 +103,19 @@ export async function fetchPlotStats() {
     console.warn('fetchPlotStats network error, returning baseline stats:', err.message);
     return {
       success: true,
-      stats: { total: 96, available: 81, reserved: 7, sold: 8, blocked: 0 }
+      stats: { total: 96, available: 85, booked: 5, sold: 6 }
     };
   }
 }
 
 export async function submitLead(leadData) {
+  if (leadData?.name || leadData?.phone || leadData?.email) {
+    saveUserContact({
+      name: leadData.name,
+      phone: leadData.phone,
+      email: leadData.email
+    });
+  }
   const res = await fetch(`${API_BASE}/leads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -102,10 +126,22 @@ export async function submitLead(leadData) {
 
 export async function trackActivityEvent(eventType, plotNumber, metadata = {}) {
   try {
+    const contact = getUserContact() || {};
+    const payload = {
+      eventType,
+      plotNumber: plotNumber ? Number(plotNumber) : undefined,
+      customerName: metadata.customerName || contact.name || '',
+      customerPhone: metadata.customerPhone || metadata.phone || contact.phone || '',
+      customerEmail: metadata.customerEmail || metadata.email || contact.email || '',
+      page: metadata.page || window.location.pathname,
+      actionDetails: metadata.actionDetails || metadata.label || '',
+      metadata
+    };
+
     await fetch(`${API_BASE}/analytics/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventType, plotNumber, metadata })
+      body: JSON.stringify(payload)
     });
   } catch (err) {
     // Analytics logging should never disrupt user flow
@@ -204,6 +240,15 @@ export async function adminUpdatePlotStatus(plotNumber, status) {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
     body: JSON.stringify({ status })
+  });
+  return handleResponse(res);
+}
+
+export async function adminBookPlot(plotNumber, bookingData) {
+  const res = await fetch(`${API_BASE}/admin/plots/${plotNumber}/book`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    body: JSON.stringify(bookingData)
   });
   return handleResponse(res);
 }
