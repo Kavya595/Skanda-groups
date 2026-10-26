@@ -39,11 +39,11 @@ import LayoutMasterView from '../../visualizer/LayoutMasterView';
 
 export default function AdminPlots() {
   const [viewMode, setViewMode] = useState('table'); // 'table' | '2d' | '3d'
-  const [plots, setPlots] = useState([]);
-  const [allPlots, setAllPlots] = useState([]);
+  const [plots, setPlots] = useState(() => getEnrichedPlots().slice(0, 20));
+  const [allPlots, setAllPlots] = useState(() => getEnrichedPlots());
   const [selectedPlot, setSelectedPlot] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(96);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');

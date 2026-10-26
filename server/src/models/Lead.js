@@ -26,6 +26,6 @@ const leadSchema = new mongoose.Schema({
   }],
   ipAddress: { type: String },
   userAgent: { type: String }
-}, { timestamps: true });
+}, { timestamps: true, bufferCommands: false });
 
 export default mongoose.model('Lead', leadSchema);

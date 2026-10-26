@@ -2,8 +2,35 @@ import React, { useState, useEffect } from 'react';
 import { adminGetSettings, adminUpdateSettings } from '../../api/client';
 import { Save, Check, AlertCircle, Shield, Globe, MessageSquare } from 'lucide-react';
 
+const defaultSettings = {
+  companyName: 'Skandha Group',
+  projectName: "Kadthal Venture",
+  projectLocation: 'Kadthal, Srisailam Highway, Hyderabad',
+  officeAddress: '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana -500079',
+  contactEmail: 'contact@skandhagroup.com',
+  whatsappNumber: '919100031199',
+  dtcpNumber: 'TLP NO. 87/2024/H',
+  reraNumber: 'P02400009081',
+  heroVideoUrl: '',
+  heroPosterUrl: '/assets/hero_cover.jpg',
+  brochurePdfUrl: '/assets/skandha_brochure.pdf',
+  flyerPdfUrl: '/assets/skandha_flyer.pdf',
+  socialLinks: {
+    facebook: '',
+    instagram: 'https://www.instagram.com/_skandhagroups_/',
+    youtube: 'https://www.youtube.com/@SkandhaGroups-hyd'
+  },
+  publicClaimsApproved: true,
+  seo: {
+    title: "Skandha Group | DTCP & RERA Approved Open Plots in Kadthal",
+    description: "Premium DTCP & RERA approved residential villa plots in Kadthal near Srisailam Highway & Maisigandi Temple by Skandha Group.",
+    keywords: "open plots Kadthal, Skandha Group, DTCP approved plots, Srisailam Highway plots",
+    ogImage: '/assets/hero_cover.jpg'
+  }
+};
+
 export default function AdminSettings() {
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState('');
@@ -11,7 +38,11 @@ export default function AdminSettings() {
 
   useEffect(() => {
     adminGetSettings()
-      .then(res => res.success && setSettings(res.settings))
+      .then(res => {
+        if (res && res.success && res.settings) {
+          setSettings(prev => ({ ...prev, ...res.settings }));
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);

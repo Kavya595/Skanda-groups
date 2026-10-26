@@ -670,9 +670,9 @@ const Layout2DView = React.forwardRef(function Layout2DView({
       poly.addTo(plotsGroup);
       layersMap[plot.plotNumber] = poly;
 
-      // Clean Plot Number Typography (matching Plots99 Screenshots)
-      // When zoomed out (< 18.2), HIDE individual numbers so they never clutter or spill out of boundaries (Fix for Image 1)
-      const shouldShowNumber = isVisible && (currentZoom >= 18.2 || isSelected || isTargetMatch);
+      // Clean Plot Number Typography
+      // Plot numbers are permanently visible on all zoom levels so admins and visitors can always identify plots
+      const shouldShowNumber = isVisible;
 
       if (shouldShowNumber) {
         if (isSelected || isTargetMatch) {
@@ -702,18 +702,27 @@ const Layout2DView = React.forwardRef(function Layout2DView({
         } else {
           // Authentic Brochure Plot Circles: <Number> on top, horizontal dividing line, <Area> below
           const isNarrow = (plot.plotNumber >= 1 && plot.plotNumber <= 8) || (plot.plotNumber >= 83 && plot.plotNumber <= 96);
-          let circleSize = 15;
-          let fontSize = '5.5px';
-          let areaFontSize = '4.5px';
+          let circleSize = 14;
+          let fontSize = '6.5px';
+          let areaFontSize = '5px';
+          let showArea = true;
 
           if (currentZoom >= 19.8) {
             circleSize = isNarrow ? 20 : 22;
-            fontSize = isNarrow ? '7.5px' : '8.5px';
+            fontSize = isNarrow ? '8px' : '9px';
             areaFontSize = isNarrow ? '6px' : '7px';
-          } else if (currentZoom >= 18.8) {
+          } else if (currentZoom >= 18.4) {
             circleSize = isNarrow ? 16 : 18;
-            fontSize = isNarrow ? '6.5px' : '7px';
+            fontSize = isNarrow ? '7px' : '7.5px';
             areaFontSize = isNarrow ? '5px' : '5.8px';
+          } else if (currentZoom >= 17.2) {
+            circleSize = isNarrow ? 13 : 15;
+            fontSize = isNarrow ? '6px' : '6.5px';
+            areaFontSize = '4.5px';
+          } else {
+            circleSize = isNarrow ? 11 : 13;
+            fontSize = isNarrow ? '5.5px' : '6px';
+            showArea = false;
           }
 
           const numIcon = L.divIcon({
@@ -724,7 +733,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
                 height: ${circleSize}px;
                 border-radius: 50%;
                 border: 1px solid #0F172A;
-                background: rgba(255, 255, 255, 0.45);
+                background: rgba(255, 255, 255, 0.88);
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -732,7 +741,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
                 transform: translate(-50%, -50%);
                 pointer-events: none;
                 user-select: none;
-                box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+                box-shadow: 0 1px 2px rgba(0,0,0,0.2);
               ">
                 <div style="
                   font-size: ${fontSize};
@@ -740,11 +749,12 @@ const Layout2DView = React.forwardRef(function Layout2DView({
                   color: #0F172A;
                   line-height: 1;
                 ">${plot.plotNumber}</div>
+                ${showArea ? `
                 <div style="
-                  width: 80%;
+                  width: 75%;
                   height: 0.8px;
                   background: #0F172A;
-                  margin: 0.8px 0;
+                  margin: 0.6px 0;
                 "></div>
                 <div style="
                   font-size: ${areaFontSize};
@@ -752,6 +762,7 @@ const Layout2DView = React.forwardRef(function Layout2DView({
                   color: #0F172A;
                   line-height: 1;
                 ">${plot.areaSqYds}</div>
+                ` : ''}
               </div>
             `,
             iconSize: [circleSize, circleSize],
