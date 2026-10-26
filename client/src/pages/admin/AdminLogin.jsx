@@ -2,19 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { adminBootstrap } from '../../api/client';
-import { Lock, Mail, User, ShieldCheck, KeyRound, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User, ShieldCheck, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLogin() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const [identifier, setIdentifier] = useState('admin');
-  const [password, setPassword] = useState('SkandhaAdmin2026!');
+  const [password, setPassword] = useState('admin@123');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   // One-time Bootstrap setup state
   const [showBootstrap, setShowBootstrap] = useState(false);
+  const [showBootstrapSecret, setShowBootstrapSecret] = useState(false);
+  const [showBootstrapPassword, setShowBootstrapPassword] = useState(false);
   const [bootstrapData, setBootstrapData] = useState({
     secretKey: '',
     username: 'admin',
@@ -115,19 +118,35 @@ export default function AdminLogin() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-700">
+                    Password
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-medium">Default: admin@123</span>
+                </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter admin password"
-                    className="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                    className="w-full pl-9 pr-10 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -135,9 +154,16 @@ export default function AdminLogin() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3 rounded-xl text-sm shadow transition-all disabled:opacity-50"
+                  className="w-full bg-brand-orange hover:bg-brand-orange-dark text-white font-bold py-3 rounded-xl text-sm shadow transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loading ? 'Authenticating...' : 'Sign In to Admin Portal'}
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Authenticating...</span>
+                    </>
+                  ) : (
+                    <span>Sign In to Admin Portal</span>
+                  )}
                 </button>
               </div>
 
@@ -163,14 +189,29 @@ export default function AdminLogin() {
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Bootstrap Secret Key
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Enter secret from server env"
-                  value={bootstrapData.secretKey}
-                  onChange={(e) => setBootstrapData({ ...bootstrapData, secretKey: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                />
+                <div className="relative">
+                  <input
+                    type={showBootstrapSecret ? 'text' : 'password'}
+                    required
+                    placeholder="Enter secret from server env"
+                    value={bootstrapData.secretKey}
+                    onChange={(e) => setBootstrapData({ ...bootstrapData, secretKey: e.target.value })}
+                    className="w-full pl-3 pr-10 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowBootstrapSecret(!showBootstrapSecret)}
+                    tabIndex={-1}
+                    aria-label={showBootstrapSecret ? 'Hide secret' : 'Show secret'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  >
+                    {showBootstrapSecret ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -203,14 +244,29 @@ export default function AdminLogin() {
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   Set Master Password (min 8 chars)
                 </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="Create secure password"
-                  value={bootstrapData.password}
-                  onChange={(e) => setBootstrapData({ ...bootstrapData, password: e.target.value })}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
-                />
+                <div className="relative">
+                  <input
+                    type={showBootstrapPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Create secure password"
+                    value={bootstrapData.password}
+                    onChange={(e) => setBootstrapData({ ...bootstrapData, password: e.target.value })}
+                    className="w-full pl-3 pr-10 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowBootstrapPassword(!showBootstrapPassword)}
+                    tabIndex={-1}
+                    aria-label={showBootstrapPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  >
+                    {showBootstrapPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="pt-2 flex gap-3">
