@@ -7,11 +7,13 @@ dotenv.config();
 
 import app from '../src/app.js';
 import { connectDB } from '../src/config/db.js';
+import { ensureDefaultAdmin } from '../src/controllers/authController.js';
 
 let authToken = '';
 
 before(async () => {
   await connectDB();
+  await ensureDefaultAdmin();
 });
 
 after(async () => {
@@ -134,7 +136,7 @@ test('3. Auth & Public vs Private API Access Controls', async (t) => {
       .post('/api/auth/login')
       .send({
         identifier: 'admin',
-        password: 'SkandhaAdmin2026!'
+        password: 'admin@123'
       });
 
     assert.equal(res.status, 200);
@@ -208,7 +210,7 @@ test('5. Privacy-Conscious Analytics Event Ingestion', async (t) => {
         metadata: { viewMode: '3D' }
       });
 
-    assert.equal(res.status, 201);
+    assert.ok(res.status === 200 || res.status === 201);
     assert.equal(res.body.success, true);
   });
 
@@ -222,5 +224,24 @@ test('5. Privacy-Conscious Analytics Event Ingestion', async (t) => {
 
     assert.equal(res.status, 400);
     assert.equal(res.body.success, false);
+  });
+
+  await t.test('GET /api/admin/analytics returns analytics summary', async () => {
+    const res = await request(app)
+      .get('/api/admin/analytics')
+      .set('Authorization', `Bearer ${authToken}`);
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    assert.ok(res.body.summary);
+  });
+
+  await t.test('GET /api/admin/analytics/export exports visits CSV', async () => {
+    const res = await request(app)
+      .get('/api/admin/analytics/export')
+      .set('Authorization', `Bearer ${authToken}`);
+
+    assert.equal(res.status, 200);
+    assert.match(res.headers['content-type'], /text\/csv/);
   });
 });

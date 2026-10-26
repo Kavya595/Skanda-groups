@@ -11,6 +11,11 @@ async function startServer() {
   try {
     await connectDB();
     await ensureDefaultAdmin();
+  } catch (dbErr) {
+    console.warn('[Startup Notice] Initial database connection was not ready:', dbErr.message);
+  }
+
+  try {
     const server = app.listen(PORT, () => {
       console.log(`=======================================================`);
       console.log(` Skandha Group API Server running on port ${PORT}`);
@@ -29,7 +34,7 @@ async function startServer() {
       }
     });
   } catch (err) {
-    console.error('[Startup Error] Failed to connect to database or start server:', err.message);
+    console.error('[Startup Error] Failed to start HTTP server:', err.message);
     process.exit(1);
   }
 }

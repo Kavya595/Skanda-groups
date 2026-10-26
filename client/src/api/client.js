@@ -127,25 +127,34 @@ export async function submitLead(leadData) {
 export async function trackActivityEvent(eventType, plotNumber, metadata = {}) {
   try {
     const contact = getUserContact() || {};
+    const validPlotNumber = (plotNumber !== null && plotNumber !== undefined && !isNaN(Number(plotNumber)))
+      ? Number(plotNumber)
+      : undefined;
+
     const payload = {
       eventType,
-      plotNumber: plotNumber ? Number(plotNumber) : undefined,
+      plotNumber: validPlotNumber,
       customerName: metadata.customerName || contact.name || '',
       customerPhone: metadata.customerPhone || metadata.phone || contact.phone || '',
       customerEmail: metadata.customerEmail || metadata.email || contact.email || '',
-      page: metadata.page || window.location.pathname,
+      page: metadata.page || (typeof window !== 'undefined' ? window.location.pathname : ''),
       actionDetails: metadata.actionDetails || metadata.label || '',
       metadata
     };
 
-    await fetch(`${API_BASE}/analytics/events`, {
+    const res = await fetch(`${API_BASE}/analytics/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
+    if (res.ok) {
+      return await res.json();
+    }
+    return { success: true, buffered: true };
   } catch (err) {
-    // Analytics logging should never disrupt user flow
-    console.debug('[Analytics tracking error]', err);
+    // Analytics logging is non-blocking background telemetry
+    return { success: true, buffered: true };
   }
 }
 

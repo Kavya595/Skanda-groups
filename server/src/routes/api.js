@@ -129,7 +129,9 @@ router.delete('/admin/leads/:id', leadCtrl.deleteLead);
 router.get('/admin/leads/export/csv', leadCtrl.exportLeadsCsv);
 
 // Admin Analytics & Activity
+router.get('/admin/analytics', analyticsCtrl.getAnalyticsSummary);
 router.get('/admin/analytics/summary', analyticsCtrl.getAnalyticsSummary);
+router.get('/admin/analytics/export', analyticsCtrl.exportWebsiteVisitsCsv);
 router.get('/admin/analytics/export/csv', analyticsCtrl.exportWebsiteVisitsCsv);
 
 // Admin Gallery Management

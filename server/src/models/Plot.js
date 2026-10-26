@@ -45,7 +45,7 @@ const plotSchema = new mongoose.Schema({
   },
   notes: { type: String, default: '' },
   updatedBy: { type: String }
-}, { timestamps: true });
+}, { timestamps: true, bufferCommands: false });
 
 plotSchema.pre('save', function (next) {
   if (this.areaSqYds) {

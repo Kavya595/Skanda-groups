@@ -44,7 +44,7 @@ function filterFallbackPlots({ status, facing, minArea, maxArea, search, page, l
 function getFallbackStats() {
   const total = initialPlots.length;
   const available = initialPlots.filter(p => p.status === 'available').length;
-  const booked = initialPlots.filter(p => p.status === 'booked' || p.status === 'reserved').length;
+  const booked = initialPlots.filter(p => p.status === 'booked').length;
   const sold = initialPlots.filter(p => p.status === 'sold').length;
 
   return {
