@@ -199,28 +199,16 @@ export default function Footer({ settings }) {
           <div>
             Copyright &copy; {new Date().getFullYear()} Skandha Group. All Rights Reserved.
           </div>
-          <div className="flex items-center gap-6">
-            <Link
-              to="/privacy"
-              className="hover:text-white transition-colors flex items-center gap-1.5 text-xs text-slate-300"
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <span>Designed &amp; Developed by</span>
+            <a
+              href="https://qwikdigitalsolutions.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand-orange hover:text-orange-400 font-medium hover:underline transition-colors"
             >
-              <span className="text-brand-orange text-[10px]">▶</span>
-              <span>Privacy Policy</span>
-            </Link>
-            <Link
-              to="/terms"
-              className="hover:text-white transition-colors flex items-center gap-1.5 text-xs text-slate-300"
-            >
-              <span className="text-brand-orange text-[10px]">▶</span>
-              <span>Terms &amp; Conditions</span>
-            </Link>
-            <Link
-              to="/admin"
-              className="text-slate-500 hover:text-brand-orange transition-colors p-1 ml-2"
-              aria-label="Portal Access"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-            </Link>
+              Qwik Digital Solutions
+            </a>
           </div>
         </div>
       </div>
