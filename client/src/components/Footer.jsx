@@ -5,15 +5,12 @@ import {
   Facebook,
   Instagram,
   Linkedin,
-  Youtube,
-  ShieldCheck
+  Youtube
 } from 'lucide-react';
 
 export default function Footer({ settings }) {
   const email = (settings && settings.contactEmail) || 'contact@skandhagroup.com';
   const officeAddress = (settings && settings.officeAddress) || '# 8-7-91/17/1, 4th Floor Bata Building, Beside Naveena Hospital, Main Road, Hastinapuram, Hyderabad, Telangana - 500079';
-  const reraNo = (settings && settings.reraNumber) || 'PO2400009081';
-  const dtcpNo = (settings && settings.dtcpNumber) || 'TLP NO. 87/2024/H';
 
   const instagramUrl = (settings && settings.socialLinks && settings.socialLinks.instagram && !settings.socialLinks.instagram.endsWith('/skandhagroup'))
     ? settings.socialLinks.instagram
@@ -179,16 +176,6 @@ export default function Footer({ settings }) {
                 </a>
               </li>
             </ul>
-
-            <div className="pt-3 flex flex-wrap gap-2 text-xs">
-              <span className="px-2.5 py-1 bg-white/10 rounded border border-white/20 text-slate-200 inline-flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-orange" />
-                DTCP: {dtcpNo}
-              </span>
-              <span className="px-2.5 py-1 bg-white/10 rounded border border-white/20 text-slate-200">
-                RERA: {reraNo}
-              </span>
-            </div>
           </div>
         </div>
       </div>
